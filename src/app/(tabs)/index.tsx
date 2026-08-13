@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
-import { useRouter } from "expo-router";
 import {
   ActivityIndicator,
   FlatList,
@@ -8,12 +7,11 @@ import {
   Text,
   View,
 } from "react-native";
-import { supabase } from "../utils/supabase";
+import { supabase } from "@/utils/supabase";
 
 type Todo = { id: number; name: string };
 
 export default function Index() {
-  const route = useRouter();
   const {
     data: todos,
     isLoading,
@@ -54,9 +52,6 @@ export default function Index() {
           <Text style={styles.textRegular}>{item.name}</Text>
         )}
       />
-      <Button variant="secondary" onPress={() => route.push("/(tabs)")}>
-        Click meeee
-      </Button>
     </View>
   );
 }
