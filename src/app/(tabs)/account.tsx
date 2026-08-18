@@ -17,6 +17,7 @@ import {
   shadow,
 } from "../../constants/theme";
 import { Text } from "@/components/ui/text";
+import { Button } from "@/components/ui/button";
 
 type AccountType = "bank" | "ewallet" | "investment";
 
@@ -166,29 +167,16 @@ export default function AccountScreen() {
       >
         {/* Total balance hero card */}
         <View style={[styles.card, styles.heroCard, shadow.heroCard]}>
-          <Text style={styles.heroLabel}>TOTAL BALANCE</Text>
-          <Text style={styles.heroAmount}>{formatCurrency(totalBalance)}</Text>
+          <Text style={styles.heroLabel}>TRANSFER SALDO</Text>
           <View style={styles.heroDivider} />
-          <View style={styles.heroBreakdownRow}>
-            {grouped.map((group) => (
-              <View key={group.type} style={styles.heroBreakdownItem}>
-                <View
-                  style={[
-                    styles.heroDot,
-                    { backgroundColor: group.meta.color },
-                  ]}
-                />
-                <View>
-                  <Text style={styles.heroBreakdownLabel}>
-                    {group.meta.label}
-                  </Text>
-                  <Text style={styles.heroBreakdownValue}>
-                    {formatCurrency(group.subtotal)}
-                  </Text>
-                </View>
-              </View>
-            ))}
-          </View>
+          <Button
+            variant='default'
+            onPress={() => {}}
+            style={styles.buttonTransfer}
+          >
+            <Text style={styles.buttonTransferText}>Transfer Antar Rekening</Text>
+            <MaterialIcons name="arrow-forward" size={24} color="white" />
+          </Button>
         </View>
 
         {/* Account groups */}
@@ -284,6 +272,19 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     backgroundColor: colors.surface,
   },
+  buttonTransfer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: "#014e25",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: radius.md,
+  },
+  buttonTransferText: {
+    ...typography.bodyLg,
+    color: colors.white,
+  },  
   wordmark: { ...typography.headlineLgMobile, color: colors.primary },
 
   scrollContent: {

@@ -31,6 +31,13 @@ const CATEGORIES = [
   { key: "others", icon: "more-horiz", label: "Others" },
 ];
 
+const KEYPAD_ROWS = [
+  ["1", "2", "3"],
+  ["4", "5", "6"],
+  ["7", "8", "9"],
+  [".", "0", "backspace"],
+];
+
 const todayISO = () => new Date().toISOString().slice(0, 10);
 
 export default function AddTransactionScreen() {
@@ -40,6 +47,27 @@ export default function AddTransactionScreen() {
   const [note, setNote] = useState("");
 
   const isValid = parseFloat(amount) > 0 && category;
+
+  const handleKeyPress = (key: string) => {
+    if (key === "backspace") {
+      setAmount((prev) => prev.slice(0, -1));
+      return;
+    }
+    if (key === ".") {
+      if (amount.includes(".")) return; // cegah lebih dari satu titik desimal
+      setAmount((prev) => (prev.length === 0 ? "0." : prev + "."));
+      return;
+    }
+    // batasi maksimal 2 digit di belakang koma
+    const decimalPart = amount.split(".")[1];
+    if (decimalPart && decimalPart.length >= 2) return;
+    // cegah leading zero ganda (mis. "00")
+    if (amount === "0") {
+      setAmount(key);
+      return;
+    }
+    setAmount((prev) => prev + key);
+  };
 
   const handleSave = () => {
     if (!isValid) return;
@@ -76,108 +104,126 @@ export default function AddTransactionScreen() {
         <View style={styles.headerBtn} />
       </View>
 
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-      >
-        {/* Amount input */}
-        <View style={styles.amountBlock}>
-          <Text style={styles.label}>Amount</Text>
-          <View style={styles.amountRow}>
-            <Text style={styles.currencySymbol}>$</Text>
-            <TextInput
-              value={amount}
-              onChangeText={setAmount}
-              placeholder="0.00"
-              placeholderTextColor={colors.outlineVariant}
-              keyboardType="decimal-pad"
-              style={styles.amountInput}
-              autoFocus
-            />
+      <View style={styles.body}>
+        {/* Bagian atas yang bisa discroll: amount, category, date, note */}
+        <ScrollView
+          style={styles.topScroll}
+          contentContainerStyle={styles.topScrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Amount display (bukan input keyboard, hanya tampilan) */}
+          <View style={styles.amountBlock}>
+            <Text style={styles.label}>Amount</Text>
+            <View style={styles.amountRow}>
+              <Text style={styles.currencySymbol}>$</Text>
+              <Text
+                style={styles.amountValue}
+                // numberOfLines={1}
+                // adjustsFontSizeToFit
+              >
+                {amount.length > 0 ? amount : "0"}
+              </Text>
+            </View>
           </View>
-        </View>
 
-        {/* Category grid */}
-        <View style={{ marginTop: spacing.gutter }}>
-          <Text style={styles.label}>Category</Text>
-          <View style={styles.categoryGrid}>
-            {CATEGORIES.map((cat) => {
-              const active = category === cat.key;
-              return (
-                <TouchableOpacity
-                  key={cat.key}
-                  onPress={() => setCategory(cat.key)}
-                  style={[
-                    styles.categoryItem,
-                    shadow.card,
-                    active && styles.categoryItemActive,
-                  ]}
-                  activeOpacity={0.85}
-                >
-                  <View
+          {/* Category — horizontal chip agar hemat ruang vertikal */}
+          <View style={styles.fieldBlock}>
+            <Text style={styles.label}>Category</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.categoryRow}
+            >
+              {CATEGORIES.map((cat) => {
+                const active = category === cat.key;
+                return (
+                  <TouchableOpacity
+                    key={cat.key}
+                    onPress={() => setCategory(cat.key)}
                     style={[
-                      styles.categoryIconCircle,
-                      {
-                        backgroundColor: active
-                          ? "rgba(255,255,255,0.2)"
-                          : colors.secondaryContainer + "66",
-                      },
+                      styles.categoryChip,
+                      active && styles.categoryChipActive,
                     ]}
+                    activeOpacity={0.85}
                   >
                     <MaterialIcons
                       name={cat.icon as any}
-                      size={20}
+                      size={16}
                       color={active ? colors.white : colors.secondary}
                     />
-                  </View>
-                  <Text
-                    style={[
-                      styles.categoryLabel,
-                      active && styles.categoryLabelActive,
-                    ]}
-                  >
-                    {cat.label}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
+                    <Text
+                      style={[
+                        styles.categoryChipText,
+                        active && styles.categoryChipTextActive,
+                      ]}
+                    >
+                      {cat.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
           </View>
-        </View>
 
-        {/* Date field */}
-        <View style={{ marginTop: spacing.gutter, gap: 8 }}>
-          <Text style={styles.label}>Date</Text>
-          {/* Ganti dengan date picker native (mis. @react-native-community/datetimepicker) */}
-          <View style={styles.inputSoft}>
+          {/* Date */}
+          <View style={styles.fieldBlock}>
+            <Text style={styles.label}>Date</Text>
+            <View style={styles.inputSoft}>
+              <TextInput
+                value={date}
+                onChangeText={setDate}
+                placeholder="YYYY-MM-DD"
+                placeholderTextColor={colors.outline}
+                style={styles.inputSoftText}
+              />
+              <MaterialIcons
+                name="calendar-today"
+                size={16}
+                color={colors.outline}
+              />
+            </View>
+          </View>
+
+          {/* Note */}
+          <View style={styles.fieldBlock}>
+            <Text style={styles.label}>Note</Text>
             <TextInput
-              value={date}
-              onChangeText={setDate}
-              placeholder="YYYY-MM-DD"
+              value={note}
+              onChangeText={setNote}
+              placeholder="What was this for?"
               placeholderTextColor={colors.outline}
-              style={styles.inputSoftText}
-            />
-            <MaterialIcons
-              name="calendar-today"
-              size={18}
-              color={colors.outline}
+              style={styles.inputSoft}
             />
           </View>
-        </View>
+        </ScrollView>
 
-        {/* Note field */}
-        <View style={{ marginTop: spacing.gutter, gap: 8 }}>
-          <Text style={styles.label}>Note</Text>
-          <TextInput
-            value={note}
-            onChangeText={setNote}
-            placeholder="What was this for?"
-            placeholderTextColor={colors.outline}
-            multiline
-            numberOfLines={3}
-            style={[styles.inputSoft, styles.textarea]}
-          />
+        {/* Numeric keypad — fixed, tidak ikut scroll */}
+        <View style={styles.keypad}>
+          {KEYPAD_ROWS.map((row, rowIndex) => (
+            <View key={rowIndex} style={styles.keypadRow}>
+              {row.map((key) => (
+                <TouchableOpacity
+                  key={key}
+                  style={styles.keypadKey}
+                  activeOpacity={0.6}
+                  onPress={() => handleKeyPress(key)}
+                >
+                  {key === "backspace" ? (
+                    <MaterialIcons
+                      name="backspace"
+                      size={20}
+                      color={colors.onSurfaceVariant}
+                    />
+                  ) : (
+                    <Text style={styles.keypadKeyText}>{key}</Text>
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+          ))}
         </View>
-      </ScrollView>
+      </View>
 
       {/* Footer action */}
       <View style={styles.footer}>
@@ -214,10 +260,14 @@ const styles = StyleSheet.create({
   },
   headerTitle: { ...typography.titleMd, color: colors.primary },
 
-  scrollContent: {
+  body: { flex: 1 },
+
+  topScroll: { flexGrow: 0 },
+  topScrollContent: {
     paddingHorizontal: spacing.marginMobile,
-    paddingTop: 16,
-    paddingBottom: 40,
+    paddingTop: 8,
+    paddingBottom: 8,
+    gap: 16,
   },
 
   label: {
@@ -226,52 +276,50 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
 
-  amountBlock: { alignItems: "center" },
+  amountBlock: { alignItems: "center", paddingVertical: 4 },
   amountRow: {
     flexDirection: "row",
-    alignItems: "baseline",
+    alignItems: "center",
     justifyContent: "center",
   },
   currencySymbol: {
-    ...typography.displayLg,
-    fontSize: 36,
+    ...typography.headlineLg,
+    fontSize: 28,
     color: colors.primary,
     marginRight: 4,
   },
-  amountInput: {
+  amountValue: {
     ...typography.displayLg,
     fontSize: 40,
     color: colors.primary,
-    textAlign: "center",
-    minWidth: 160,
-    padding: 0,
+    maxWidth: "100%",
   },
 
-  categoryGrid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
-  categoryItem: {
-    width: "23%",
-    aspectRatio: 1,
-    backgroundColor: colors.white,
-    borderRadius: radius.xl,
+  fieldBlock: {},
+
+  categoryRow: { gap: 8, paddingRight: 4 },
+  categoryChip: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    padding: 8,
-  },
-  categoryItemActive: { backgroundColor: colors.primary },
-  categoryIconCircle: {
-    width: 40,
-    height: 40,
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
     borderRadius: radius.full,
-    alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.outlineVariant + "4d",
+    ...shadow.card,
   },
-  categoryLabel: {
+  categoryChipActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  categoryChipText: {
     ...typography.labelCaps,
     fontSize: 10,
     color: colors.onSurface,
   },
-  categoryLabelActive: { color: colors.white },
+  categoryChipTextActive: { color: colors.white },
 
   inputSoft: {
     flexDirection: "row",
@@ -280,13 +328,29 @@ const styles = StyleSheet.create({
     backgroundColor: colors.platinumMist + "4d",
     borderRadius: radius.lg,
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingVertical: 12,
   },
   inputSoftText: { ...typography.bodyLg, color: colors.primary, flex: 1 },
-  textarea: {
-    alignItems: "flex-start",
-    minHeight: 88,
-    textAlignVertical: "top",
+
+  keypad: {
+    paddingHorizontal: spacing.marginMobile,
+    paddingTop: 4,
+    gap: 8,
+  },
+  keypadRow: { flexDirection: "row", gap: 8 },
+  keypadKey: {
+    flex: 1,
+    height: 52,
+    borderRadius: radius.lg,
+    backgroundColor: colors.white,
+    alignItems: "center",
+    justifyContent: "center",
+    ...shadow.card,
+  },
+  keypadKeyText: {
+    ...typography.titleMd,
+    fontSize: 20,
+    color: colors.onSurface,
   },
 
   footer: {
@@ -302,7 +366,7 @@ const styles = StyleSheet.create({
     gap: 8,
     backgroundColor: colors.primary,
     borderRadius: radius.xl,
-    paddingVertical: 18,
+    paddingVertical: 16,
   },
   saveButtonDisabled: { opacity: 0.4 },
   saveButtonText: { ...typography.titleMd, color: colors.white },

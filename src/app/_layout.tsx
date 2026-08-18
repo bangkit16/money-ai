@@ -39,6 +39,7 @@ export default function RootLayout() {
           headerShown: false,
         }}
       >
+        <Stack.Screen name="login" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen
           name="add-transaction"
