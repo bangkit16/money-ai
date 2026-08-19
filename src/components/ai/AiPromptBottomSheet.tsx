@@ -77,7 +77,7 @@ export default function AiPromptBottomSheet({
               <View style={styles.aiIconChip}>
                 <Ionicons name="sparkles" size={14} color={colors.white} />
               </View>
-              <Text style={styles.title}>Ask WealthFlow AI</Text>
+              <Text style={styles.title}>Ask Dompety AI</Text>
             </View>
             <TouchableOpacity hitSlop={10} onPress={handleClose}>
               <Ionicons

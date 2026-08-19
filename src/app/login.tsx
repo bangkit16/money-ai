@@ -82,7 +82,7 @@ export default function LoginScreen() {
             color={colors.white}
           />
         </View>
-        <Text style={styles.wordmark}>WealthFlow</Text>
+        <Text style={styles.wordmark}>Dompety</Text>
         <Text style={styles.tagline}>Quiet confidence for your money</Text>
       </LinearGradient>
 
@@ -116,7 +116,7 @@ export default function LoginScreen() {
         </TouchableOpacity>
 
         <Text style={styles.termsText}>
-          By continuing, you agree to WealthFlow's{" "}
+          By continuing, you agree to Dompety's{" "}
           <Text style={styles.termsLink}>Terms of Service</Text> and{" "}
           <Text style={styles.termsLink}>Privacy Policy</Text>.
         </Text>

@@ -1,4 +1,4 @@
-# WealthFlow — Page Build Spec
+# Dompety — Page Build Spec
 
 > Gunakan berdampingan dengan `DESIGN.md` (design tokens, komponen, warna, tipografi). File ini menjelaskan **struktur & konten tiap halaman** supaya bisa langsung diimplementasikan (React/Vue/HTML apa pun stack-nya).
 
@@ -8,7 +8,7 @@ Semua halaman berbagi shell yang sama — implementasikan sebagai layout/kompone
 
 ### Top App Bar
 - Fixed/sticky, tinggi 64px, background blur (glassmorphism), full width, konten dibatasi `max-w-container-max` (1200px) dan center.
-- **Varian "Home" (Dashboard, Activity, Analytics)**: kiri = avatar bulat (40px) + wordmark "WealthFlow"; kanan = ikon notifikasi.
+- **Varian "Home" (Dashboard, Activity, Analytics)**: kiri = avatar bulat (40px) + wordmark "Dompety"; kanan = ikon notifikasi.
 - **Varian "Modal/Form" (Add Transaction)**: kiri = ikon close (kembali/batal); tengah = judul halaman; kanan = spacer kosong agar judul tetap center.
 
 ### Bottom Navigation

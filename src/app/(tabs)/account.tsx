@@ -1,14 +1,17 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   View,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
   Platform,
-  Alert,
+  Modal,
+  TextInput,
+  KeyboardAvoidingView,
+  ActivityIndicator,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   colors,
   typography,
@@ -18,140 +21,165 @@ import {
 } from "../../constants/theme";
 import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/lib/supabase";
 
-type AccountType = "bank" | "ewallet" | "investment";
-
+// Sesuai schema Supabase: id int8, created_at timestamptz, account_name varchar, user_id uuid
 type Account = {
-  id: string;
-  name: string;
-  numberMasked: string;
-  type: AccountType;
-  balance: number;
-  icon: string;
-  isPrimary?: boolean;
+  id: number;
+  account_name: string;
+  created_at: string;
+  user_id: string;
 };
-
-// TODO: ganti dummy data ini dengan data asli (state global / API)
-const INITIAL_ACCOUNTS: Account[] = [
-  {
-    id: "1",
-    name: "Chase Total Checking",
-    numberMasked: "•••• 4821",
-    type: "bank",
-    balance: 12450.75,
-    icon: "account-balance",
-    isPrimary: true,
-  },
-  {
-    id: "2",
-    name: "Chase Savings",
-    numberMasked: "•••• 0093",
-    type: "bank",
-    balance: 45890.2,
-    icon: "savings",
-  },
-  {
-    id: "3",
-    name: "GoPay",
-    numberMasked: "0812-xxxx-221",
-    type: "ewallet",
-    balance: 850.0,
-    icon: "account-balance-wallet",
-  },
-  {
-    id: "4",
-    name: "OVO",
-    numberMasked: "0812-xxxx-221",
-    type: "ewallet",
-    balance: 320.5,
-    icon: "account-balance-wallet",
-  },
-  {
-    id: "5",
-    name: "Fidelity Brokerage",
-    numberMasked: "•••• 7710",
-    type: "investment",
-    balance: 358550.0,
-    icon: "trending-up",
-  },
-];
-
-const TYPE_META: Record<AccountType, { label: string; color: string }> = {
-  bank: { label: "Bank Accounts", color: colors.primary },
-  ewallet: { label: "E-Wallets", color: colors.secondary },
-  investment: { label: "Investments", color: colors.onTertiaryContainer },
-};
-
-function formatCurrency(value: number) {
-  return `$${value.toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
-}
 
 export default function AccountScreen() {
-  const [accounts, setAccounts] = useState<Account[]>(INITIAL_ACCOUNTS);
+  const queryClient = useQueryClient();
 
-  const totalBalance = useMemo(
-    () => accounts.reduce((sum, acc) => sum + acc.balance, 0),
-    [accounts],
-  );
+  const [formVisible, setFormVisible] = useState(false);
+  const [editingAccount, setEditingAccount] = useState<Account | null>(null);
+  const [accountNameInput, setAccountNameInput] = useState("");
 
-  const grouped = useMemo(() => {
-    const types: AccountType[] = ["bank", "ewallet", "investment"];
-    return types
-      .map((type) => ({
-        type,
-        meta: TYPE_META[type],
-        data: accounts.filter((a) => a.type === type),
-        subtotal: accounts
-          .filter((a) => a.type === type)
-          .reduce((sum, a) => sum + a.balance, 0),
-      }))
-      .filter((group) => group.data.length > 0);
-  }, [accounts]);
+  // Bottom sheet opsi (Edit/Hapus) & konfirmasi hapus — pengganti Alert.alert
+  // (Alert.alert tidak render apa pun di web, jadi harus pakai UI sendiri)
+  const [optionsAccount, setOptionsAccount] = useState<Account | null>(null);
+  const [deleteConfirmAccount, setDeleteConfirmAccount] =
+    useState<Account | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleSetPrimary = (id: string) => {
-    setAccounts((prev) => prev.map((a) => ({ ...a, isPrimary: a.id === id })));
+  // --- READ ---
+  const {
+    data: accounts,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["account"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("account")
+        .select("*")
+        .order("created_at", { ascending: true });
+      if (error) throw new Error(error.message);
+      return data as Account[];
+    },
+  });
+
+  // --- CREATE ---
+  const { mutate: createAccount, isPending: isCreating } = useMutation({
+    mutationFn: async (accountName: string) => {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      if (!user) throw new Error("User belum login");
+
+      const { error } = await supabase
+        .from("account")
+        .insert({ account_name: accountName, user_id: user.id });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["account"] });
+      closeForm();
+    },
+    onError: (err: any) =>
+      setErrorMessage(err.message ?? "Gagal menambah rekening."),
+  });
+
+  // --- UPDATE ---
+  const { mutate: updateAccount, isPending: isUpdating } = useMutation({
+    mutationFn: async ({
+      id,
+      accountName,
+    }: {
+      id: number;
+      accountName: string;
+    }) => {
+      const { error } = await supabase
+        .from("account")
+        .update({ account_name: accountName })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["account"] });
+      closeForm();
+    },
+    onError: (err: any) =>
+      setErrorMessage(err.message ?? "Gagal mengubah rekening."),
+  });
+
+  // --- DELETE ---
+  const { mutate: deleteAccount } = useMutation({
+    mutationFn: async (id: number) => {
+      const { error } = await supabase.from("account").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["account"] });
+      setDeleteConfirmAccount(null);
+    },
+    onError: (err: any) => {
+      setDeleteConfirmAccount(null);
+      setErrorMessage(err.message ?? "Gagal menghapus rekening.");
+    },
+  });
+
+  const openCreateForm = () => {
+    setEditingAccount(null);
+    setAccountNameInput("");
+    setFormVisible(true);
   };
 
-  const handleDelete = (id: string) => {
-    setAccounts((prev) => prev.filter((a) => a.id !== id));
+  const openEditForm = (account: Account) => {
+    setEditingAccount(account);
+    setAccountNameInput(account.account_name);
+    setFormVisible(true);
+  };
+
+  const closeForm = () => {
+    setFormVisible(false);
+    setEditingAccount(null);
+    setAccountNameInput("");
+  };
+
+  const handleSubmitForm = () => {
+    const trimmed = accountNameInput.trim();
+    if (!trimmed) return;
+
+    if (editingAccount) {
+      updateAccount({ id: editingAccount.id, accountName: trimmed });
+    } else {
+      createAccount(trimmed);
+    }
   };
 
   const openAccountOptions = (account: Account) => {
-    Alert.alert(account.name, "Kelola rekening ini", [
-      {
-        text: account.isPrimary ? "Sudah Rekening Utama" : "Jadikan Utama",
-        onPress: () => handleSetPrimary(account.id),
-      },
-      {
-        text: "Edit",
-        // onPress: () => router.push(`/edit-account?id=${account.id}`),
-      },
-      {
-        text: "Hapus",
-        style: "destructive",
-        onPress: () =>
-          Alert.alert(
-            "Hapus Rekening",
-            `Yakin ingin menghapus "${account.name}"?`,
-            [
-              { text: "Batal", style: "cancel" },
-              {
-                text: "Hapus",
-                style: "destructive",
-                onPress: () => handleDelete(account.id),
-              },
-            ],
-          ),
-      },
-      { text: "Batal", style: "cancel" },
-    ]);
+    setOptionsAccount(account);
   };
+
+  const closeOptions = () => setOptionsAccount(null);
+
+  const handleEditFromOptions = () => {
+    if (optionsAccount) openEditForm(optionsAccount);
+    closeOptions();
+  };
+
+  const handleDeleteFromOptions = () => {
+    if (optionsAccount) setDeleteConfirmAccount(optionsAccount);
+    closeOptions();
+  };
+
+  const confirmDelete = () => {
+    if (deleteConfirmAccount) deleteAccount(deleteConfirmAccount.id);
+  };
+
+  const isSubmitting = isCreating || isUpdating;
 
   return (
     <View style={styles.screen}>
       {/* Top App Bar */}
       <View style={styles.header}>
-        <Text style={styles.wordmark}>WealthFlow</Text>
+        <Text style={styles.wordmark}>Dompety</Text>
         <TouchableOpacity hitSlop={10}>
           <MaterialIcons
             name="notifications"
@@ -170,83 +198,86 @@ export default function AccountScreen() {
           <Text style={styles.heroLabel}>TRANSFER SALDO</Text>
           <View style={styles.heroDivider} />
           <Button
-            variant='default'
+            variant="default"
             onPress={() => {}}
             style={styles.buttonTransfer}
           >
-            <Text style={styles.buttonTransferText}>Transfer Antar Rekening</Text>
+            <Text style={styles.buttonTransferText}>
+              Transfer Antar Rekening
+            </Text>
             <MaterialIcons name="arrow-forward" size={24} color="white" />
           </Button>
         </View>
 
-        {/* Account groups */}
-        {grouped.map((group) => (
-          <View key={group.type} style={{ gap: 16 }}>
-            <View style={styles.sectionHeaderRow}>
-              <Text style={styles.titleMd}>{group.meta.label}</Text>
-              <Text style={styles.mutedLabel}>
-                {formatCurrency(group.subtotal)}
-              </Text>
-            </View>
+        {/* Account list */}
+        <View style={styles.sectionHeaderRow}>
+          <Text style={styles.titleMd}>My Accounts</Text>
+          <Text style={styles.mutedLabel}>
+            {accounts?.length ?? 0} account{accounts?.length === 1 ? "" : "s"}
+          </Text>
+        </View>
 
-            <View style={[styles.card, shadow.card, { padding: 0 }]}>
-              {group.data.map((account, i) => (
-                <TouchableOpacity
-                  key={account.id}
-                  onPress={() => openAccountOptions(account)}
-                  activeOpacity={0.7}
-                  style={[
-                    styles.accountRow,
-                    i !== group.data.length - 1 && styles.accountRowDivider,
-                  ]}
-                >
-                  <View style={styles.accountLeft}>
-                    <View
-                      style={[
-                        styles.accountIconCircle,
-                        { backgroundColor: group.meta.color + "1a" },
-                      ]}
-                    >
-                      <MaterialIcons
-                        name={account.icon as any}
-                        size={20}
-                        color={group.meta.color}
-                      />
-                    </View>
-                    <View>
-                      <View style={styles.accountNameRow}>
-                        <Text style={styles.accountName}>{account.name}</Text>
-                        {account.isPrimary && (
-                          <View style={styles.primaryBadge}>
-                            <Text style={styles.primaryBadgeText}>PRIMARY</Text>
-                          </View>
-                        )}
-                      </View>
-                      <Text style={styles.accountMeta}>
-                        {account.numberMasked}
-                      </Text>
-                    </View>
-                  </View>
-                  <View style={styles.accountRight}>
-                    <Text style={styles.accountBalance}>
-                      {formatCurrency(account.balance)}
-                    </Text>
+        {isLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="small" color={colors.primary} />
+            <Text style={styles.loadingText}>Loading accounts...</Text>
+          </View>
+        ) : error ? (
+          <Text style={styles.errorText}>
+            Gagal memuat rekening: {(error as Error).message}
+          </Text>
+        ) : accounts && accounts.length > 0 ? (
+          <View style={[styles.card, shadow.card, { padding: 0 }]}>
+            {accounts.map((account, i) => (
+              <View
+                key={account.id}
+                style={[
+                  styles.accountRow,
+                  i !== accounts.length - 1 && styles.accountRowDivider,
+                ]}
+              >
+                <View style={styles.accountLeft}>
+                  <View style={styles.accountIconCircle}>
                     <MaterialIcons
-                      name="more-vert"
+                      name="account-balance"
                       size={20}
-                      color={colors.outline}
+                      color={colors.primary}
                     />
                   </View>
+                  <View>
+                    <Text style={styles.accountName}>
+                      {account.account_name}
+                    </Text>
+                    <Text style={styles.accountMeta}>
+                      Ditambahkan{" "}
+                      {new Date(account.created_at).toLocaleDateString("id-ID")}
+                    </Text>
+                  </View>
+                </View>
+                <TouchableOpacity
+                  onPress={() => openAccountOptions(account)}
+                  hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                  style={styles.optionsButton}
+                >
+                  <MaterialIcons
+                    name="more-vert"
+                    size={20}
+                    color={colors.outline}
+                  />
                 </TouchableOpacity>
-              ))}
-            </View>
+              </View>
+            ))}
           </View>
-        ))}
+        ) : (
+          <Text style={styles.emptyText}>
+            Belum ada rekening. Tambahkan yang pertama.
+          </Text>
+        )}
 
         {/* Add account button */}
         <TouchableOpacity
           style={styles.addAccountButton}
-          // onPress={() => router.push("/add-account")}
+          onPress={openCreateForm}
           activeOpacity={0.8}
         >
           <MaterialIcons
@@ -257,6 +288,170 @@ export default function AccountScreen() {
           <Text style={styles.addAccountText}>Add New Account</Text>
         </TouchableOpacity>
       </ScrollView>
+
+      {/* Modal Create/Edit */}
+      <Modal
+        visible={formVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={closeForm}
+      >
+        <KeyboardAvoidingView
+          style={styles.modalOverlay}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+        >
+          <TouchableOpacity
+            style={styles.modalBackdrop}
+            activeOpacity={1}
+            onPress={closeForm}
+          />
+          <View style={[styles.modalSheet, shadow.heroCard]}>
+            <View style={styles.modalHandle} />
+            <Text style={styles.modalTitle}>
+              {editingAccount ? "Edit Account" : "Add New Account"}
+            </Text>
+
+            <Text style={styles.label}>Account Name</Text>
+            <TextInput
+              value={accountNameInput}
+              onChangeText={setAccountNameInput}
+              placeholder="e.g. BCA Checking"
+              placeholderTextColor={colors.outline}
+              style={styles.input}
+              autoFocus
+            />
+
+            <View style={styles.modalActions}>
+              <TouchableOpacity style={styles.cancelButton} onPress={closeForm}>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.saveButton,
+                  (!accountNameInput.trim() || isSubmitting) &&
+                    styles.saveButtonDisabled,
+                ]}
+                onPress={handleSubmitForm}
+                disabled={!accountNameInput.trim() || isSubmitting}
+              >
+                {isSubmitting ? (
+                  <ActivityIndicator color={colors.white} />
+                ) : (
+                  <Text style={styles.saveButtonText}>
+                    {editingAccount ? "Save Changes" : "Add Account"}
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      {/* Bottom sheet: opsi Edit/Hapus (pengganti Alert.alert) */}
+      <Modal
+        visible={!!optionsAccount}
+        transparent
+        animationType="slide"
+        onRequestClose={closeOptions}
+      >
+        <TouchableOpacity
+          style={[styles.modalOverlay, styles.modalBackdrop]}
+          activeOpacity={1}
+          onPress={closeOptions}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            style={[styles.optionsSheet, shadow.heroCard]}
+          >
+            <View style={styles.modalHandle} />
+            <Text style={styles.optionsTitle}>
+              {optionsAccount?.account_name}
+            </Text>
+
+            <TouchableOpacity
+              style={styles.optionRow}
+              onPress={handleEditFromOptions}
+            >
+              <MaterialIcons name="edit" size={20} color={colors.onSurface} />
+              <Text style={styles.optionRowText}>Edit</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.optionRow}
+              onPress={handleDeleteFromOptions}
+            >
+              <MaterialIcons
+                name="delete-outline"
+                size={20}
+                color={colors.error}
+              />
+              <Text style={[styles.optionRowText, { color: colors.error }]}>
+                Hapus
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.optionCancelRow}
+              onPress={closeOptions}
+            >
+              <Text style={styles.optionCancelText}>Batal</Text>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Konfirmasi hapus (pengganti Alert.alert kedua) */}
+      <Modal
+        visible={!!deleteConfirmAccount}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setDeleteConfirmAccount(null)}
+      >
+        <View style={styles.centerOverlay}>
+          <View style={styles.confirmCard}>
+            <Text style={styles.modalTitle}>Hapus Rekening</Text>
+            <Text style={styles.confirmText}>
+              Yakin ingin menghapus "{deleteConfirmAccount?.account_name}"?
+              Tindakan ini tidak bisa dibatalkan.
+            </Text>
+            <View style={styles.modalActions}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => setDeleteConfirmAccount(null)}
+              >
+                <Text style={styles.cancelButtonText}>Batal</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={confirmDelete}
+              >
+                <Text style={styles.saveButtonText}>Hapus</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Pesan error (pengganti Alert.alert error) */}
+      <Modal
+        visible={!!errorMessage}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setErrorMessage(null)}
+      >
+        <View style={styles.centerOverlay}>
+          <View style={styles.confirmCard}>
+            <Text style={styles.modalTitle}>Terjadi Kesalahan</Text>
+            <Text style={styles.confirmText}>{errorMessage}</Text>
+            <TouchableOpacity
+              style={[styles.saveButton, { marginTop: 8 }]}
+              onPress={() => setErrorMessage(null)}
+            >
+              <Text style={styles.saveButtonText}>OK</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -281,10 +476,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: radius.md,
   },
-  buttonTransferText: {
-    ...typography.bodyLg,
-    color: colors.white,
-  },  
+  buttonTransferText: { ...typography.bodyLg, color: colors.white },
   wordmark: { ...typography.headlineLgMobile, color: colors.primary },
 
   scrollContent: {
@@ -294,49 +486,38 @@ const styles = StyleSheet.create({
     gap: spacing.gutter,
   },
 
-  pageTitle: {
-    ...typography.headlineLg,
-    fontSize: 28,
-    color: colors.primary,
-    marginBottom: 4,
-  },
-  pageSubtitle: { ...typography.bodyLg, color: colors.onSurfaceVariant },
-
   card: { backgroundColor: colors.white, borderRadius: radius.xl, padding: 24 },
   titleMd: { ...typography.titleMd, color: colors.onSurface },
   mutedLabel: { ...typography.labelCaps, color: colors.onSurfaceVariant },
 
   heroCard: { backgroundColor: colors.primary },
   heroLabel: { ...typography.labelCaps, color: "rgba(255,255,255,0.6)" },
-  heroAmount: {
-    ...typography.displayLg,
-    fontSize: 40,
-    color: colors.white,
-    marginTop: 4,
-  },
   heroDivider: {
     height: 1,
     backgroundColor: "rgba(255,255,255,0.12)",
     marginVertical: 20,
-  },
-  heroBreakdownRow: { flexDirection: "row", flexWrap: "wrap", gap: 20 },
-  heroBreakdownItem: { flexDirection: "row", alignItems: "center", gap: 8 },
-  heroDot: { width: 8, height: 8, borderRadius: radius.full },
-  heroBreakdownLabel: {
-    ...typography.labelCaps,
-    fontSize: 10,
-    color: "rgba(255,255,255,0.6)",
-  },
-  heroBreakdownValue: {
-    ...typography.bodyLg,
-    fontWeight: "600",
-    color: colors.white,
   },
 
   sectionHeaderRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+  },
+
+  loadingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 24,
+    gap: 8,
+  },
+  loadingText: { ...typography.bodySm, color: colors.onSurfaceVariant },
+  errorText: { ...typography.bodySm, color: colors.error, textAlign: "center" },
+  emptyText: {
+    ...typography.bodyLg,
+    color: colors.onSurfaceVariant,
+    textAlign: "center",
+    paddingVertical: 24,
   },
 
   accountRow: {
@@ -359,10 +540,10 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: radius.full,
+    backgroundColor: colors.primary + "1a",
     alignItems: "center",
     justifyContent: "center",
   },
-  accountNameRow: { flexDirection: "row", alignItems: "center", gap: 6 },
   accountName: {
     ...typography.bodyLg,
     fontWeight: "600",
@@ -373,22 +554,11 @@ const styles = StyleSheet.create({
     color: colors.onSurfaceVariant,
     marginTop: 2,
   },
-  primaryBadge: {
-    backgroundColor: colors.tertiaryFixed,
-    borderRadius: radius.full,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-  },
-  primaryBadgeText: {
-    ...typography.labelCaps,
-    fontSize: 9,
-    color: colors.onTertiaryContainer,
-  },
-  accountRight: { flexDirection: "row", alignItems: "center", gap: 8 },
-  accountBalance: {
-    ...typography.titleMd,
-    fontSize: 16,
-    color: colors.onSurface,
+  optionsButton: {
+    width: 32,
+    height: 32,
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   addAccountButton: {
@@ -406,5 +576,133 @@ const styles = StyleSheet.create({
     ...typography.titleMd,
     fontSize: 15,
     color: colors.primary,
+  },
+
+  // Modal
+  modalOverlay: { flex: 1, justifyContent: "flex-end" },
+  modalBackdrop: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: "rgba(5,17,37,0.5)",
+  },
+  modalSheet: {
+    backgroundColor: colors.white,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
+    paddingHorizontal: spacing.marginMobile,
+    paddingTop: 12,
+    paddingBottom: Platform.OS === "ios" ? 32 : 20,
+    gap: 12,
+  },
+  modalHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: radius.full,
+    backgroundColor: colors.outlineVariant,
+    alignSelf: "center",
+    marginBottom: 4,
+  },
+  modalTitle: {
+    ...typography.titleMd,
+    color: colors.onSurface,
+    marginBottom: 4,
+  },
+  label: { ...typography.labelCaps, color: colors.onSurfaceVariant },
+  input: {
+    ...typography.bodyLg,
+    color: colors.onSurface,
+    backgroundColor: colors.platinumMist + "4d",
+    borderRadius: radius.lg,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  modalActions: { flexDirection: "row", gap: 12, marginTop: 8 },
+  cancelButton: {
+    flex: 1,
+    paddingVertical: 16,
+    borderRadius: radius.xl,
+    borderWidth: 1,
+    borderColor: colors.outlineVariant,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cancelButtonText: {
+    ...typography.titleMd,
+    fontSize: 15,
+    color: colors.onSurfaceVariant,
+  },
+  saveButton: {
+    flex: 1,
+    paddingVertical: 16,
+    borderRadius: radius.xl,
+    backgroundColor: colors.primary,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  saveButtonDisabled: { opacity: 0.4 },
+  saveButtonText: { ...typography.titleMd, fontSize: 15, color: colors.white },
+
+  // Options bottom sheet
+  optionsSheet: {
+    backgroundColor: colors.white,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
+    paddingHorizontal: spacing.marginMobile,
+    paddingTop: 12,
+    paddingBottom: Platform.OS === "ios" ? 32 : 20,
+  },
+  optionsTitle: {
+    ...typography.titleMd,
+    color: colors.onSurface,
+    textAlign: "center",
+    marginBottom: 8,
+  },
+  optionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderTopColor: colors.surfaceContainerHighest,
+  },
+  optionRowText: { ...typography.bodyLg, color: colors.onSurface },
+  optionCancelRow: {
+    paddingVertical: 16,
+    alignItems: "center",
+    marginTop: 4,
+  },
+  optionCancelText: {
+    ...typography.titleMd,
+    fontSize: 15,
+    color: colors.onSurfaceVariant,
+  },
+
+  // Center modal (confirm delete / error)
+  centerOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(5,17,37,0.5)",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: spacing.marginMobile,
+  },
+  confirmCard: {
+    width: "100%",
+    backgroundColor: colors.white,
+    borderRadius: radius.xl,
+    padding: 24,
+    gap: 12,
+    ...shadow.heroCard,
+  },
+  confirmText: {
+    ...typography.bodyLg,
+    color: colors.onSurfaceVariant,
+    lineHeight: 22,
+  },
+  deleteButton: {
+    flex: 1,
+    paddingVertical: 16,
+    borderRadius: radius.xl,
+    backgroundColor: colors.error,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

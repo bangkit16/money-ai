@@ -8,7 +8,7 @@ function Header() {
   return (
     <View style={styles.header}>
       <View style={styles.headerLeft}>
-        <Text style={styles.wordmark}>WealthFlow</Text>
+        <Text style={styles.wordmark}>Dompety</Text>
       </View>
       <TouchableOpacity hitSlop={10}>
         <MaterialIcons name="notifications" size={24} color={colors.primary} />

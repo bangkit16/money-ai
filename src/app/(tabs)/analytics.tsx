@@ -119,7 +119,7 @@ export default function AnalyticsScreen() {
     <View style={styles.screen}>
       {/* Top App Bar */}
       <View style={styles.header}>
-        <Text style={styles.wordmark}>WealthFlow</Text>
+        <Text style={styles.wordmark}>Dompety</Text>
         <TouchableOpacity hitSlop={10}>
           <MaterialIcons
             name="notifications"

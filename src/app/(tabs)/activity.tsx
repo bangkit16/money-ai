@@ -1,5 +1,7 @@
 import { Text } from "@/components/ui/text";
+import { supabase } from "@/lib/supabase";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import {
   Platform,
@@ -11,7 +13,7 @@ import {
 } from "react-native";
 import { colors, radius, spacing, typography } from "../../constants/theme";
 
-type TxType = "income" | "expense" | "investment";
+type TxType = "INCOME" | "EXPENSE" | "investment";
 
 type Transaction = {
   id: string;
@@ -107,9 +109,8 @@ const SECTIONS: { title: string; data: Transaction[] }[] = [
 
 const FILTERS: { key: "all" | TxType; label: string }[] = [
   { key: "all", label: "All" },
-  { key: "income", label: "Income" },
-  { key: "expense", label: "Expenses" },
-  { key: "investment", label: "Investments" },
+  { key: "INCOME", label: "Income" },
+  { key: "EXPENSE", label: "Expenses" },
 ];
 
 function formatCurrency(value: number) {
@@ -117,9 +118,27 @@ function formatCurrency(value: number) {
   return `${sign}$${Math.abs(value).toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
 }
 
+
+
 export default function ActivityScreen() {
   const [query, setQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<"all" | TxType>("all");
+
+  const {
+    data: accounts,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["account"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("transaction")
+        .select("*")
+        .order("created_at", { ascending: true });
+      if (error) throw new Error(error.message);
+      return data;
+    },
+  });
 
   const filteredSections = useMemo(() => {
     return SECTIONS.map((section) => ({
@@ -140,7 +159,7 @@ export default function ActivityScreen() {
     <View style={styles.screen}>
       {/* Top App Bar */}
       <View style={styles.header}>
-        <Text style={styles.wordmark}>WealthFlow</Text>
+        <Text style={styles.wordmark}>Dompety</Text>
         <TouchableOpacity hitSlop={10}>
           <MaterialIcons
             name="notifications"

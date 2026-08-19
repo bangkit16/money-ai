@@ -1,5 +1,5 @@
 ---
-name: WealthFlow Poppins
+name: Dompety Poppins
 colors:
   surface: '#fbf8fb'
   surface-dim: '#dcd9db'
@@ -106,7 +106,7 @@ spacing:
 
 ## Brand & Style
 
-**WealthFlow** is a personal-finance app built around **Quiet Confidence**: a private-banking feeling delivered through everyday mobile UI. The palette leans on an almost-black navy (`#051125`) instead of pure black, paired with an airy off-white surface (`#fbf8fb`) — the effect reads as premium and calm rather than loud or "fintech neon."
+**Dompety** is a personal-finance app built around **Quiet Confidence**: a private-banking feeling delivered through everyday mobile UI. The palette leans on an almost-black navy (`#051125`) instead of pure black, paired with an airy off-white surface (`#fbf8fb`) — the effect reads as premium and calm rather than loud or "fintech neon."
 
 The interface is content-first: large numerals, soft ambient shadows instead of borders, and generous rounded corners. Poppins (400/600/700) gives it a friendly, geometric character that keeps the "private banking" tone from feeling cold. Material Symbols Outlined icons are used everywhere for a consistent, lightweight iconographic language.
 
@@ -127,7 +127,7 @@ This system currently covers four core screens: **Dashboard**, **Transaction Act
 Poppins is the only typeface, scaled through a fixed set of named styles rather than ad-hoc sizes:
 
 - **`display-lg` (48px/700)**: Hero numbers only — total balance, amount input on Add Transaction.
-- **`headline-lg` (32px/600)** and **`headline-lg-mobile` (24px/600)**: Section titles and the "WealthFlow" wordmark in the header.
+- **`headline-lg` (32px/600)** and **`headline-lg-mobile` (24px/600)**: Section titles and the "Dompety" wordmark in the header.
 - **`title-md` (20px/600)**: Card titles, list-item primary text, button labels.
 - **`body-lg` (16px/400)**: Default body/paragraph text and form inputs.
 - **`body-sm` (14px/400)**: Secondary/meta text (timestamps, subtitles).

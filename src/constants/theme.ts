@@ -1,4 +1,4 @@
-// WealthFlow design tokens — turunan dari DESIGN.md
+// Dompety design tokens — turunan dari DESIGN.md
 
 export const colors = {
   surface: "#fbf8fb",
