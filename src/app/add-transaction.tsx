@@ -4,6 +4,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
+import DateTimeField from "@/components/DateTimeField";
 import {
   ActivityIndicator,
   Alert,
@@ -36,8 +37,6 @@ const TRANSACTION_TYPES = [
   { key: "INCOME", label: "Income", icon: "arrow-downward" },
 ] as const;
 
-const todayISO = () => new Date().toISOString().slice(0, 10);
-
 export default function AddTransactionScreen() {
   const queryClient = useQueryClient();
 
@@ -46,7 +45,7 @@ export default function AddTransactionScreen() {
   const [accountId, setAccountId] = useState<number | null>(null);
   const [transactionType, setTransactionType] =
     useState<(typeof TRANSACTION_TYPES)[number]["key"]>("EXPENSE");
-  const [date, setDate] = useState(todayISO());
+  const [dateTime, setDateTime] = useState(new Date());
   const [transaction, setTransaction] = useState("");
 
   const isValid =
@@ -117,7 +116,7 @@ export default function AddTransactionScreen() {
         category_id: categoryId,
         account_id: accountId,
         user_id: user.id, // WAJIB — dicek oleh RLS policy (auth.uid() = user_id)
-        created_at: new Date(date).toISOString(),
+        created_at: dateTime.toISOString(),
       });
 
       if (error) throw error;
@@ -125,6 +124,9 @@ export default function AddTransactionScreen() {
     onSuccess: () => {
       // Refresh query transaksi/dashboard yang bergantung pada data ini
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      queryClient.invalidateQueries({
+        queryKey: ["dashboard-recent-transactions"],
+      });
       console.log("Transaksi berhasil disimpan.");
       Alert.alert("Tersimpan", "Transaksi berhasil disimpan.", [
         { text: "OK", onPress: () => router.back() },
@@ -160,6 +162,7 @@ export default function AddTransactionScreen() {
       </View>
 
       <View style={styles.body}>
+        {/* Hanya Amount, Type, Category, Account yang scrollable */}
         <ScrollView
           style={styles.topScroll}
           contentContainerStyle={styles.topScrollContent}
@@ -294,38 +297,27 @@ export default function AddTransactionScreen() {
               </ScrollView>
             )}
           </View>
+        </ScrollView>
 
-          {/* Date */}
-          <View style={styles.fieldBlock}>
-            <Text style={styles.label}>Date</Text>
-            <View style={styles.inputSoft}>
+        {/* Transaction & Date/Time — fixed satu baris, selalu terlihat di atas numpad */}
+        <View style={styles.fixedFieldsBlock}>
+          <View style={styles.compactRow}>
+            <View style={[styles.fieldBlock, { flex: 3 }]}>
+              <Text style={styles.label}>Transaction</Text>
               <TextInput
-                value={date}
-                onChangeText={setDate}
-                placeholder="YYYY-MM-DD"
+                value={transaction}
+                onChangeText={setTransaction}
+                placeholder="What was this for?"
                 placeholderTextColor={colors.outline}
-                style={styles.inputSoftText}
-              />
-              <MaterialIcons
-                name="calendar-today"
-                size={16}
-                color={colors.outline}
+                style={styles.inputSoft}
               />
             </View>
+            <View style={[styles.fieldBlock, { flex: 2 }]}>
+              <Text style={styles.label}>Date & Time</Text>
+              <DateTimeField value={dateTime} onChange={setDateTime} />
+            </View>
           </View>
-
-          {/* Transaction note */}
-          <View style={styles.fieldBlock}>
-            <Text style={styles.label}>Transaction</Text>
-            <TextInput
-              value={transaction}
-              onChangeText={setTransaction}
-              placeholder="What was this for?"
-              placeholderTextColor={colors.outline}
-              style={styles.inputSoft}
-            />
-          </View>
-        </ScrollView>
+        </View>
 
         {/* Numeric keypad */}
         <View style={styles.keypad}>
@@ -505,6 +497,13 @@ const styles = StyleSheet.create({
     ...shadow.card,
   },
 
+  fixedFieldsBlock: {
+    paddingHorizontal: spacing.marginMobile,
+    paddingTop: 8,
+    gap: 16,
+  },
+  compactRow: { flexDirection: "row", gap: 12 },
+
   inputSoft: {
     flexDirection: "row",
     alignItems: "center",
@@ -516,7 +515,7 @@ const styles = StyleSheet.create({
   },
   inputSoftText: { ...typography.bodyLg, color: colors.primary, flex: 1 },
 
-  keypad: { paddingHorizontal: spacing.marginMobile, paddingTop: 4, gap: 8 },
+  keypad: { paddingHorizontal: spacing.marginMobile, paddingTop: 16, gap: 8 },
   keypadRow: { flexDirection: "row", gap: 8 },
   keypadKey: {
     flex: 1,

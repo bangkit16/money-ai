@@ -4,6 +4,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import {
+  ActivityIndicator,
   Platform,
   SectionList,
   StyleSheet,
@@ -13,147 +14,129 @@ import {
 } from "react-native";
 import { colors, radius, spacing, typography } from "../../constants/theme";
 
-type TxType = "INCOME" | "EXPENSE" | "investment";
+type TxType = "INCOME" | "EXPENSE";
 
-type Transaction = {
-  id: string;
-  icon: string;
-  name: string;
-  category: string;
-  time: string;
+type TransactionRow = {
+  id: number;
+  created_at: string;
+  transaction: string | null;
   amount: number;
-  type: TxType;
+  transaction_type: TxType;
+  category: { category: string; slug: string } | null;
 };
-
-// TODO: ganti dummy data ini dengan data asli (state/API)
-const SECTIONS: { title: string; data: Transaction[] }[] = [
-  {
-    title: "Today",
-    data: [
-      {
-        id: "1",
-        icon: "shopping-bag",
-        name: "Luxury Boutique",
-        category: "Shopping",
-        time: "2:45 PM",
-        amount: -1240.0,
-        type: "expense",
-      },
-      {
-        id: "2",
-        icon: "restaurant",
-        name: "The Gilded Fork",
-        category: "Dining",
-        time: "1:12 PM",
-        amount: -156.4,
-        type: "expense",
-      },
-    ],
-  },
-  {
-    title: "Yesterday",
-    data: [
-      {
-        id: "3",
-        icon: "payments",
-        name: "Dividend Deposit",
-        category: "Investment",
-        time: "9:00 AM",
-        amount: 2450.0,
-        type: "investment",
-      },
-      {
-        id: "4",
-        icon: "directions-car",
-        name: "Tesla Supercharger",
-        category: "Transport",
-        time: "Oct 23",
-        amount: -22.5,
-        type: "expense",
-      },
-    ],
-  },
-  {
-    title: "October 22",
-    data: [
-      {
-        id: "5",
-        icon: "house",
-        name: "Mortgage Payment",
-        category: "Housing",
-        time: "10:30 AM",
-        amount: -3800.0,
-        type: "expense",
-      },
-      {
-        id: "6",
-        icon: "payments",
-        name: "Monthly Salary",
-        category: "Income",
-        time: "8:00 AM",
-        amount: 8500.0,
-        type: "income",
-      },
-      {
-        id: "7",
-        icon: "payments",
-        name: "Monthly Salary",
-        category: "Income",
-        time: "8:00 AM",
-        amount: 8500.0,
-        type: "income",
-      },
-    ],
-  },
-];
 
 const FILTERS: { key: "all" | TxType; label: string }[] = [
   { key: "all", label: "All" },
-  { key: "INCOME", label: "Income" },
   { key: "EXPENSE", label: "Expenses" },
+  { key: "INCOME", label: "Income" },
 ];
 
-function formatCurrency(value: number) {
-  const sign = value < 0 ? "-" : "+";
+// DB belum punya kolom icon per kategori, jadi kita map manual dari slug.
+// TODO: sesuaikan key-nya dengan slug asli di tabel category_transaction kamu.
+const ICON_BY_SLUG: Record<string, string> = {
+  food: "restaurant",
+  shopping: "shopping-bag",
+  bills: "receipt",
+  travel: "flight",
+  transport: "directions-car",
+  auto: "directions-car",
+  health: "medical-services",
+  fun: "movie",
+  entertainment: "movie",
+  housing: "house",
+  salary: "payments",
+  others: "more-horiz",
+};
+
+function getIcon(category: TransactionRow["category"], type: TxType) {
+  if (category?.slug && ICON_BY_SLUG[category.slug])
+    return ICON_BY_SLUG[category.slug];
+  return type === "INCOME" ? "payments" : "receipt-long";
+}
+
+function formatCurrency(value: number, type: TxType) {
+  const sign = type === "EXPENSE" ? "-" : "+";
   return `${sign}$${Math.abs(value).toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
 }
 
+function formatTime(dateStr: string) {
+  return new Date(dateStr).toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
 
+function getDateLabel(dateStr: string) {
+  const date = new Date(dateStr);
+  const today = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+
+  const isSameDay = (a: Date, b: Date) =>
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate();
+
+  if (isSameDay(date, today)) return "Today";
+  if (isSameDay(date, yesterday)) return "Yesterday";
+  return date.toLocaleDateString("en-US", { month: "long", day: "numeric" });
+}
+
+// Kelompokkan array transaksi (sudah terurut created_at desc) jadi section per tanggal
+function groupByDate(transactions: TransactionRow[]) {
+  const sections: { title: string; data: TransactionRow[] }[] = [];
+
+  for (const tx of transactions) {
+    const label = getDateLabel(tx.created_at);
+    const lastSection = sections[sections.length - 1];
+    if (lastSection && lastSection.title === label) {
+      lastSection.data.push(tx);
+    } else {
+      sections.push({ title: label, data: [tx] });
+    }
+  }
+
+  return sections;
+}
 
 export default function ActivityScreen() {
   const [query, setQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<"all" | TxType>("all");
 
   const {
-    data: accounts,
+    data: transactions,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["account"],
+    queryKey: ["transactions"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("transaction")
-        .select("*")
-        .order("created_at", { ascending: true });
+        .select(
+          "id, created_at, transaction, amount, transaction_type, category:category_transaction(category, slug)",
+        )
+        .order("created_at", { ascending: false });
       if (error) throw new Error(error.message);
-      return data;
+      return data as unknown as TransactionRow[];
     },
   });
 
   const filteredSections = useMemo(() => {
-    return SECTIONS.map((section) => ({
-      ...section,
-      data: section.data.filter((tx) => {
-        const matchesFilter =
-          activeFilter === "all" || tx.type === activeFilter;
-        const matchesQuery =
-          query.trim().length === 0 ||
-          tx.name.toLowerCase().includes(query.toLowerCase()) ||
-          tx.category.toLowerCase().includes(query.toLowerCase());
-        return matchesFilter && matchesQuery;
-      }),
-    })).filter((section) => section.data.length > 0);
-  }, [query, activeFilter]);
+    if (!transactions) return [];
+
+    const filtered = transactions.filter((tx) => {
+      const matchesFilter =
+        activeFilter === "all" || tx.transaction_type === activeFilter;
+      const q = query.trim().toLowerCase();
+      const matchesQuery =
+        q.length === 0 ||
+        (tx.transaction ?? "").toLowerCase().includes(q) ||
+        (tx.category?.category ?? "").toLowerCase().includes(q);
+      return matchesFilter && matchesQuery;
+    });
+
+    return groupByDate(filtered);
+  }, [transactions, query, activeFilter]);
 
   return (
     <View style={styles.screen}>
@@ -169,96 +152,124 @@ export default function ActivityScreen() {
         </TouchableOpacity>
       </View>
 
-      <SectionList
-        sections={filteredSections}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
-        stickySectionHeadersEnabled={false}
-        ListHeaderComponent={
-          <View style={styles.searchBlock}>
-            {/* Search bar */}
-            <View style={styles.searchInputWrap}>
-              <MaterialIcons
-                name="search"
-                size={20}
-                color={colors.outline}
-                style={{ marginRight: 8 }}
-              />
-              <TextInput
-                value={query}
-                onChangeText={setQuery}
-                placeholder="Search transactions..."
-                placeholderTextColor={colors.outline}
-                style={styles.searchInput}
-              />
-            </View>
-
-            {/* Filter chips */}
-            <View style={styles.filterRow}>
-              {FILTERS.map((f) => {
-                const active = activeFilter === f.key;
-                return (
-                  <TouchableOpacity
-                    key={f.key}
-                    onPress={() => setActiveFilter(f.key)}
-                    style={[styles.chip, active && styles.chipActive]}
-                  >
-                    <Text
-                      style={[styles.chipText, active && styles.chipTextActive]}
-                    >
-                      {f.label}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          </View>
-        }
-        renderSectionHeader={({ section }) => (
-          <View style={styles.sectionHeaderRow}>
-            <Text style={styles.sectionHeaderText}>{section.title}</Text>
-            <View style={styles.sectionHeaderLine} />
-          </View>
-        )}
-        renderItem={({ item, index, section }) => (
-          <View
-            style={[
-              styles.txRow,
-              index === 0 && styles.txRowFirst,
-              index === section.data.length - 1 && styles.txRowLast,
-              index !== section.data.length - 1 && styles.txRowDivider,
-            ]}
-          >
-            <View style={styles.txLeft}>
-              <View style={styles.txIconCircle}>
+      {isLoading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="small" color={colors.primary} />
+          <Text style={styles.loadingText}>Loading transactions...</Text>
+        </View>
+      ) : error ? (
+        <Text style={styles.emptyText}>
+          Gagal memuat transaksi: {(error as Error).message}
+        </Text>
+      ) : (
+        <SectionList
+          sections={filteredSections}
+          keyExtractor={(item) => String(item.id)}
+          contentContainerStyle={styles.listContent}
+          stickySectionHeadersEnabled={false}
+          ListHeaderComponent={
+            <View style={styles.searchBlock}>
+              {/* Search bar */}
+              <View style={styles.searchInputWrap}>
                 <MaterialIcons
-                  name={item.icon as any}
+                  name="search"
                   size={20}
-                  color={colors.primary}
+                  color={colors.outline}
+                  style={{ marginRight: 8 }}
+                />
+                <TextInput
+                  value={query}
+                  onChangeText={setQuery}
+                  placeholder="Search transactions..."
+                  placeholderTextColor={colors.outline}
+                  style={styles.searchInput}
                 />
               </View>
-              <View>
-                <Text style={styles.txName}>{item.name}</Text>
-                <Text style={styles.txMeta}>
-                  {item.category} • {item.time}
-                </Text>
+
+              {/* Filter chips: hanya Expense & Income */}
+              <View style={styles.filterRow}>
+                {FILTERS.map((f) => {
+                  const active = activeFilter === f.key;
+                  return (
+                    <TouchableOpacity
+                      key={f.key}
+                      onPress={() => setActiveFilter(f.key)}
+                      style={[styles.chip, active && styles.chipActive]}
+                    >
+                      <Text
+                        style={[
+                          styles.chipText,
+                          active && styles.chipTextActive,
+                        ]}
+                      >
+                        {f.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
               </View>
             </View>
-            <Text
+          }
+          renderSectionHeader={({ section }) => (
+            <View style={styles.sectionHeaderRow}>
+              <Text style={styles.sectionHeaderText}>{section.title}</Text>
+              <View style={styles.sectionHeaderLine} />
+            </View>
+          )}
+          renderItem={({ item, index, section }) => (
+            <View
               style={[
-                styles.txAmount,
-                { color: item.amount < 0 ? colors.error : colors.successGreen },
+                styles.txRow,
+                index === 0 && styles.txRowFirst,
+                index === section.data.length - 1 && styles.txRowLast,
+                index !== section.data.length - 1 && styles.txRowDivider,
               ]}
             >
-              {formatCurrency(item.amount)}
+              <View style={styles.txLeft}>
+                <View style={styles.txIconCircle}>
+                  <MaterialIcons
+                    name={getIcon(item.category, item.transaction_type) as any}
+                    size={20}
+                    color={colors.primary}
+                  />
+                </View>
+                <View>
+                  <Text style={styles.txName}>
+                    {item.transaction ||
+                      item.category?.category ||
+                      "Transaction"}
+                  </Text>
+                  <Text style={styles.txMeta}>
+                    {item.category?.category ?? "Uncategorized"} •{" "}
+                    {formatTime(item.created_at)}
+                  </Text>
+                </View>
+              </View>
+              <Text
+                style={[
+                  styles.txAmount,
+                  {
+                    color:
+                      item.transaction_type === "EXPENSE"
+                        ? colors.error
+                        : colors.successGreen,
+                  },
+                ]}
+              >
+                {formatCurrency(item.amount, item.transaction_type)}
+              </Text>
+            </View>
+          )}
+          renderSectionFooter={() => (
+            <View style={{ height: spacing.gutter }} />
+          )}
+          ListEmptyComponent={
+            <Text style={styles.emptyText}>
+              Tidak ada transaksi yang cocok.
             </Text>
-          </View>
-        )}
-        renderSectionFooter={() => <View style={{ height: spacing.gutter }} />}
-        ListEmptyComponent={
-          <Text style={styles.emptyText}>Tidak ada transaksi yang cocok.</Text>
-        }
-      />
+          }
+        />
+      )}
     </View>
   );
 }
@@ -275,6 +286,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
   },
   wordmark: { ...typography.headlineLgMobile, color: colors.primary },
+
+  loadingContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+  loadingText: { ...typography.bodySm, color: colors.onSurfaceVariant },
 
   listContent: { paddingHorizontal: spacing.marginMobile, paddingBottom: 40 },
 
