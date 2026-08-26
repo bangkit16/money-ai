@@ -22,9 +22,11 @@ import { DashboardService } from "@/services/dashboardService";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Alert,
+  Animated,
+  Easing,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -35,6 +37,17 @@ import {
 
 export default function AddTransactionScreen() {
   const queryClient = useQueryClient();
+
+  const entrance = useMemo(() => new Animated.Value(0), []);
+
+  useEffect(() => {
+    Animated.timing(entrance, {
+      toValue: 1,
+      duration: 350,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+  }, [entrance]);
 
   const [amount, setAmount] = useState("");
   const [categoryId, setCategoryId] = useState<number | null>(null);
@@ -116,9 +129,25 @@ export default function AddTransactionScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={styles.screen}
+      style={[styles.screen, styles.screenBackdrop]}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
+      <Animated.View
+        style={[
+          styles.screen,
+          {
+            opacity: entrance,
+            transform: [
+              {
+                translateY: entrance.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [60, 0],
+                }),
+              },
+            ],
+          },
+        ]}
+      >
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
@@ -188,11 +217,13 @@ export default function AddTransactionScreen() {
           onPress={handleSave}
         />
       </View>
+      </Animated.View>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
+  screenBackdrop: { backgroundColor: colors.background },
   screen: { flex: 1, backgroundColor: colors.background },
 
   header: {

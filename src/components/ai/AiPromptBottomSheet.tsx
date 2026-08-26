@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Animated,
   KeyboardAvoidingView,
@@ -29,14 +29,48 @@ export default function AiPromptBottomSheet({
   onVoicePress,
 }: AiPromptBottomSheetProps) {
   const [prompt, setPrompt] = useState("");
-  const backdropOpacity = useRef(new Animated.Value(0)).current;
+  const [mounted, setMounted] = useState(visible);
+  const [prevVisible, setPrevVisible] = useState(visible);
+  const backdropOpacity = useMemo(() => new Animated.Value(0), []);
+  const sheetTranslateY = useMemo(() => new Animated.Value(300), []);
+
+  if (visible !== prevVisible) {
+    setPrevVisible(visible);
+    if (visible) {
+      setMounted(true);
+    }
+  }
 
   useEffect(() => {
-    Animated.timing(backdropOpacity, {
-      toValue: visible ? 1 : 0,
-      duration: 200,
-      useNativeDriver: true,
-    }).start();
+    if (visible) {
+      Animated.parallel([
+        Animated.timing(backdropOpacity, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.spring(sheetTranslateY, {
+          toValue: 0,
+          speed: 30,
+          bounciness: 4,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else if (mounted) {
+      Animated.parallel([
+        Animated.timing(backdropOpacity, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(sheetTranslateY, {
+          toValue: 400,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]).start(() => setMounted(false));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
 
   const canSend = prompt.trim().length > 0;
@@ -54,9 +88,9 @@ export default function AiPromptBottomSheet({
 
   return (
     <Modal
-      visible={visible}
+      visible={visible || mounted}
       transparent
-      animationType="slide"
+      animationType="none"
       onRequestClose={handleClose}
     >
       <KeyboardAvoidingView
@@ -69,7 +103,13 @@ export default function AiPromptBottomSheet({
           />
         </TouchableWithoutFeedback>
 
-        <View style={[styles.sheet, shadow.heroCard]}>
+        <Animated.View
+          style={[
+            styles.sheet,
+            shadow.heroCard,
+            { transform: [{ translateY: sheetTranslateY }] },
+          ]}
+        >
           <View style={styles.handleBar} />
 
           <View style={styles.headerRow}>
@@ -127,7 +167,7 @@ export default function AiPromptBottomSheet({
               </LinearGradient>
             </TouchableOpacity>
           </View>
-        </View>
+        </Animated.View>
       </KeyboardAvoidingView>
     </Modal>
   );
