@@ -13,6 +13,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { colors, typography, radius, spacing, shadow } from "@/constants/theme";
+import { formatCurrency } from '@/utils/formatCurrency';
 import { Text } from "@/components/ui/text";
 
 // TODO: sama seperti activity.tsx & analytics.tsx — enaknya map ini
@@ -50,11 +51,6 @@ type RecentTxRow = {
   category: { category: string; slug: string } | null;
   account: { account_name: string } | null;
 };
-
-function formatCurrency(value: number) {
-  const sign = value < 0 ? "-" : "";
-  return `${sign}$${Math.abs(value).toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
-}
 
 function getRelativeLabel(dateStr: string) {
   const date = new Date(dateStr);

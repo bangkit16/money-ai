@@ -1,16 +1,9 @@
-import AiButton from "@/components/ai-button";
 import AddTransactionButton from "@/components/add-transaction-button";
+import AiButton from "@/components/ai-button";
 import { colors, typography } from "@/constants/theme";
-import {
-  Poppins_400Regular,
-  Poppins_700Bold,
-  useFonts,
-} from "@expo-google-fonts/poppins";
 import { MaterialIcons } from "@expo/vector-icons";
-import { SplashScreen, Tabs } from "expo-router";
-import { useEffect } from "react";
+import { Tabs } from "expo-router";
 import { StyleSheet, View } from "react-native";
-import Header from "@/components/header";
 
 export default function TabsLayout() {
   return (
@@ -92,7 +85,6 @@ export default function TabsLayout() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    
   },
 
   fab: {

@@ -1,27 +1,28 @@
-import { useState } from "react";
-import {
-  View,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Platform,
-  Modal,
-  TextInput,
-  KeyboardAvoidingView,
-  ActivityIndicator,
-} from "react-native";
+import { Button } from "@/components/ui/button";
+import { Text } from "@/components/ui/text";
+import { supabase } from "@/lib/supabase";
+import { formatCurrency, formatCurrencyShort } from "@/utils/formatCurrency";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import {
   colors,
-  typography,
   radius,
-  spacing,
   shadow,
+  spacing,
+  typography,
 } from "../../constants/theme";
-import { Text } from "@/components/ui/text";
-import { Button } from "@/components/ui/button";
-import { supabase } from "@/lib/supabase";
 
 // Sesuai schema Supabase: id int8, created_at timestamptz, account_name varchar, user_id uuid
 type Account = {
@@ -54,13 +55,16 @@ export default function AccountScreen() {
     queryKey: ["account"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("account")
+        .from("account_with_totals") // Panggil nama view yang dibuat tadi
         .select("*")
         .order("created_at", { ascending: true });
+
       if (error) throw new Error(error.message);
-      return data as Account[];
+      return data; // 'data' langsung memiliki field total_amount secara otomatis
     },
   });
+
+  console.log(accounts);
 
   // --- CREATE ---
   const { mutate: createAccount, isPending: isCreating } = useMutation({
@@ -249,8 +253,7 @@ export default function AccountScreen() {
                       {account.account_name}
                     </Text>
                     <Text style={styles.accountMeta}>
-                      Ditambahkan{" "}
-                      {new Date(account.created_at).toLocaleDateString("id-ID")}
+                      {formatCurrency(account.total_amount)}
                     </Text>
                   </View>
                 </View>

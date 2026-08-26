@@ -1,20 +1,21 @@
-import {
-  View,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Platform,
-} from "react-native";
-import Svg, { Circle } from "react-native-svg";
+import { Text } from "@/components/ui/text";
 import { MaterialIcons } from "@expo/vector-icons";
 import {
+  Platform,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import Svg, { Circle } from "react-native-svg";
+import {
   colors,
-  typography,
   radius,
-  spacing,
   shadow,
+  spacing,
+  typography,
 } from "../../constants/theme";
-import { Text } from "@/components/ui/text";
+import { formatCurrency } from '@/utils/formatCurrency';
 
 // TODO: ganti dummy data ini dengan data asli (state/API)
 const period = "Insights for September 2023";
@@ -30,7 +31,7 @@ const donutSegments = [
 const insight = {
   title: "Spending Insight",
   text: "Your food expenditure decreased by 12% compared to last month. Great job managing your variables!",
-  delta: "-$420",
+  delta: "-Rp420",
   deltaLabel: "VS PREVIOUS MONTH",
 };
 
@@ -60,10 +61,6 @@ const topCategories = [
     color: colors.onTertiaryContainer,
   },
 ];
-
-function formatCurrency(value: number) {
-  return `$${value.toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
-}
 
 function DonutChart({
   size = 200,
@@ -177,7 +174,7 @@ export default function AnalyticsScreen() {
         </View>
 
         {/* Insight card */}
-        <View style={[styles.card, styles.insightCard, shadow.card]}>
+        {/* <View style={[styles.card, styles.insightCard, shadow.card]}>
           <View>
             <MaterialIcons
               name="trending-down"
@@ -192,14 +189,11 @@ export default function AnalyticsScreen() {
             <Text style={styles.insightDelta}>{insight.delta}</Text>
             <Text style={styles.insightDeltaLabel}>{insight.deltaLabel}</Text>
           </View>
-        </View>
+        </View> */}
 
         {/* Top categories */}
         <View style={styles.sectionHeaderRow}>
           <Text style={styles.titleMd}>Top Spending Categories</Text>
-          <TouchableOpacity>
-            <Text style={styles.viewAllLink}>VIEW ALL REPORTS</Text>
-          </TouchableOpacity>
         </View>
 
         <View style={[styles.card, shadow.card, { padding: 0 }]}>

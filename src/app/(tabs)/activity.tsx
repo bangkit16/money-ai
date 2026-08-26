@@ -13,6 +13,7 @@ import {
   View,
 } from "react-native";
 import { colors, radius, spacing, typography } from "../../constants/theme";
+import { formatCurrency } from '@/utils/formatCurrency';
 
 type TxType = "INCOME" | "EXPENSE";
 
@@ -52,11 +53,6 @@ function getIcon(category: TransactionRow["category"], type: TxType) {
   if (category?.slug && ICON_BY_SLUG[category.slug])
     return ICON_BY_SLUG[category.slug];
   return type === "INCOME" ? "payments" : "receipt-long";
-}
-
-function formatCurrency(value: number, type: TxType) {
-  const sign = type === "EXPENSE" ? "-" : "+";
-  return `${sign}$${Math.abs(value).toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
 }
 
 function formatTime(dateStr: string) {

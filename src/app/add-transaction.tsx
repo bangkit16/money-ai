@@ -1,10 +1,10 @@
+import DateTimeField from "@/components/DateTimeField";
 import { Text } from "@/components/ui/text";
 import { supabase } from "@/lib/supabase";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import DateTimeField from "@/components/DateTimeField";
 import {
   ActivityIndicator,
   Alert,
@@ -72,15 +72,18 @@ export default function AddTransactionScreen() {
 
   // --- Categories ---
   const { data: categories, isLoading: isLoadingCategory } = useQuery({
-    queryKey: ["category_transaction"],
+    queryKey: ["category_transaction", transactionType],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("category_transaction")
-        .select("*");
+        .select("*")
+        .or(`category_type.eq.${transactionType},category_type.is.null`);
       if (error) throw new Error(error.message);
       return data;
     },
   });
+
+  console.log(categories);
 
   // --- Accounts milik user yang lagi login ---
   const { data: accounts, isLoading: isLoadingAccounts } = useQuery({
@@ -124,6 +127,8 @@ export default function AddTransactionScreen() {
     onSuccess: () => {
       // Refresh query transaksi/dashboard yang bergantung pada data ini
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["account"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard-transactions"] });
       queryClient.invalidateQueries({
         queryKey: ["dashboard-recent-transactions"],
       });
@@ -173,7 +178,7 @@ export default function AddTransactionScreen() {
           <View style={styles.amountBlock}>
             <Text style={styles.label}>Amount</Text>
             <View style={styles.amountRow}>
-              <Text style={styles.currencySymbol}>$</Text>
+              <Text style={styles.currencySymbol}>Rp</Text>
               <Text style={styles.amountValue}>
                 {amount.length > 0 ? amount : "0"}
               </Text>
