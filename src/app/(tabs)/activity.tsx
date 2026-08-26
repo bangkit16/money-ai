@@ -1,5 +1,8 @@
 import { Text } from "@/components/ui/text";
-import { supabase } from "@/lib/supabase";
+import {
+  ActivityService,
+  type ActivityTransactionRow,
+} from "@/services/activityService";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
@@ -17,14 +20,7 @@ import { formatCurrency } from '@/utils/formatCurrency';
 
 type TxType = "INCOME" | "EXPENSE";
 
-type TransactionRow = {
-  id: number;
-  created_at: string;
-  transaction: string | null;
-  amount: number;
-  transaction_type: TxType;
-  category: { category: string; slug: string } | null;
-};
+type TransactionRow = ActivityTransactionRow;
 
 const FILTERS: { key: "all" | TxType; label: string }[] = [
   { key: "all", label: "All" },
@@ -104,17 +100,8 @@ export default function ActivityScreen() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["transactions"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("transaction")
-        .select(
-          "id, created_at, transaction, amount, transaction_type, category:category_transaction(category, slug)",
-        )
-        .order("created_at", { ascending: false });
-      if (error) throw new Error(error.message);
-      return data as unknown as TransactionRow[];
-    },
+    queryKey: ActivityService.keys.transactions,
+    queryFn: ActivityService.GetTransactions,
   });
 
   const filteredSections = useMemo(() => {

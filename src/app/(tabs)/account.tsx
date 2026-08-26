@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
-import { supabase } from "@/lib/supabase";
+import { AccountService, type AccountRow } from "@/services/accountService";
 import { formatCurrency, formatCurrencyShort } from "@/utils/formatCurrency";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -25,12 +25,7 @@ import {
 } from "../../constants/theme";
 
 // Sesuai schema Supabase: id int8, created_at timestamptz, account_name varchar, user_id uuid
-type Account = {
-  id: number;
-  account_name: string;
-  created_at: string;
-  user_id: string;
-};
+type Account = AccountRow;
 
 export default function AccountScreen() {
   const queryClient = useQueryClient();
@@ -52,77 +47,41 @@ export default function AccountScreen() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["account"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("account_with_totals") // Panggil nama view yang dibuat tadi
-        .select("*")
-        .order("created_at", { ascending: true });
-
-      if (error) throw new Error(error.message);
-      return data; // 'data' langsung memiliki field total_amount secara otomatis
-    },
+    queryKey: AccountService.keys.all,
+    queryFn: AccountService.GetAccountsWithTotals,
   });
-
-  console.log(accounts);
 
   // --- CREATE ---
   const { mutate: createAccount, isPending: isCreating } = useMutation({
-    mutationFn: async (accountName: string) => {
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-      if (userError) throw userError;
-      if (!user) throw new Error("User belum login");
-
-      const { error } = await supabase
-        .from("account")
-        .insert({ account_name: accountName, user_id: user.id });
-      if (error) throw error;
-    },
+    mutationFn: AccountService.CreateAccount,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["account"] });
+      queryClient.invalidateQueries({ queryKey: AccountService.keys.all });
       closeForm();
     },
-    onError: (err: any) =>
+    onError: (err: Error) =>
       setErrorMessage(err.message ?? "Gagal menambah rekening."),
   });
 
   // --- UPDATE ---
   const { mutate: updateAccount, isPending: isUpdating } = useMutation({
-    mutationFn: async ({
-      id,
-      accountName,
-    }: {
-      id: number;
-      accountName: string;
-    }) => {
-      const { error } = await supabase
-        .from("account")
-        .update({ account_name: accountName })
-        .eq("id", id);
-      if (error) throw error;
-    },
+    mutationFn: ({ id, accountName }: { id: number; accountName: string }) =>
+      AccountService.UpdateAccount(id, accountName),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["account"] });
+      queryClient.invalidateQueries({ queryKey: AccountService.keys.all });
       closeForm();
     },
-    onError: (err: any) =>
+    onError: (err: Error) =>
       setErrorMessage(err.message ?? "Gagal mengubah rekening."),
   });
 
   // --- DELETE ---
   const { mutate: deleteAccount } = useMutation({
-    mutationFn: async (id: number) => {
-      const { error } = await supabase.from("account").delete().eq("id", id);
-      if (error) throw error;
-    },
+    mutationFn: AccountService.DeleteAccount,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["account"] });
+      queryClient.invalidateQueries({ queryKey: AccountService.keys.all });
       setDeleteConfirmAccount(null);
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       setDeleteConfirmAccount(null);
       setErrorMessage(err.message ?? "Gagal menghapus rekening.");
     },

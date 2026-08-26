@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { DashboardService } from "@/services/dashboardService";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import {
@@ -35,23 +35,6 @@ const ICON_BY_SLUG: Record<string, string> = {
 
 type TxType = "INCOME" | "EXPENSE";
 
-type AllTxRow = {
-  amount: number;
-  transaction_type: TxType;
-  created_at: string;
-  account: { id: number; account_name: string } | null;
-};
-
-type RecentTxRow = {
-  id: number;
-  created_at: string;
-  transaction: string | null;
-  amount: number;
-  transaction_type: TxType;
-  category: { category: string; slug: string } | null;
-  account: { account_name: string } | null;
-};
-
 function getRelativeLabel(dateStr: string) {
   const date = new Date(dateStr);
   const today = new Date();
@@ -75,16 +58,8 @@ export default function DashboardScreen() {
     isLoading: isLoadingAll,
     error: errorAll,
   } = useQuery({
-    queryKey: ["dashboard-transactions"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("transaction")
-        .select(
-          "amount, transaction_type, created_at, account:account(id, account_name)",
-        );
-      if (error) throw new Error(error.message);
-      return data as unknown as AllTxRow[];
-    },
+    queryKey: DashboardService.keys.transactions,
+    queryFn: DashboardService.GetTransactions,
   });
 
   // 3 transaksi terbaru buat list "Recent Transactions"
@@ -93,18 +68,8 @@ export default function DashboardScreen() {
     isLoading: isLoadingRecent,
     error: errorRecent,
   } = useQuery({
-    queryKey: ["dashboard-recent-transactions"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("transaction")
-        .select(
-          "id, created_at, transaction, amount, transaction_type, category:category_transaction(category, slug), account:account(account_name)",
-        )
-        .order("created_at", { ascending: false })
-        .limit(3);
-      if (error) throw new Error(error.message);
-      return data as unknown as RecentTxRow[];
-    },
+    queryKey: DashboardService.keys.recentTransactions,
+    queryFn: DashboardService.GetRecentTransactions,
   });
 
   const summary = useMemo(() => {

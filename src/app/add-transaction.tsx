@@ -1,6 +1,12 @@
 import DateTimeField from "@/components/DateTimeField";
 import { Text } from "@/components/ui/text";
-import { supabase } from "@/lib/supabase";
+import {
+  AddTransactionService,
+  type TransactionType,
+} from "@/services/addTransactionService";
+import { AccountService } from "@/services/accountService";
+import { ActivityService } from "@/services/activityService";
+import { DashboardService } from "@/services/dashboardService";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
@@ -37,6 +43,8 @@ const TRANSACTION_TYPES = [
   { key: "INCOME", label: "Income", icon: "arrow-downward" },
 ] as const;
 
+type TransactionTypeKey = (typeof TRANSACTION_TYPES)[number]["key"];
+
 export default function AddTransactionScreen() {
   const queryClient = useQueryClient();
 
@@ -44,7 +52,7 @@ export default function AddTransactionScreen() {
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [accountId, setAccountId] = useState<number | null>(null);
   const [transactionType, setTransactionType] =
-    useState<(typeof TRANSACTION_TYPES)[number]["key"]>("EXPENSE");
+    useState<TransactionTypeKey>("EXPENSE");
   const [dateTime, setDateTime] = useState(new Date());
   const [transaction, setTransaction] = useState("");
 
@@ -72,27 +80,14 @@ export default function AddTransactionScreen() {
 
   // --- Categories ---
   const { data: categories, isLoading: isLoadingCategory } = useQuery({
-    queryKey: ["category_transaction", transactionType],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("category_transaction")
-        .select("*")
-        .or(`category_type.eq.${transactionType},category_type.is.null`);
-      if (error) throw new Error(error.message);
-      return data;
-    },
+    queryKey: AddTransactionService.keys.categories(transactionType),
+    queryFn: () => AddTransactionService.GetCategories(transactionType),
   });
-
-  console.log(categories);
 
   // --- Accounts milik user yang lagi login ---
   const { data: accounts, isLoading: isLoadingAccounts } = useQuery({
-    queryKey: ["account"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("account").select("*");
-      if (error) throw new Error(error.message);
-      return data;
-    },
+    queryKey: AddTransactionService.keys.accounts,
+    queryFn: AddTransactionService.GetAccountOptions,
   });
 
   // Default-kan ke rekening pertama begitu data account selesai dimuat
@@ -104,41 +99,32 @@ export default function AddTransactionScreen() {
 
   // --- Insert transaksi ---
   const { mutate: saveTransaction, isPending: isSaving } = useMutation({
-    mutationFn: async () => {
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-      if (userError) throw userError;
-      if (!user) throw new Error("User belum login");
-
-      const { error } = await supabase.from("transaction").insert({
+    mutationFn: () => {
+      if (categoryId === null || accountId === null) {
+        throw new Error("Kategori dan rekening wajib dipilih.");
+      }
+      return AddTransactionService.InsertTransaction({
         amount: parseFloat(amount),
         transaction, // deskripsi/nama transaksi
-        transaction_type: transactionType,
+        transaction_type: transactionType as TransactionType,
         category_id: categoryId,
         account_id: accountId,
-        user_id: user.id, // WAJIB — dicek oleh RLS policy (auth.uid() = user_id)
         created_at: dateTime.toISOString(),
       });
-
-      if (error) throw error;
     },
     onSuccess: () => {
       // Refresh query transaksi/dashboard yang bergantung pada data ini
-      queryClient.invalidateQueries({ queryKey: ["transactions"] });
-      queryClient.invalidateQueries({ queryKey: ["account"] });
-      queryClient.invalidateQueries({ queryKey: ["dashboard-transactions"] });
+      queryClient.invalidateQueries({ queryKey: ActivityService.keys.transactions });
+      queryClient.invalidateQueries({ queryKey: AccountService.keys.all });
+      queryClient.invalidateQueries({ queryKey: DashboardService.keys.transactions });
       queryClient.invalidateQueries({
-        queryKey: ["dashboard-recent-transactions"],
+        queryKey: DashboardService.keys.recentTransactions,
       });
-      console.log("Transaksi berhasil disimpan.");
       Alert.alert("Tersimpan", "Transaksi berhasil disimpan.", [
         { text: "OK", onPress: () => router.back() },
       ]);
     },
-    onError: (error: any) => {
-      console.error("Gagal menyimpan transaksi:", error);
+    onError: (error: Error) => {
       Alert.alert("Gagal menyimpan", error.message ?? "Terjadi kesalahan.");
     },
   });
