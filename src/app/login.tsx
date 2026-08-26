@@ -1,24 +1,17 @@
-import { useState } from "react";
+import { GoogleSignInButton } from "@/components/features/login/google-sign-in-button";
+import { LoginHero } from "@/components/features/login/login-hero";
+import { Text } from "@/components/ui/text";
 import {
-  View,
-  StyleSheet,
-  TouchableOpacity,
-  Platform,
-  ActivityIndicator,
-} from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+  colors,
+  radius,
+  spacing,
+  typography,
+} from "@/constants/theme";
 import * as WebBrowser from "expo-web-browser";
 import * as Linking from "expo-linking";
 import { router } from "expo-router";
-import {
-  colors,
-  typography,
-  radius,
-  spacing,
-  shadow,
-} from "../constants/theme";
-import { Text } from "@/components/ui/text";
+import { useState } from "react";
+import { Platform, StyleSheet, View } from "react-native";
 import { supabase } from "@/lib/supabase";
 import { createSessionFromUrl } from "@/lib/auth";
 
@@ -69,22 +62,7 @@ export default function LoginScreen() {
   return (
     <View style={styles.screen}>
       {/* Bagian atas: brand hero */}
-      <LinearGradient
-        colors={[colors.primary, colors.primaryContainer]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.hero}
-      >
-        <View style={styles.logoCircle}>
-          <MaterialCommunityIcons
-            name="chart-donut"
-            size={32}
-            color={colors.white}
-          />
-        </View>
-        <Text style={styles.wordmark}>Dompety</Text>
-        <Text style={styles.tagline}>Quiet confidence for your money</Text>
-      </LinearGradient>
+      <LoginHero />
 
       {/* Bagian bawah: card sign-in */}
       <View style={styles.sheet}>
@@ -95,28 +73,10 @@ export default function LoginScreen() {
           </Text>
         </View>
 
-        <TouchableOpacity
-          style={[styles.googleButton, shadow.card]}
-          onPress={handleGoogleSignIn}
-          activeOpacity={0.85}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color={colors.onSurface} />
-          ) : (
-            <>
-              <MaterialCommunityIcons
-                name="google"
-                size={20}
-                color={colors.onSurface}
-              />
-              <Text style={styles.googleButtonText}>Continue with Google</Text>
-            </>
-          )}
-        </TouchableOpacity>
+        <GoogleSignInButton loading={loading} onPress={handleGoogleSignIn} />
 
         <Text style={styles.termsText}>
-          By continuing, you agree to Dompety's{" "}
+          By continuing, you agree to {"Dompety's"}{" "}
           <Text style={styles.termsLink}>Terms of Service</Text> and{" "}
           <Text style={styles.termsLink}>Privacy Policy</Text>.
         </Text>
@@ -127,28 +87,6 @@ export default function LoginScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
-
-  hero: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: spacing.marginMobile,
-  },
-  logoCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: radius.full,
-    backgroundColor: "rgba(255,255,255,0.12)",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 20,
-  },
-  wordmark: { ...typography.headlineLg, fontSize: 30, color: colors.white },
-  tagline: {
-    ...typography.bodyLg,
-    color: "rgba(255,255,255,0.7)",
-    marginTop: 8,
-  },
 
   sheet: {
     backgroundColor: colors.white,
@@ -163,23 +101,6 @@ const styles = StyleSheet.create({
     ...typography.bodyLg,
     color: colors.onSurfaceVariant,
     marginTop: 6,
-  },
-
-  googleButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 10,
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.outlineVariant,
-    borderRadius: radius.xl,
-    paddingVertical: 16,
-  },
-  googleButtonText: {
-    ...typography.titleMd,
-    fontSize: 15,
-    color: colors.onSurface,
   },
 
   termsText: {

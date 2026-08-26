@@ -20,6 +20,7 @@ export class AccountService {
       .select("*")
       .order("created_at", { ascending: true });
     if (error) throw new Error(error.message);
+    console.log(data);
     return data as AccountRow[];
   }
 

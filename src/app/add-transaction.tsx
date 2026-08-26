@@ -1,5 +1,17 @@
-import DateTimeField from "@/components/DateTimeField";
+import { AccountChips } from "@/components/features/add-transaction/account-chips";
+import { AmountDisplay } from "@/components/features/add-transaction/amount-display";
+import { CategoryGrid } from "@/components/features/add-transaction/category-grid";
+import { Keypad } from "@/components/features/add-transaction/keypad";
+import { SaveButton } from "@/components/features/add-transaction/save-button";
+import {
+  TransactionDateFields,
+} from "@/components/features/add-transaction/transaction-date-fields";
+import {
+  TypeToggle,
+  type TransactionTypeKey,
+} from "@/components/features/add-transaction/type-toggle";
 import { Text } from "@/components/ui/text";
+import { colors, spacing, typography } from "@/constants/theme";
 import {
   AddTransactionService,
   type TransactionType,
@@ -10,40 +22,16 @@ import { DashboardService } from "@/services/dashboardService";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
-import {
-  colors,
-  radius,
-  shadow,
-  spacing,
-  typography,
-} from "../constants/theme";
-
-const KEYPAD_ROWS = [
-  ["1", "2", "3"],
-  ["4", "5", "6"],
-  ["7", "8", "9"],
-  ["000", "0", "backspace"],
-];
-
-// TODO: sesuaikan value ini dengan value enum "transaction_type" di DB kamu
-const TRANSACTION_TYPES = [
-  { key: "EXPENSE", label: "Expense", icon: "arrow-upward" },
-  { key: "INCOME", label: "Income", icon: "arrow-downward" },
-] as const;
-
-type TransactionTypeKey = (typeof TRANSACTION_TYPES)[number]["key"];
 
 export default function AddTransactionScreen() {
   const queryClient = useQueryClient();
@@ -55,9 +43,6 @@ export default function AddTransactionScreen() {
     useState<TransactionTypeKey>("EXPENSE");
   const [dateTime, setDateTime] = useState(new Date());
   const [transaction, setTransaction] = useState("");
-
-  const isValid =
-    parseFloat(amount) > 0 && categoryId !== null && accountId !== null;
 
   const handleKeyPress = (key: string) => {
     if (key === "backspace") {
@@ -90,18 +75,13 @@ export default function AddTransactionScreen() {
     queryFn: AddTransactionService.GetAccountOptions,
   });
 
-  // Default-kan ke rekening pertama begitu data account selesai dimuat
-  useEffect(() => {
-    if (accounts && accounts.length > 0 && accountId === null) {
-      setAccountId(accounts[0].id);
-    }
-  }, [accounts]);
+  const isValid = parseFloat(amount) > 0 && categoryId !== null;
 
   // --- Insert transaksi ---
   const { mutate: saveTransaction, isPending: isSaving } = useMutation({
     mutationFn: () => {
-      if (categoryId === null || accountId === null) {
-        throw new Error("Kategori dan rekening wajib dipilih.");
+      if (categoryId === null) {
+        throw new Error("Kategori wajib dipilih.");
       }
       return AddTransactionService.InsertTransaction({
         amount: parseFloat(amount),
@@ -160,207 +140,53 @@ export default function AddTransactionScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* Amount display */}
-          <View style={styles.amountBlock}>
-            <Text style={styles.label}>Amount</Text>
-            <View style={styles.amountRow}>
-              <Text style={styles.currencySymbol}>Rp</Text>
-              <Text style={styles.amountValue}>
-                {amount.length > 0 ? amount : "0"}
-              </Text>
-            </View>
-          </View>
+          <AmountDisplay amount={amount} />
 
-          {/* Transaction type toggle */}
           <View style={styles.fieldBlock}>
             <Text style={styles.label}>Type</Text>
-            <View style={styles.typeRow}>
-              {TRANSACTION_TYPES.map((t) => {
-                const active = transactionType === t.key;
-                return (
-                  <TouchableOpacity
-                    key={t.key}
-                    onPress={() => setTransactionType(t.key)}
-                    style={[
-                      styles.typeButton,
-                      active && styles.typeButtonActive,
-                    ]}
-                    activeOpacity={0.85}
-                  >
-                    <MaterialIcons
-                      name={t.icon as any}
-                      size={16}
-                      color={active ? colors.white : colors.onSurfaceVariant}
-                    />
-                    <Text
-                      style={[
-                        styles.typeButtonText,
-                        active && styles.typeButtonTextActive,
-                      ]}
-                    >
-                      {t.label}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
+            <TypeToggle value={transactionType} onChange={setTransactionType} />
           </View>
 
-          {/* Category */}
           <View style={styles.fieldBlock}>
             <Text style={styles.label}>Category</Text>
-            <View style={styles.categoryGrid}>
-              {isLoadingCategory ? (
-                <View style={styles.loadingContainer}>
-                  <ActivityIndicator size="small" color={colors.primary} />
-                  <Text style={styles.loadingText}>Loading categories...</Text>
-                </View>
-              ) : (
-                categories?.map((cat) => {
-                  const active = categoryId === cat.id;
-                  return (
-                    <TouchableOpacity
-                      key={cat.id}
-                      onPress={() => setCategoryId(cat.id)}
-                      style={[
-                        styles.categoryChip,
-                        active && styles.categoryChipActive,
-                      ]}
-                      activeOpacity={0.85}
-                    >
-                      <MaterialIcons
-                        name={cat.icon as any}
-                        size={16}
-                        color={active ? colors.white : colors.secondary}
-                      />
-                      <Text
-                        style={[
-                          styles.categoryChipText,
-                          active && styles.categoryChipTextActive,
-                        ]}
-                      >
-                        {cat.category}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })
-              )}
-            </View>
+            <CategoryGrid
+              categories={categories}
+              selectedId={categoryId}
+              isLoading={isLoadingCategory}
+              onSelect={(id) => setCategoryId(id)}
+            />
           </View>
 
-          {/* Account */}
           <View style={styles.fieldBlock}>
             <Text style={styles.label}>Account</Text>
-            {isLoadingAccounts ? (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="small" color={colors.primary} />
-                <Text style={styles.loadingText}>Loading accounts...</Text>
-              </View>
-            ) : (
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ gap: 8 }}
-              >
-                {accounts?.map((acc) => {
-                  const active = accountId === acc.id;
-                  return (
-                    <TouchableOpacity
-                      key={acc.id}
-                      onPress={() => setAccountId(acc.id)}
-                      style={[
-                        styles.accountChip,
-                        active && styles.categoryChipActive,
-                      ]}
-                      activeOpacity={0.85}
-                    >
-                      <Text
-                        style={[
-                          styles.categoryChipText,
-                          active && styles.categoryChipTextActive,
-                        ]}
-                      >
-                        {acc.account_name}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </ScrollView>
-            )}
+            <AccountChips
+              accounts={accounts}
+              selectedId={accountId}
+              isLoading={isLoadingAccounts}
+              onSelect={(id) => setAccountId((prev) => (prev === id ? null : id))}
+            />
           </View>
         </ScrollView>
 
-        {/* Transaction & Date/Time — fixed satu baris, selalu terlihat di atas numpad */}
-        <View style={styles.fixedFieldsBlock}>
-          <View style={styles.compactRow}>
-            <View style={[styles.fieldBlock, { flex: 3 }]}>
-              <Text style={styles.label}>Transaction</Text>
-              <TextInput
-                value={transaction}
-                onChangeText={setTransaction}
-                placeholder="What was this for?"
-                placeholderTextColor={colors.outline}
-                style={styles.inputSoft}
-              />
-            </View>
-            <View style={[styles.fieldBlock, { flex: 2 }]}>
-              <Text style={styles.label}>Date & Time</Text>
-              <DateTimeField value={dateTime} onChange={setDateTime} />
-            </View>
-          </View>
-        </View>
+        <TransactionDateFields
+          transaction={transaction}
+          onChangeTransaction={setTransaction}
+          dateTime={dateTime}
+          onChangeDateTime={setDateTime}
+        />
 
-        {/* Numeric keypad */}
-        <View style={styles.keypad}>
-          {KEYPAD_ROWS.map((row, rowIndex) => (
-            <View key={rowIndex} style={styles.keypadRow}>
-              {row.map((key) => (
-                <TouchableOpacity
-                  key={key}
-                  style={styles.keypadKey}
-                  activeOpacity={0.6}
-                  onPress={() => handleKeyPress(key)}
-                >
-                  {key === "backspace" ? (
-                    <MaterialIcons
-                      name="backspace"
-                      size={20}
-                      color={colors.onSurfaceVariant}
-                    />
-                  ) : (
-                    <Text style={styles.keypadKeyText}>{key}</Text>
-                  )}
-                </TouchableOpacity>
-              ))}
-            </View>
-          ))}
+        <View style={styles.keypadWrap}>
+          <Keypad onKeyPress={handleKeyPress} />
         </View>
       </View>
 
       {/* Footer */}
       <View style={styles.footer}>
-        <TouchableOpacity
-          style={[
-            styles.saveButton,
-            (!isValid || isSaving) && styles.saveButtonDisabled,
-          ]}
+        <SaveButton
+          disabled={!isValid}
+          loading={isSaving}
           onPress={handleSave}
-          disabled={!isValid || isSaving}
-          activeOpacity={0.9}
-        >
-          {isSaving ? (
-            <ActivityIndicator color={colors.white} />
-          ) : (
-            <>
-              <Text style={styles.saveButtonText}>Save Transaction</Text>
-              <MaterialIcons
-                name="check-circle"
-                size={20}
-                color={colors.white}
-              />
-            </>
-          )}
-        </TouchableOpacity>
+        />
       </View>
     </KeyboardAvoidingView>
   );
@@ -400,138 +226,9 @@ const styles = StyleSheet.create({
     color: colors.onSurfaceVariant,
     marginBottom: 8,
   },
-
-  amountBlock: { alignItems: "center", paddingVertical: 4 },
-  amountRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  currencySymbol: {
-    ...typography.headlineLg,
-    fontSize: 28,
-    color: colors.primary,
-    marginRight: 4,
-  },
-  amountValue: {
-    ...typography.displayLg,
-    fontSize: 40,
-    color: colors.primary,
-    maxWidth: "100%",
-  },
-
   fieldBlock: {},
 
-  typeRow: { flexDirection: "row", gap: 8 },
-  typeButton: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    paddingVertical: 12,
-    borderRadius: radius.lg,
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.outlineVariant,
-    ...shadow.card,
-  },
-  typeButtonActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  typeButtonText: {
-    ...typography.labelCaps,
-    fontSize: 11,
-    color: colors.onSurfaceVariant,
-  },
-  typeButtonTextActive: { color: colors.white },
-
-  categoryGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "flex-start",
-    rowGap: 8,
-    columnGap: "2.5%",
-  },
-  categoryChip: {
-    flexDirection: "column",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 4,
-    paddingVertical: 8,
-    borderRadius: radius.xl,
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.outlineVariant,
-    width: "18%",
-    ...shadow.card,
-  },
-  categoryChipActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  categoryChipText: {
-    ...typography.labelCaps,
-    fontSize: 11,
-    color: colors.onSurface,
-  },
-  categoryChipTextActive: { color: colors.white },
-
-  accountChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: radius.full,
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.outlineVariant,
-    ...shadow.card,
-  },
-
-  fixedFieldsBlock: {
-    paddingHorizontal: spacing.marginMobile,
-    paddingTop: 8,
-    gap: 16,
-  },
-  compactRow: { flexDirection: "row", gap: 12 },
-
-  inputSoft: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: colors.platinumMist + "4d",
-    borderRadius: radius.lg,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  inputSoftText: { ...typography.bodyLg, color: colors.primary, flex: 1 },
-
-  keypad: { paddingHorizontal: spacing.marginMobile, paddingTop: 16, gap: 8 },
-  keypadRow: { flexDirection: "row", gap: 8 },
-  keypadKey: {
-    flex: 1,
-    height: 52,
-    borderRadius: radius.lg,
-    backgroundColor: colors.white,
-    alignItems: "center",
-    justifyContent: "center",
-    ...shadow.card,
-  },
-  keypadKeyText: {
-    ...typography.titleMd,
-    fontSize: 20,
-    color: colors.onSurface,
-  },
-
-  loadingContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 12,
-    width: "100%",
-    gap: 8,
-  },
-  loadingText: { fontSize: 14, color: colors.secondary },
+  keypadWrap: { paddingHorizontal: spacing.marginMobile },
 
   footer: {
     paddingHorizontal: spacing.marginMobile,
@@ -539,15 +236,4 @@ const styles = StyleSheet.create({
     paddingBottom: Platform.OS === "ios" ? 32 : 20,
     backgroundColor: colors.background,
   },
-  saveButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    backgroundColor: colors.primary,
-    borderRadius: radius.xl,
-    paddingVertical: 16,
-  },
-  saveButtonDisabled: { opacity: 0.4 },
-  saveButtonText: { ...typography.titleMd, color: colors.white },
 });

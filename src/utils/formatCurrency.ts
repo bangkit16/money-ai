@@ -11,6 +11,17 @@ export function formatCurrency(value: number, type?: 'INCOME' | 'EXPENSE'): stri
 }
 
 /**
+ * Format a numeric value as Indonesian rupiah (Rp) keeping the original sign.
+ *
+ * @param value - The numeric amount to format
+ * @returns Formatted string like "Rp 500,000.00" or "-Rp 500,000.00"
+ */
+export function formatCurrencySigned(value: number): string {
+  const sign = value < 0 ? '-' : '';
+  return `${sign}Rp${Math.abs(value).toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
+}
+
+/**
  * Short format for display - just Rp with thousands separator
  *
  * @param value - The numeric amount to format

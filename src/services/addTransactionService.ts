@@ -20,7 +20,7 @@ export type InsertTransactionParams = {
   transaction: string;
   transaction_type: TransactionType;
   category_id: number;
-  account_id: number;
+  account_id: number | null;
   created_at: string;
 };
 
