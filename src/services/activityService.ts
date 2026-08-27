@@ -7,7 +7,7 @@ export type ActivityTransactionRow = {
   transaction: string | null;
   amount: number;
   transaction_type: TransactionType;
-  category: { category: string; slug: string } | null;
+  category: { id: number; category: string; slug: string } | null;
 };
 
 export class ActivityService {
@@ -19,7 +19,7 @@ export class ActivityService {
     const { data, error } = await supabase
       .from("transaction")
       .select(
-        "id, created_at, transaction, amount, transaction_type, category:category_transaction(category, slug)",
+        "id, created_at, transaction, amount, transaction_type, category:category_transaction(id, category, slug)",
       )
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);

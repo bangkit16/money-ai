@@ -14,7 +14,7 @@ export type RecentTxRow = {
   transaction: string | null;
   amount: number;
   transaction_type: TransactionType;
-  category: { category: string; slug: string } | null;
+  category: { id: number; category: string; slug: string } | null;
   account: { account_name: string } | null;
 };
 
@@ -38,7 +38,7 @@ export class DashboardService {
     const { data, error } = await supabase
       .from("transaction")
       .select(
-        "id, created_at, transaction, amount, transaction_type, category:category_transaction(category, slug), account:account(account_name)",
+        "id, created_at, transaction, amount, transaction_type, category:category_transaction(id, category, slug), account:account(account_name)",
       )
       .order("created_at", { ascending: false })
       .limit(3);

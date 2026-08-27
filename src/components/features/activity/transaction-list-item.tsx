@@ -2,28 +2,32 @@ import { formatCurrency } from "@/utils/formatCurrency";
 import { colors, radius, typography } from "@/constants/theme";
 import { getIcon, formatTime } from "./utils";
 import { MaterialIcons } from "@expo/vector-icons";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { Text } from "@/components/ui/text";
 
 type TransactionListItemProps = {
   item: import("@/services/activityService").ActivityTransactionRow;
   isFirst?: boolean;
   isLast?: boolean;
+  onPress?: () => void;
 };
 
 export function TransactionListItem({
   item,
   isFirst,
   isLast,
+  onPress,
 }: TransactionListItemProps) {
   return (
-    <View
+    <TouchableOpacity
       style={[
         styles.row,
         isFirst && styles.rowFirst,
         isLast && styles.rowLast,
         !isLast && styles.rowDivider,
       ]}
+      onPress={onPress}
+      activeOpacity={0.7}
     >
       <View style={styles.left}>
         <View style={styles.iconCircle}>
@@ -56,7 +60,7 @@ export function TransactionListItem({
       >
         {formatCurrency(item.amount, item.transaction_type)}
       </Text>
-    </View>
+    </TouchableOpacity>
   );
 }
 

@@ -27,7 +27,7 @@ export type InsertTransactionParams = {
 export class AddTransactionService {
   static readonly keys = {
     categories: (type: TransactionType) => ["category_transaction", type] as const,
-    accounts: ["account"] as const,
+    accounts: ["account"] as const, 
   };
 
   static async GetCategories(transactionType: TransactionType) {
@@ -59,5 +59,40 @@ export class AddTransactionService {
       user_id: user.id,
     });
     if (error) throw error;
+  }
+
+  static async UpdateTransaction(
+    id: number,
+    params: Partial<InsertTransactionParams>
+  ) {
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+    if (userError) throw userError;
+    if (!user) throw new Error("User belum login");
+
+    const { error } = await supabase
+      .from("transaction")
+      .update(params)
+      .eq("id", id)
+      .eq("user_id", user.id);
+    if (error) throw new Error(error.message);
+  }
+
+  static async DeleteTransaction(id: number) {
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+    if (userError) throw userError;
+    if (!user) throw new Error("User belum login");
+
+    const { error } = await supabase
+      .from("transaction")
+      .delete()
+      .eq("id", id)
+      .eq("user_id", user.id);
+    if (error) throw new Error(error.message);
   }
 }

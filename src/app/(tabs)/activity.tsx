@@ -17,6 +17,7 @@ import {
   StyleSheet,
   View,
 } from "react-native";
+import { router } from "expo-router";
 
 type TxType = "INCOME" | "EXPENSE";
 
@@ -49,6 +50,12 @@ export default function ActivityScreen() {
 
     return groupByDate(filtered);
   }, [transactions, query, activeFilter]);
+
+  const handleEditPress = (
+    transaction: import("@/services/activityService").ActivityTransactionRow
+  ) => {
+    router.push(`/edit-transaction?id=${transaction.id}`);
+  };
 
   return (
     <View style={styles.screen}>
@@ -83,6 +90,7 @@ export default function ActivityScreen() {
               item={item}
               isFirst={index === 0}
               isLast={index === section.data.length - 1}
+              onPress={() => handleEditPress(item)}
             />
           )}
           renderSectionFooter={() => (

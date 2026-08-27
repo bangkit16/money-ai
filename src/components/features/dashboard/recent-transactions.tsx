@@ -38,9 +38,21 @@ function getRelativeLabel(dateStr: string) {
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
-function TransactionRow({ tx, isLast }: { tx: RecentTxRow; isLast: boolean }) {
+function TransactionRow({
+  tx,
+  isLast,
+  onPress,
+}: {
+  tx: RecentTxRow;
+  isLast: boolean;
+  onPress: () => void;
+}) {
   return (
-    <View style={[styles.txRow, !isLast && styles.txRowDivider]}>
+    <TouchableOpacity
+      style={[styles.txRow, !isLast && styles.txRowDivider]}
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
       <View style={styles.txLeft}>
         <View style={styles.txIconCircle}>
           <MaterialIcons
@@ -81,7 +93,7 @@ function TransactionRow({ tx, isLast }: { tx: RecentTxRow; isLast: boolean }) {
         </Text>
         <Text style={styles.txSource}>{tx.account?.account_name ?? "—"}</Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
@@ -90,6 +102,10 @@ export function RecentTransactions({
 }: {
   transactions: RecentTxRow[] | undefined;
 }) {
+  const handleEditPress = (tx: RecentTxRow) => {
+    router.push(`/edit-transaction?id=${tx.id}`);
+  };
+
   return (
     <>
       <View style={styles.sectionHeaderRow}>
@@ -106,6 +122,7 @@ export function RecentTransactions({
               key={tx.id}
               tx={tx}
               isLast={i === transactions.length - 1}
+              onPress={() => handleEditPress(tx)}
             />
           ))}
         </View>

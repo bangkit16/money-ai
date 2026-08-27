@@ -1,20 +1,13 @@
-import { AddAccountButton } from "@/components/features/account/add-account-button";
 import { AccountFormModal } from "@/components/features/account/account-form-modal";
 import { AccountList } from "@/components/features/account/account-list";
 import { AccountOptionsSheet } from "@/components/features/account/account-options-sheet";
+import { AddAccountButton } from "@/components/features/account/add-account-button";
 import { TransferCard } from "@/components/features/account/transfer-card";
 import { AppBar } from "@/components/features/shared/app-bar";
 import { ConfirmDialog } from "@/components/features/shared/confirm-dialog";
 import { Text } from "@/components/ui/text";
-import {
-  colors,
-  spacing,
-  typography,
-} from "@/constants/theme";
-import {
-  AccountService,
-  type AccountRow,
-} from "@/services/accountService";
+import { colors, spacing, typography } from "@/constants/theme";
+import { AccountService, type AccountRow } from "@/services/accountService";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
@@ -38,10 +31,12 @@ export default function AccountScreen() {
     data: accounts,
     isLoading,
     error,
-  } = useQuery({
-    queryKey: AccountService.keys.all,
+  } = useQuery<AccountRow[]>({
+    queryKey: ["accounts"],
     queryFn: AccountService.GetAccountsWithTotals,
   });
+
+  console.log("rekening", accounts);
 
   // --- CREATE ---
   const { mutate: createAccount, isPending: isCreating } = useMutation({

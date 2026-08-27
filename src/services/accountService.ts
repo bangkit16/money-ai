@@ -14,15 +14,47 @@ export class AccountService {
     all: ["account"] as const,
   };
 
-  static async GetAccountsWithTotals() {
+static async GetAccountsWithTotals() {
     const { data, error } = await supabase
-      .from("account_with_totals")
-      .select("*")
+      .from('account')
+      .select(`
+        id,
+        created_at,
+        account_name,
+        user_id,
+        transaction (
+          transaction_type,
+          amount
+        )
+      `)
       .order("created_at", { ascending: true });
+
     if (error) throw new Error(error.message);
-    console.log(data);
-    return data as AccountRow[];
-  }
+
+    // Proses mapping data mentah dari Supabase ke format yang diinginkan
+    const mappedData = data.map((acc) => {
+      // Hitung total_amount: INCOME (+) dan EXPENSE (-)
+      const totalAmount = acc.transaction.reduce((sum, currentTx) => {
+        const amt = Number(currentTx.amount) || 0;
+        if (currentTx.transaction_type === 'INCOME') return sum + amt;
+        if (currentTx.transaction_type === 'EXPENSE') return sum - amt;
+        return sum;
+      }, 0);
+
+      // Kembalikan objek flat tanpa properti array 'transaction'
+      return {
+        id: acc.id,
+        created_at: acc.created_at,
+        account_name: acc.account_name,
+        user_id: acc.user_id,
+        total_amount: totalAmount
+      };
+    });
+
+    console.log("goodwell", mappedData);
+    return mappedData as AccountRow[];
+}
+
 
   static async CreateAccount(accountName: string) {
     const {
