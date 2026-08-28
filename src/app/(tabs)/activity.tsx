@@ -54,7 +54,7 @@ export default function ActivityScreen() {
   const handleEditPress = (
     transaction: import("@/services/activityService").ActivityTransactionRow
   ) => {
-    router.push(`/edit-transaction?id=${transaction.id}`);
+    router.push({ pathname: "/add-transaction", params: { id: String(transaction.id) } });
   };
 
   return (

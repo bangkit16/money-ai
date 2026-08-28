@@ -3,10 +3,10 @@ import { colors, radius, shadow, typography } from "@/constants/theme";
 import { MaterialIcons } from "@expo/vector-icons";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 
-// TODO: sesuaikan value ini dengan value enum "transaction_type" di DB kamu
 const TRANSACTION_TYPES = [
   { key: "EXPENSE", label: "Expense", icon: "arrow-upward" },
   { key: "INCOME", label: "Income", icon: "arrow-downward" },
+  { key: "TRANSFER", label: "Transfer", icon: "swap-horiz" },
 ] as const;
 
 export type TransactionTypeKey = (typeof TRANSACTION_TYPES)[number]["key"];

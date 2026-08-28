@@ -28,7 +28,7 @@ export class DashboardService {
     const { data, error } = await supabase
       .from("transaction")
       .select(
-        "amount, transaction_type, created_at, account:account(id, account_name)",
+        "amount, transaction_type, created_at,   from_account:account!account_id(account_name), to_account:account!to_account_id(account_name)",
       );
     if (error) throw new Error(error.message);
     return data as unknown as DashboardTxRow[];
@@ -38,7 +38,7 @@ export class DashboardService {
     const { data, error } = await supabase
       .from("transaction")
       .select(
-        "id, created_at, transaction, amount, transaction_type, category:category_transaction(id, category, slug), account:account(account_name)",
+        "id, created_at, transaction, amount, transaction_type, category:category_transaction(id, category, slug),   from_account:account!account_id(account_name), to_account:account!to_account_id(account_name)",
       )
       .order("created_at", { ascending: false })
       .limit(3);

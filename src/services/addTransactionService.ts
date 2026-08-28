@@ -19,8 +19,9 @@ export type InsertTransactionParams = {
   amount: number;
   transaction: string;
   transaction_type: TransactionType;
-  category_id: number;
+  category_id: number | null;
   account_id: number | null;
+  to_account_id: number | null;
   created_at: string;
 };
 

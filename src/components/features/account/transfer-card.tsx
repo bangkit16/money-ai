@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { colors, radius, shadow, typography } from "@/constants/theme";
 import { MaterialIcons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import { StyleSheet, View } from "react-native";
 
 export function TransferCard() {
@@ -9,7 +10,11 @@ export function TransferCard() {
     <View style={[styles.card, styles.heroCard, shadow.heroCard]}>
       <Text style={styles.heroLabel}>TRANSFER SALDO</Text>
       <View style={styles.heroDivider} />
-      <Button variant="default" onPress={() => {}} style={styles.buttonTransfer}>
+      <Button
+        variant="default"
+        onPress={() => {}}
+        style={styles.buttonTransfer}
+      >
         <Text style={styles.buttonTransferText}>Transfer Antar Rekening</Text>
         <MaterialIcons name="arrow-forward" size={24} color="white" />
       </Button>

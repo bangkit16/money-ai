@@ -103,7 +103,7 @@ export function RecentTransactions({
   transactions: RecentTxRow[] | undefined;
 }) {
   const handleEditPress = (tx: RecentTxRow) => {
-    router.push(`/edit-transaction?id=${tx.id}`);
+    router.push({ pathname: "/add-transaction", params: { id: String(tx.id) } });
   };
 
   return (
