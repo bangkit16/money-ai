@@ -12,7 +12,7 @@ export function TransferCard() {
       <View style={styles.heroDivider} />
       <Button
         variant="default"
-        onPress={() => {}}
+        onPress={() => router.push({ pathname: "/add-transaction", params: { type: "TRANSFER" } })}
         style={styles.buttonTransfer}
       >
         <Text style={styles.buttonTransferText}>Transfer Antar Rekening</Text>

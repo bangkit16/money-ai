@@ -10,7 +10,6 @@ import {
 } from "@/components/features/transaction/type-toggle";
 import { Text } from "@/components/ui/text";
 import { colors, spacing, typography } from "@/constants/theme";
-import { supabase } from "@/lib/supabase";
 import { AccountService } from "@/services/accountService";
 import {
   AddTransactionService,
@@ -156,22 +155,25 @@ export default function TransactionScreen() {
       const basePayload = {
         amount: parseFloat(amount),
         transaction: transactionName,
-        created_at: dateTime.toISOString(),
+        transaction_date: dateTime.toISOString(),
       };
       if (isTransfer) {
-        if (!isEdit || !editId) {
-          throw new Error("Insert transfer pakai jalur lain.");
-        }
         if (fromAccountId === null || toAccountId === null) {
           throw new Error("Akun asal dan tujuan wajib dipilih.");
         }
-        return AddTransactionService.UpdateTransaction(Number(editId), {
+        const transferPayload = {
           ...basePayload,
-          transaction_type: "EXPENSE" as TransactionType,
           account_id: fromAccountId,
           to_account_id: toAccountId,
           category_id: categoryId,
-        });
+        };
+        if (isEdit && editId) {
+          return AddTransactionService.UpdateTransaction(Number(editId), {
+            ...transferPayload,
+            transaction_type: "EXPENSE" as TransactionType,
+          });
+        }
+        return AddTransactionService.InsertTransfer(transferPayload);
       }
       if (categoryId === null) {
         throw new Error("Kategori wajib dipilih.");
@@ -182,6 +184,7 @@ export default function TransactionScreen() {
           transaction_type: transactionType as TransactionType,
           category_id: categoryId,
           account_id: fromAccountId,
+          to_account_id: null,
         });
       }
       return AddTransactionService.InsertTransaction({
@@ -199,47 +202,11 @@ export default function TransactionScreen() {
       queryClient.invalidateQueries({
         queryKey: DashboardService.keys.recentTransactions,
       });
-      Alert.alert("Tersimpan", "Transaksi berhasil disimpan.", [
-        { text: "OK", onPress: () => router.back() },
-      ]);
-    },
-    onError: (error: Error) => {
-      Alert.alert("Gagal menyimpan", error.message ?? "Terjadi kesalahan.");
-    },
-  });
-
-  // TRANSFER-specific insert path (DB enum only has INCOME/EXPENSE;
-  // transfer is represented by to_account_id IS NOT NULL with transaction_type='EXPENSE')
-  const { mutate: insertTransfer, isPending: isInsertingTransfer } = useMutation({
-    mutationFn: async () => {
-      if (fromAccountId === null || toAccountId === null) {
-        throw new Error("Akun asal dan tujuan wajib dipilih.");
-      }
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      if (userError) throw userError;
-      if (!userData.user) throw new Error("User belum login");
-      const { error } = await supabase.from("transaction").insert({
-        amount: parseFloat(amount),
-        transaction: transactionName,
-        transaction_type: "EXPENSE",
-        account_id: fromAccountId,
-        to_account_id: toAccountId,
-        category_id: categoryId,
-        user_id: userData.user.id,
-        transaction_date: dateTime.toISOString(),
-      });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ActivityService.keys.transactions });
-      queryClient.invalidateQueries({ queryKey: AccountService.keys.all });
-      queryClient.invalidateQueries({ queryKey: DashboardService.keys.transactions });
-      queryClient.invalidateQueries({
-        queryKey: DashboardService.keys.recentTransactions,
-      });
-      Alert.alert("Tersimpan", "Transfer berhasil disimpan.", [
-        { text: "OK", onPress: () => router.back() },
-      ]);
+      Alert.alert(
+        "Tersimpan",
+        isTransfer ? "Transfer berhasil disimpan." : "Transaksi berhasil disimpan.",
+        [{ text: "OK", onPress: () => router.back() }],
+      );
     },
     onError: (error: Error) => {
       Alert.alert("Gagal menyimpan", error.message ?? "Terjadi kesalahan.");
@@ -284,10 +251,6 @@ export default function TransactionScreen() {
 
   const handleSave = () => {
     if (!isValid) return;
-    if (isTransfer && !isEdit) {
-      insertTransfer();
-      return;
-    }
     saveTransaction();
   };
 
@@ -467,7 +430,7 @@ export default function TransactionScreen() {
         <View style={styles.footer}>
           <SaveButton
             disabled={!isValid}
-            loading={isSaving || isInsertingTransfer}
+            loading={isSaving}
             onPress={handleSave}
           />
         </View>

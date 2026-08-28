@@ -22,7 +22,7 @@ export type InsertTransactionParams = {
   category_id: number | null;
   account_id: number | null;
   to_account_id: number | null;
-  created_at: string;
+  transaction_date: string;
 };
 
 export class AddTransactionService {
@@ -57,6 +57,22 @@ export class AddTransactionService {
 
     const { error } = await supabase.from("transaction").insert({
       ...params,
+      user_id: user.id,
+    });
+    if (error) throw error;
+  }
+
+  static async InsertTransfer(params: Omit<InsertTransactionParams, "transaction_type">) {
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+    if (userError) throw userError;
+    if (!user) throw new Error("User belum login");
+
+    const { error } = await supabase.from("transaction").insert({
+      ...params,
+      transaction_type: "EXPENSE",
       user_id: user.id,
     });
     if (error) throw error;
