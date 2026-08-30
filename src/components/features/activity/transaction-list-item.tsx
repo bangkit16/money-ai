@@ -1,6 +1,11 @@
 import { formatCurrency } from "@/utils/formatCurrency";
 import { colors, radius, typography } from "@/constants/theme";
-import { getIcon, formatTime } from "./utils";
+import {
+  getDisplaySubtitle,
+  getDisplayTitle,
+  getIcon,
+  formatTime,
+} from "./utils";
 import { MaterialIcons } from "@expo/vector-icons";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { Text } from "@/components/ui/text";
@@ -18,6 +23,22 @@ export function TransactionListItem({
   isLast,
   onPress,
 }: TransactionListItemProps) {
+  const title = getDisplayTitle(item);
+  const subtitle = getDisplaySubtitle(item);
+  const isTransfer = item.transaction_type === "TRANSFER";
+  const fromName = item.from_account?.account_name;
+  const toName = item.to_account?.account_name;
+  const amountColor = isTransfer
+    ? colors.onSurface
+    : item.transaction_type === "EXPENSE"
+      ? colors.error
+      : colors.successGreen;
+  const amountPrefix = isTransfer
+    ? ""
+    : item.transaction_type === "EXPENSE"
+      ? "-"
+      : "+";
+
   return (
     <TouchableOpacity
       style={[
@@ -37,28 +58,48 @@ export function TransactionListItem({
             color={colors.primary}
           />
         </View>
-        <View>
-          <Text style={styles.name}>
-            {item.transaction || item.category?.category || "Transaction"}
+        <View style={{ flexShrink: 1 }}>
+          <Text style={styles.name} numberOfLines={1}>
+            {title}
           </Text>
-          <Text style={styles.meta}>
-            {item.category?.category ?? "Uncategorized"} •{" "}
-            {formatTime(item.created_at)}
-          </Text>
+          {isTransfer && fromName && toName ? (
+            <View style={styles.transferRow}>
+              <View style={styles.transferAccount}>
+                <Text style={styles.transferLabel}>Dari</Text>
+                <Text style={styles.transferName} numberOfLines={1}>
+                  {fromName}
+                </Text>
+              </View>
+              <MaterialIcons
+                name="trending-flat"
+                size={14}
+                color={colors.onSurfaceVariant}
+                style={styles.transferArrow}
+              />
+              <View style={styles.transferAccount}>
+                <Text style={styles.transferLabel}>Ke</Text>
+                <Text style={styles.transferName} numberOfLines={1}>
+                  {toName}
+                </Text>
+              </View>
+            </View>
+          ) : subtitle ? (
+            <Text style={styles.meta} numberOfLines={1}>
+              {subtitle} • {formatTime(item.created_at)}
+            </Text>
+          ) : (
+            <Text style={styles.meta} numberOfLines={1}>
+              {formatTime(item.created_at)}
+            </Text>
+          )}
         </View>
       </View>
       <Text
-        style={[
-          styles.amount,
-          {
-            color:
-              item.transaction_type === "EXPENSE"
-                ? colors.error
-                : colors.successGreen,
-          },
-        ]}
+        style={[styles.amount, { color: amountColor }]}
+        numberOfLines={1}
       >
-        {formatCurrency(item.amount, item.transaction_type)}
+        {amountPrefix}
+        {formatCurrency(item.amount)}
       </Text>
     </TouchableOpacity>
   );
@@ -101,4 +142,22 @@ const styles = StyleSheet.create({
   name: { ...typography.bodyLg, fontWeight: "600", color: colors.onSurface },
   meta: { ...typography.bodySm, color: colors.onSurfaceVariant },
   amount: { ...typography.titleMd, fontSize: 16 },
+  transferRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 2,
+  },
+  transferAccount: { flexShrink: 1 },
+  transferLabel: {
+    ...typography.labelCaps,
+    color: colors.onSurfaceVariant,
+    fontSize: 9,
+    marginRight: 4,
+  },
+  transferName: {
+    ...typography.bodySm,
+    color: colors.onSurfaceVariant,
+    marginRight: 6,
+  },
+  transferArrow: { marginHorizontal: 2 },
 });

@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase";
 
-export type TransactionType = "INCOME" | "EXPENSE";
+export type TransactionType = "INCOME" | "EXPENSE" | "TRANSFER";
 
 export type CategoryRow = {
   id: number;
@@ -72,7 +72,7 @@ export class AddTransactionService {
 
     const { error } = await supabase.from("transaction").insert({
       ...params,
-      transaction_type: "EXPENSE",
+      transaction_type: "TRANSFER",
       user_id: user.id,
     });
     if (error) throw error;

@@ -17,6 +17,7 @@ import {
 } from "@/services/addTransactionService";
 import { ActivityService } from "@/services/activityService";
 import { DashboardService } from "@/services/dashboardService";
+import { supabase } from "@/lib/supabase";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router, useLocalSearchParams } from "expo-router";
@@ -91,12 +92,8 @@ export default function TransactionScreen() {
         from_account?: { id: number; account_name: string } | null;
         to_account?: { id: number; account_name: string } | null;
       };
-      const isTransferRow = raw.to_account_id != null;
       return {
         ...raw,
-        transaction_type: isTransferRow
-          ? ("TRANSFER" as const)
-          : (raw.transaction_type as TransactionType),
         created_at: raw.transaction_date ?? raw.created_at,
         account: raw.from_account ?? null,
       } as LoadedTx;
@@ -170,7 +167,7 @@ export default function TransactionScreen() {
         if (isEdit && editId) {
           return AddTransactionService.UpdateTransaction(Number(editId), {
             ...transferPayload,
-            transaction_type: "EXPENSE" as TransactionType,
+            transaction_type: "TRANSFER",
           });
         }
         return AddTransactionService.InsertTransfer(transferPayload);

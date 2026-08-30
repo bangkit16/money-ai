@@ -5,22 +5,11 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { Text } from "@/components/ui/text";
-
-// DB belum punya kolom icon per kategori, jadi kita map manual dari slug.
-const ICON_BY_SLUG: Record<string, string> = {
-  food: "restaurant",
-  shopping: "shopping-bag",
-  bills: "receipt",
-  travel: "flight",
-  transport: "directions-car",
-  auto: "directions-car",
-  health: "medical-services",
-  fun: "movie",
-  entertainment: "movie",
-  housing: "home",
-  salary: "payments",
-  others: "more-horiz",
-};
+import {
+  getDisplaySubtitle,
+  getDisplayTitle,
+  getIcon,
+} from "@/components/features/activity/utils";
 
 function getRelativeLabel(dateStr: string) {
   const date = new Date(dateStr);
@@ -38,6 +27,17 @@ function getRelativeLabel(dateStr: string) {
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
+function getSourceLabel(tx: RecentTxRow): string {
+  if (tx.transaction_type === "TRANSFER") {
+    const from = tx.from_account?.account_name;
+    const to = tx.to_account?.account_name;
+    if (from && to) return `${from} → ${to}`;
+    if (to) return `→ ${to}`;
+    if (from) return `${from} →`;
+  }
+  return tx.from_account?.account_name ?? "—";
+}
+
 function TransactionRow({
   tx,
   isLast,
@@ -47,6 +47,21 @@ function TransactionRow({
   isLast: boolean;
   onPress: () => void;
 }) {
+  const title = getDisplayTitle(tx);
+  const subtitle = getDisplaySubtitle(tx);
+  const amountColor =
+    tx.transaction_type === "TRANSFER"
+      ? colors.onSurface
+      : tx.transaction_type === "EXPENSE"
+        ? colors.error
+        : colors.successGreen;
+  const amountPrefix =
+    tx.transaction_type === "TRANSFER"
+      ? ""
+      : tx.transaction_type === "EXPENSE"
+        ? "-"
+        : "+";
+
   return (
     <TouchableOpacity
       style={[styles.txRow, !isLast && styles.txRowDivider]}
@@ -56,42 +71,32 @@ function TransactionRow({
       <View style={styles.txLeft}>
         <View style={styles.txIconCircle}>
           <MaterialIcons
-            name={
-              (ICON_BY_SLUG[tx.category?.slug ?? ""] ??
-                (tx.transaction_type === "INCOME"
-                  ? "payments"
-                  : "receipt-long")) as any
-            }
+            name={getIcon(tx.category, tx.transaction_type) as any}
             size={20}
             color={colors.primary}
           />
         </View>
-        <View>
-          <Text style={styles.txName}>
-            {tx.transaction || tx.category?.category || "Transaction"}
+        <View style={{ flexShrink: 1 }}>
+          <Text style={styles.txName} numberOfLines={1}>
+            {title}
           </Text>
-          <Text style={styles.txMeta}>
-            {tx.category?.category ?? "Uncategorized"} •{" "}
-            {getRelativeLabel(tx.created_at)}
-          </Text>
+          {subtitle ? (
+            <Text style={styles.txMeta} numberOfLines={1}>
+              {subtitle} • {getRelativeLabel(tx.created_at)}
+            </Text>
+          ) : (
+            <Text style={styles.txMeta} numberOfLines={1}>
+              {getRelativeLabel(tx.created_at)}
+            </Text>
+          )}
         </View>
       </View>
       <View style={styles.txRight}>
-        <Text
-          style={[
-            styles.txAmount,
-            {
-              color:
-                tx.transaction_type === "EXPENSE"
-                  ? colors.error
-                  : colors.successGreen,
-            },
-          ]}
-        >
-          {tx.transaction_type === "EXPENSE" ? "-" : "+"}
+        <Text style={[styles.txAmount, { color: amountColor }]} numberOfLines={1}>
+          {amountPrefix}
           {formatCurrency(tx.amount)}
         </Text>
-        <Text style={styles.txSource}>{tx.account?.account_name ?? "—"}</Text>
+        <Text style={styles.txSource}>{getSourceLabel(tx)}</Text>
       </View>
     </TouchableOpacity>
   );

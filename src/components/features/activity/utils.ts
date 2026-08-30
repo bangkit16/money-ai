@@ -19,12 +19,38 @@ const ICON_BY_SLUG: Record<string, string> = {
   others: "more-horiz",
 };
 
-type TxType = "INCOME" | "EXPENSE";
+type TxType = "INCOME" | "EXPENSE" | "TRANSFER";
 
 export function getIcon(category: TransactionRow["category"], type: TxType) {
+  if (type === "TRANSFER") return "swap-horiz";
   if (category?.slug && ICON_BY_SLUG[category.slug])
     return ICON_BY_SLUG[category.slug];
   return type === "INCOME" ? "payments" : "receipt-long";
+}
+
+// Title fallback: transaction > category > "Pemasukan"/"Pengeluaran"/dari akun tujuan
+export function getDisplayTitle(row: TransactionRow): string {
+  if (row.transaction && row.transaction.trim()) return row.transaction;
+  if (row.category?.category) return row.category.category;
+  if (row.transaction_type === "TRANSFER") {
+    const from = row.from_account?.account_name;
+    const to = row.to_account?.account_name;
+    if (from && to) return `${from} → ${to}`;
+    if (to) return `→ ${to}`;
+    if (from) return `${from} →`;
+  }
+  if (row.transaction_type === "INCOME") return "Pemasukan";
+  if (row.transaction_type === "EXPENSE") return "Pengeluaran";
+  return "Transaksi";
+}
+
+// Subtitle: kalau TRANSFER, return "" — baris akun eksplisit sudah cukup.
+// Kalau bukan TRANSFER & ada category, tampilkan category.
+// Kalau kosong semua, tampilkan nothing (return "").
+export function getDisplaySubtitle(row: TransactionRow): string {
+  if (row.transaction_type === "TRANSFER") return "";
+  if (row.category?.category) return row.category.category;
+  return "";
 }
 
 export function formatTime(dateStr: string) {
