@@ -9,6 +9,7 @@ type MonthlySummaryCardProps = {
   expense: number;
   incomeBarWidth: number;
   expenseBarWidth: number;
+  monthLabel?: string;
 };
 
 export function MonthlySummaryCard({
@@ -16,6 +17,7 @@ export function MonthlySummaryCard({
   expense,
   incomeBarWidth,
   expenseBarWidth,
+  monthLabel,
 }: MonthlySummaryCardProps) {
   return (
     <View style={[styles.card, shadow.card, styles.summaryCard]}>
@@ -40,6 +42,9 @@ export function MonthlySummaryCard({
             ]}
           />
         </View>
+        {monthLabel ? (
+          <Text style={styles.monthLabel}>{monthLabel}</Text>
+        ) : null}
       </View>
       <View style={[styles.summaryCol, styles.summaryColBorder]}>
         <View style={styles.summaryLabelRow}>
@@ -58,6 +63,9 @@ export function MonthlySummaryCard({
             ]}
           />
         </View>
+        {monthLabel ? (
+          <Text style={styles.monthLabel}>{monthLabel}</Text>
+        ) : null}
       </View>
     </View>
   );
@@ -76,6 +84,11 @@ const styles = StyleSheet.create({
   summaryLabelRow: { flexDirection: "row", alignItems: "center", gap: 8 },
   summaryLabel: { ...typography.labelCaps, color: colors.onSurfaceVariant },
   summaryAmount: { ...typography.headlineLgMobile, color: colors.onSurface },
+  monthLabel: {
+    ...typography.labelCaps,
+    color: colors.outline,
+    marginTop: 4,
+  },
   progressTrack: {
     height: 4,
     backgroundColor: colors.surfaceContainer,

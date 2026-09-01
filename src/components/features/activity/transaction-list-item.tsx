@@ -39,6 +39,11 @@ export function TransactionListItem({
       ? "-"
       : "+";
 
+  // Bangun subtitle meta: "Kategori • Rekening • Jam"
+  const timeStr = formatTime(item.created_at);
+  const metaParts = [subtitle, fromName, timeStr].filter(Boolean);
+  const metaText = metaParts.join(" • ");
+
   return (
     <TouchableOpacity
       style={[
@@ -83,13 +88,9 @@ export function TransactionListItem({
                 </Text>
               </View>
             </View>
-          ) : subtitle ? (
-            <Text style={styles.meta} numberOfLines={1}>
-              {subtitle} • {formatTime(item.created_at)}
-            </Text>
           ) : (
             <Text style={styles.meta} numberOfLines={1}>
-              {formatTime(item.created_at)}
+              {metaText}
             </Text>
           )}
         </View>

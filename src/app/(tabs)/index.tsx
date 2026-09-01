@@ -102,6 +102,11 @@ export default function DashboardScreen() {
     const expenseBarWidth =
       flowTotal > 0 ? (thisMonthExpense / flowTotal) * 100 : 0;
 
+    const monthLabel = now.toLocaleDateString("en-US", {
+      month: "long",
+      year: "numeric",
+    });
+
     return {
       netWorth,
       trendPct,
@@ -110,6 +115,7 @@ export default function DashboardScreen() {
       thisMonthExpense,
       incomeBarWidth,
       expenseBarWidth,
+      monthLabel,
     };
   }, [allTx]);
 
@@ -147,6 +153,7 @@ export default function DashboardScreen() {
             expense={summary?.thisMonthExpense ?? 0}
             incomeBarWidth={summary?.incomeBarWidth ?? 0}
             expenseBarWidth={summary?.expenseBarWidth ?? 0}
+            monthLabel={summary?.monthLabel}
           />
 
           <RecentTransactions transactions={recentTx} />

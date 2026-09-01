@@ -5,17 +5,12 @@ import { Text } from "@/components/ui/text";
 import { colors, radius, shadow, typography } from "@/constants/theme";
 import { StyleSheet, View } from "react-native";
 
-// TODO: ganti dummy data ini dengan data asli (state/API)
-const donutSegments: DonutSegment[] = [
-  { label: "Rent (40%)", value: 40, color: colors.primary },
-  { label: "Food (25%)", value: 25, color: colors.secondary },
-  { label: "Transport (20%)", value: 20, color: colors.tertiaryFixedDim },
-  { label: "Other (15%)", value: 15, color: colors.secondaryContainer },
-];
+type Props = {
+  segments: DonutSegment[];
+  totalSpend: number;
+};
 
-const totalSpend = 4280;
-
-export function SpendingStructureCard() {
+export function SpendingStructureCard({ segments, totalSpend }: Props) {
   return (
     <View style={[styles.card, shadow.card, { alignItems: "center" }]}>
       <Text style={[styles.titleMd, { alignSelf: "flex-start", marginBottom: 16 }]}>
@@ -29,14 +24,14 @@ export function SpendingStructureCard() {
           justifyContent: "center",
         }}
       >
-        <DonutChart segments={donutSegments} />
+        <DonutChart segments={segments} />
         <View style={styles.donutCenter}>
           <Text style={styles.mutedLabel}>TOTAL</Text>
           <Text style={styles.donutTotal}>{formatCurrency(totalSpend)}</Text>
         </View>
       </View>
       <View style={styles.legendGrid}>
-        {donutSegments.map((seg) => (
+        {segments.map((seg) => (
           <View key={seg.label} style={styles.legendItem}>
             <View
               style={[styles.legendDot, { backgroundColor: seg.color }]}

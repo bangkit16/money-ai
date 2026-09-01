@@ -3,7 +3,7 @@ import {
   Poppins_700Bold,
   useFonts,
 } from "@expo-google-fonts/poppins";
-// Import global web stylesheet
+import { AuthGuard } from "@/components/auth-guard";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SplashScreen, Stack } from "expo-router";
 import { useEffect } from "react";
@@ -33,20 +33,20 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* <View style={{ flex: 1 }}> */}
-      <Stack
-        screenOptions={{
-          headerShown: false,
-        }}
-      >
-        <Stack.Screen name="login" />
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen
-          name="add-transaction"
-          options={{ presentation: "modal" }}
-        />
-      </Stack>
-      {/* </View> */}
+      <AuthGuard>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+          }}
+        >
+          <Stack.Screen name="login" />
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen
+            name="add-transaction"
+            options={{ presentation: "modal" }}
+          />
+        </Stack>
+      </AuthGuard>
     </QueryClientProvider>
   );
 }

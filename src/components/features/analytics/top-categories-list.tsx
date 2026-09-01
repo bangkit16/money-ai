@@ -4,7 +4,7 @@ import { colors, radius, shadow, typography } from "@/constants/theme";
 import { MaterialIcons } from "@expo/vector-icons";
 import { StyleSheet, View } from "react-native";
 
-type CategoryItem = {
+export type TopCategory = {
   icon: string;
   name: string;
   subtitle: string;
@@ -13,43 +13,27 @@ type CategoryItem = {
   color: string;
 };
 
-// TODO: ganti dummy data ini dengan data asli (state/API)
-const topCategories: CategoryItem[] = [
-  {
-    icon: "home",
-    name: "Rent & Housing",
-    subtitle: "Monthly recurring",
-    amount: 1712.0,
-    percent: 85,
-    color: colors.primary,
-  },
-  {
-    icon: "restaurant",
-    name: "Food & Dining",
-    subtitle: "Grocery + Restaurants",
-    amount: 1070.0,
-    percent: 55,
-    color: colors.secondary,
-  },
-  {
-    icon: "directions-car",
-    name: "Transport",
-    subtitle: "Fuel + Transit",
-    amount: 856.0,
-    percent: 40,
-    color: colors.onTertiaryContainer,
-  },
-];
+type Props = {
+  items: TopCategory[];
+};
 
-export function TopCategoriesList() {
+export function TopCategoriesList({ items }: Props) {
+  if (items.length === 0) {
+    return (
+      <View style={[styles.card, shadow.card, styles.empty]}>
+        <Text style={styles.emptyText}>No spending yet for this month.</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={[styles.card, shadow.card, { padding: 0 }]}>
-      {topCategories.map((cat, i) => (
+      {items.map((cat, i) => (
         <View
           key={cat.name}
           style={[
             styles.catRow,
-            i !== topCategories.length - 1 && styles.catRowDivider,
+            i !== items.length - 1 && styles.catRowDivider,
           ]}
         >
           <View style={styles.catLeft}>
@@ -135,4 +119,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   catProgressFill: { height: "100%", borderRadius: radius.full },
+
+  empty: { alignItems: "center", paddingVertical: 32 },
+  emptyText: { ...typography.bodyMd, color: colors.onSurfaceVariant },
 });
