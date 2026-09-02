@@ -1,29 +1,28 @@
-import { colors, radius } from "@/constants/theme";
+// migrated to useColor
+import { radius } from "@/constants/theme";
+import { useColor } from "@/hooks/useColor";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { StyleSheet, TouchableOpacity } from "react-native";
 
 function AddTransactionButton() {
+  const whiteColor = useColor("card");
   return (
     <TouchableOpacity
-      style={styles.fab}
+      style={[styles.fab, { borderColor: whiteColor }]}
       onPress={() => router.push("/add-transaction")}
       activeOpacity={0.85}
     >
-      <MaterialIcons name="add" size={24} color={colors.white} />
+      <MaterialIcons name="add" size={24} color={whiteColor} />
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   fab: {
-    // position: "absolute",
-    // right: 20,
-    // bottom: 10,
     width: 60,
     height: 60,
     borderRadius: radius.full,
-    borderColor: colors.white,
     borderWidth: 2,
     backgroundColor: "#038303",
     alignItems: "center",

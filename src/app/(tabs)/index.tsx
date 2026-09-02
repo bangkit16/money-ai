@@ -1,8 +1,10 @@
+// migrated to useColor
 import { colors, spacing, typography } from "@/constants/theme";
 import { HeroBalanceCard } from "@/components/features/dashboard/hero-balance-card";
 import { MonthlySummaryCard } from "@/components/features/dashboard/monthly-summary-card";
 import { RecentTransactions } from "@/components/features/dashboard/recent-transactions";
 import { AppBar } from "@/components/features/shared/app-bar";
+import { useColor } from "@/hooks/useColor";
 import { DashboardService } from "@/services/dashboardService";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
@@ -15,6 +17,12 @@ import {
 import { Text } from "@/components/ui/text";
 
 export default function DashboardScreen() {
+  const bgColor = useColor("background");
+  const primaryColor = useColor("primary");
+  const textMutedColor = useColor("textMuted");
+  const textColor = useColor("text");
+  const errorColor = useColor("error");
+
   // Semua transaksi (dipakai untuk hitung net worth, ringkasan bulan ini, & saldo per rekening)
   const {
     data: allTx,
@@ -81,7 +89,7 @@ export default function DashboardScreen() {
         }
       }
     }
-    
+
     const netWorth = totalIncome - totalExpense;
     const thisMonthNet = thisMonthIncome - thisMonthExpense;
     const prevMonthNet = prevMonthIncome - prevMonthExpense;
@@ -123,17 +131,19 @@ export default function DashboardScreen() {
   const error = errorAll || errorRecent;
 
   return (
-    <View style={styles.screen}>
+    <View style={[styles.screen, { backgroundColor: bgColor }]}>
       <AppBar />
 
       {isLoading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="small" color={colors.primary} />
-          <Text style={styles.loadingText}>Loading dashboard...</Text>
+          <ActivityIndicator size="small" color={primaryColor} />
+          <Text style={[styles.loadingText, { color: textMutedColor }]}>
+            Loading dashboard...
+          </Text>
         </View>
       ) : error ? (
         <View style={styles.loadingContainer}>
-          <Text style={styles.errorText}>
+          <Text style={[styles.errorText, { color: errorColor }]}>
             Gagal memuat data: {(error as Error).message}
           </Text>
         </View>
@@ -164,7 +174,7 @@ export default function DashboardScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
+  screen: { flex: 1 },
 
   loadingContainer: {
     flex: 1,
@@ -172,10 +182,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 8,
   },
-  loadingText: { ...typography.bodySm, color: colors.onSurfaceVariant },
+  loadingText: { ...typography.bodySm },
   errorText: {
     ...typography.bodyLg,
-    color: colors.error,
     textAlign: "center",
     paddingHorizontal: spacing.marginMobile,
   },

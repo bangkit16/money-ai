@@ -1,5 +1,7 @@
+// migrated to useColor
 import { Text } from "@/components/ui/text";
-import { colors, radius, shadow, typography } from "@/constants/theme";
+import { radius, shadow, typography } from "@/constants/theme";
+import { useColor } from "@/hooks/useColor";
 import { MaterialIcons } from "@expo/vector-icons";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 
@@ -15,6 +17,9 @@ type KeypadProps = {
 };
 
 export function Keypad({ onKeyPress }: KeypadProps) {
+  const cardColor = useColor("card");
+  const textColor = useColor("text");
+  const textMutedColor = useColor("textMuted");
   return (
     <View style={styles.keypad}>
       {KEYPAD_ROWS.map((row, rowIndex) => (
@@ -22,7 +27,7 @@ export function Keypad({ onKeyPress }: KeypadProps) {
           {row.map((key) => (
             <TouchableOpacity
               key={key}
-              style={styles.keypadKey}
+              style={[styles.keypadKey, { backgroundColor: cardColor }, shadow.card]}
               activeOpacity={0.6}
               onPress={() => onKeyPress(key)}
             >
@@ -30,10 +35,10 @@ export function Keypad({ onKeyPress }: KeypadProps) {
                 <MaterialIcons
                   name="backspace"
                   size={20}
-                  color={colors.onSurfaceVariant}
+                  color={textMutedColor}
                 />
               ) : (
-                <Text style={styles.keypadKeyText}>{key}</Text>
+                <Text style={[styles.keypadKeyText, { color: textColor }]}>{key}</Text>
               )}
             </TouchableOpacity>
           ))}
@@ -50,14 +55,11 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 52,
     borderRadius: radius.lg,
-    backgroundColor: colors.white,
     alignItems: "center",
     justifyContent: "center",
-    ...shadow.card,
   },
   keypadKeyText: {
     ...typography.titleMd,
     fontSize: 20,
-    color: colors.onSurface,
   },
 });

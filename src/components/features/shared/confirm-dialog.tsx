@@ -1,5 +1,7 @@
+// migrated to useColor
 import { Text } from "@/components/ui/text";
-import { colors, radius, shadow, spacing, typography } from "@/constants/theme";
+import { radius, shadow, spacing, typography } from "@/constants/theme";
+import { useColor } from "@/hooks/useColor";
 import {
   Modal,
   StyleSheet,
@@ -30,6 +32,14 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   const hasConfirmAction = !!onConfirm;
 
+  const cardColor = useColor("card");
+  const textColor = useColor("text");
+  const textMutedColor = useColor("textMuted");
+  const borderColor = useColor("border");
+  const errorColor = useColor("destructive");
+  const primaryColor = useColor("primary");
+  const whiteColor = useColor("card");
+
   return (
     <Modal
       visible={visible}
@@ -38,35 +48,35 @@ export function ConfirmDialog({
       onRequestClose={onClose}
     >
       <View style={styles.centerOverlay}>
-        <View style={[styles.confirmCard, shadow.heroCard]}>
-          <Text style={styles.modalTitle}>{title}</Text>
-          <Text style={styles.confirmText}>{message}</Text>
+        <View style={[styles.confirmCard, shadow.heroCard, { backgroundColor: cardColor }]}>
+          <Text style={[styles.modalTitle, { color: textColor }]}>{title}</Text>
+          <Text style={[styles.confirmText, { color: textMutedColor }]}>{message}</Text>
           <View style={styles.modalActions}>
             {hasConfirmAction ? (
               <>
                 <TouchableOpacity
-                  style={styles.cancelButton}
+                  style={[styles.cancelButton, { borderColor }]}
                   onPress={onClose}
                   disabled={isConfirming}
                 >
-                  <Text style={styles.cancelButtonText}>Batal</Text>
+                  <Text style={[styles.cancelButtonText, { color: textMutedColor }]}>Batal</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={styles.deleteButton}
+                  style={[styles.deleteButton, { backgroundColor: errorColor }]}
                   onPress={onConfirm!}
                   disabled={isConfirming}
                 >
-                  <Text style={styles.saveButtonText}>
+                  <Text style={[styles.saveButtonText, { color: whiteColor }]}>
                     {isConfirming ? "..." : confirmLabel}
                   </Text>
                 </TouchableOpacity>
               </>
             ) : (
               <TouchableOpacity
-                style={[styles.saveButton, { marginTop: 8 }]}
+                style={[styles.saveButton, { backgroundColor: primaryColor, marginTop: 8 }]}
                 onPress={onClose}
               >
-                <Text style={styles.saveButtonText}>{confirmLabel}</Text>
+                <Text style={[styles.saveButtonText, { color: whiteColor }]}>{confirmLabel}</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -86,19 +96,16 @@ const styles = StyleSheet.create({
   },
   confirmCard: {
     width: "100%",
-    backgroundColor: colors.white,
     borderRadius: radius.xl,
     padding: 24,
     gap: 12,
   },
   modalTitle: {
     ...typography.titleMd,
-    color: colors.onSurface,
     marginBottom: 4,
   },
   confirmText: {
     ...typography.bodyLg,
-    color: colors.onSurfaceVariant,
     lineHeight: 22,
   },
   modalActions: { flexDirection: "row", gap: 12, marginTop: 8 },
@@ -107,29 +114,25 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: radius.xl,
     borderWidth: 1,
-    borderColor: colors.outlineVariant,
     alignItems: "center",
     justifyContent: "center",
   },
   cancelButtonText: {
     ...typography.titleMd,
     fontSize: 15,
-    color: colors.onSurfaceVariant,
   },
   deleteButton: {
     flex: 1,
     paddingVertical: 16,
     borderRadius: radius.xl,
-    backgroundColor: colors.error,
     alignItems: "center",
     justifyContent: "center",
   },
   saveButton: {
     paddingVertical: 16,
     borderRadius: radius.xl,
-    backgroundColor: colors.primary,
     alignItems: "center",
     justifyContent: "center",
   },
-  saveButtonText: { ...typography.titleMd, fontSize: 15, color: colors.white },
+  saveButtonText: { ...typography.titleMd, fontSize: 15 },
 });

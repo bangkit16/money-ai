@@ -1,6 +1,6 @@
 import { Spinner } from "@/components/ui/spinner";
 import { useAuth } from "@/hooks/useAuth";
-import { colors } from "@/constants/theme";
+import { useColor } from "@/hooks/useColor";
 import { usePathname, useRouter, useSegments } from "expo-router";
 import { useEffect } from "react";
 import { StyleSheet, View } from "react-native";
@@ -17,6 +17,8 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const segments = useSegments();
   const router = useRouter();
   const pathname = usePathname();
+  const primaryColor = useColor("primary");
+  const backgroundColor = useColor("background");
 
   useEffect(() => {
     if (loading) return;
@@ -39,8 +41,8 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
   if (loading) {
     return (
-      <View style={styles.splash}>
-        <Spinner size="lg" variant="circle" color={colors.primary} />
+      <View style={[styles.splash, { backgroundColor }]}>
+        <Spinner size="lg" variant="circle" color={primaryColor} />
       </View>
     );
   }
@@ -53,6 +55,5 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.background,
   },
 });

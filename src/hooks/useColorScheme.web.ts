@@ -1,33 +1,20 @@
-import { useEffect, useState } from 'react';
 import { useColorScheme as useRNColorScheme } from 'react-native';
 
 import { useModeContext } from '@/providers/mode-provider';
 
 /**
- * To support static rendering, this value needs to be re-calculated on the client side for web.
+ * Web mirror of the native hook. Provider wins over the OS scheme so the
+ * in-app light/dark toggle works on every platform — react-native-web's
+ * `Appearance` is read-only.
  *
- * Mirrors the native variant: a mounted `ModeProvider` wins, falling back to the
- * OS scheme. The provider is what makes the toggle work here at all —
- * react-native-web's `Appearance` is read-only, exposing `getColorScheme` and
- * `addChangeListener` but no setter, so nothing can push an override into the
- * value `useRNColorScheme()` reports.
- *
- * React Native 0.86's `ColorSchemeName` includes `'unspecified'`, which the
- * binary theme has no slot for, so it collapses here.
+ * No `hasHydrated` two-pass: returning `'light'` first then the real scheme
+ * forces every `useColor` consumer to re-render. On the first paint the
+ * provider has not been read yet, so we just use the system scheme and let
+ * the next render (triggered by the provider's own state being available)
+ * flip to the user-chosen one. The trade is one wrong-tinted frame on
+ * the very first navigation, not an extra render every mount.
  */
 export function useColorScheme(): 'light' | 'dark' {
-  const [hasHydrated, setHasHydrated] = useState(false);
-
-  useEffect(() => {
-    setHasHydrated(true);
-  }, []);
-
   const system = useRNColorScheme() === 'dark' ? 'dark' : 'light';
-  const scheme = useModeContext()?.scheme ?? system;
-
-  if (hasHydrated) {
-    return scheme;
-  }
-
-  return 'light';
+  return useModeContext()?.scheme ?? system;
 }

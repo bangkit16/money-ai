@@ -1,5 +1,7 @@
+// migrated to useColor
 import { useState } from "react";
-import { colors, radius } from "@/constants/theme";
+import { radius } from "@/constants/theme";
+import { useColor } from "@/hooks/useColor";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { StyleSheet, TouchableOpacity } from "react-native";
@@ -7,6 +9,7 @@ import AiPromptBottomSheet from "./ai/AiPromptBottomSheet";
 
 function AiButton() {
   const [open, setOpen] = useState(false);
+  const whiteColor = useColor("card");
 
   const handleSend = (prompt: string) => {
     // TODO: kirim `prompt` ke sistem AI kamu (API call / store, dll)
@@ -21,7 +24,7 @@ function AiButton() {
   return (
     <>
       <TouchableOpacity
-        style={styles.fabContainer} // Gunakan container untuk shadow & border
+        style={[styles.fabContainer, { borderColor: whiteColor }]}
         onPress={() => setOpen(true)}
         activeOpacity={0.85}
       >
@@ -31,7 +34,7 @@ function AiButton() {
           end={{ x: 1, y: 1 }}
           style={styles.gradient}
         >
-          <Ionicons name="sparkles" size={18} color={colors.white} />
+          <Ionicons name="sparkles" size={18} color={whiteColor} />
         </LinearGradient>
       </TouchableOpacity>
 
@@ -50,7 +53,6 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: radius.full,
-    borderColor: colors.white,
     borderWidth: 2,
     // Efek Shadow/Elevation dipindahkan ke container luar agar tidak terpotong overflow
     shadowColor: "#051125",

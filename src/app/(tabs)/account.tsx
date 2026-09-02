@@ -1,3 +1,4 @@
+// migrated to useColor
 import { AccountFormModal } from "@/components/features/account/account-form-modal";
 import { AccountList } from "@/components/features/account/account-list";
 import { AccountOptionsSheet } from "@/components/features/account/account-options-sheet";
@@ -6,7 +7,8 @@ import { TransferCard } from "@/components/features/account/transfer-card";
 import { AppBar } from "@/components/features/shared/app-bar";
 import { ConfirmDialog } from "@/components/features/shared/confirm-dialog";
 import { Text } from "@/components/ui/text";
-import { colors, spacing, typography } from "@/constants/theme";
+import { spacing, typography } from "@/constants/theme";
+import { useColor } from "@/hooks/useColor";
 import { AccountService, type AccountRow } from "@/services/accountService";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -18,6 +20,10 @@ export default function AccountScreen() {
   const [formVisible, setFormVisible] = useState(false);
   const [editingAccount, setEditingAccount] = useState<AccountRow | null>(null);
   const [accountNameInput, setAccountNameInput] = useState("");
+
+  const bgColor = useColor("background");
+  const textColor = useColor("text");
+  const textMutedColor = useColor("textMuted");
 
   // Bottom sheet opsi (Edit/Hapus) & konfirmasi hapus — pengganti Alert.alert
   // (Alert.alert tidak render apa pun di web, jadi harus pakai UI sendiri)
@@ -110,7 +116,7 @@ export default function AccountScreen() {
   const isSubmitting = isCreating || isUpdating;
 
   return (
-    <View style={styles.screen}>
+    <View style={[styles.screen, { backgroundColor: bgColor }]}>
       <AppBar />
 
       <ScrollView
@@ -120,8 +126,8 @@ export default function AccountScreen() {
         <TransferCard />
 
         <View style={styles.sectionHeaderRow}>
-          <Text style={styles.titleMd}>My Accounts</Text>
-          <Text style={styles.mutedLabel}>
+          <Text style={[styles.titleMd, { color: textColor }]}>My Accounts</Text>
+          <Text style={[styles.mutedLabel, { color: textMutedColor }]}>
             {accounts?.length ?? 0} account{accounts?.length === 1 ? "" : "s"}
           </Text>
         </View>
@@ -173,7 +179,7 @@ export default function AccountScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
+  screen: { flex: 1 },
 
   scrollContent: {
     paddingHorizontal: spacing.marginMobile,
@@ -187,6 +193,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
-  titleMd: { ...typography.titleMd, color: colors.onSurface },
-  mutedLabel: { ...typography.labelCaps, color: colors.onSurfaceVariant },
+  titleMd: { ...typography.titleMd },
+  mutedLabel: { ...typography.labelCaps },
 });

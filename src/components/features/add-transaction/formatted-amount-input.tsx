@@ -1,7 +1,9 @@
-import { useRef, useCallback, useEffect } from "react";
+import { useRef, useCallback } from "react";
 import { TextInput, View, StyleSheet } from "react-native";
 import { Text } from "@/components/ui/text";
-import { colors, radius, shadow, typography } from "@/constants/theme";
+import { radius, shadow, typography } from "@/constants/theme";
+import { useColor } from "@/hooks/useColor";
+import { CURRENCIES, useSettings } from "@/providers/settings-provider";
 import { formatAmountInput, unformatAmountInput } from "@/utils/formatAmountInput";
 
 type FormattedAmountInputProps = {
@@ -15,6 +17,12 @@ export function FormattedAmountInput({
   onChange,
   placeholder = "0",
 }: FormattedAmountInputProps) {
+  const { currency } = useSettings();
+  const onSurfaceVariantColor = useColor("onSurfaceVariant");
+  const primaryColor = useColor("primary");
+  const outlineVariantColor = useColor("outlineVariant");
+  const cardColor = useColor("card");
+  const symbol = CURRENCIES.find((c) => c.code === currency)?.symbol ?? "Rp";
   const inputRef = useRef<TextInput>(null);
   const lastSelection = useRef({ start: 0, end: 0 });
 
@@ -29,7 +37,6 @@ export function FormattedAmountInput({
       requestAnimationFrame(() => {
         if (!inputRef.current) return;
 
-        const rawDigits = raw.replace(/\D/g, "");
         const newLen = newFormatted.length;
         let newPos = lastSelection.current.start;
 
@@ -64,20 +71,20 @@ export function FormattedAmountInput({
 
   return (
     <View style={styles.block}>
-      <Text style={styles.label}>Amount</Text>
-      <View style={styles.inputRow}>
-        <Text style={styles.currencySymbol}>Rp</Text>
+      <Text style={[styles.label, { color: onSurfaceVariantColor }]}>Amount</Text>
+      <View style={[styles.inputRow, { backgroundColor: cardColor }, shadow.card]}>
+        <Text style={[styles.currencySymbol, { color: primaryColor }]}>{symbol}</Text>
         <TextInput
           ref={inputRef}
-          style={styles.input}
+          style={[styles.input, { color: primaryColor }]}
           value={formatted}
           onChangeText={handleChangeText}
           onSelectionChange={handleSelectionChange}
           onFocus={handleFocus}
           keyboardType="numeric"
           placeholder={placeholder}
-          placeholderTextColor={colors.outlineVariant}
-          selectionColor={colors.primary}
+          placeholderTextColor={outlineVariantColor}
+          selectionColor={primaryColor}
           maxLength={15}
         />
       </View>
@@ -89,31 +96,26 @@ const styles = StyleSheet.create({
   block: { alignItems: "center", paddingVertical: 4 },
   label: {
     ...typography.labelCaps,
-    color: colors.onSurfaceVariant,
     marginBottom: 8,
   },
   inputRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.white,
     borderRadius: radius.lg,
     paddingHorizontal: 16,
     paddingVertical: 12,
     width: "100%",
-    ...shadow.card,
   },
   currencySymbol: {
     ...typography.headlineLg,
     fontSize: 28,
-    color: colors.primary,
     marginRight: 8,
   },
   input: {
     flex: 1,
     ...typography.displayLg,
     fontSize: 36,
-    color: colors.primary,
     minWidth: 0,
   },
 });

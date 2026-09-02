@@ -30,14 +30,14 @@ export type TopCategory = {
   color: string;
 };
 
-// Color palette fallback (urut konsisten dengan legend chart)
+// Color palette fallback (urut konsisten dengan legend chart) — green brand
 const PALETTE = [
-  "#1F4E89", // primary
-  "#5B7FBF", // secondary-ish
-  "#3FA796", // tertiary
-  "#A0BFE0", // secondary container
-  "#7B8FA1",
-  "#C7D9EA",
+  "#0a2505", // primary deep
+  "#1b4d1b", // forest
+  "#3FA796", // teal
+  "#6b8e4e", // sage
+  "#a8b88f", // light sage
+  "#d4e3c4", // pale sage
 ];
 
 function monthLabel(d: Date) {

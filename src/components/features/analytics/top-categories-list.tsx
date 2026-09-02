@@ -1,6 +1,7 @@
-import { formatCurrency } from "@/utils/formatCurrency";
+import { useFormatCurrency } from "@/hooks/useFormatCurrency";
 import { Text } from "@/components/ui/text";
-import { colors, radius, shadow, typography } from "@/constants/theme";
+import { radius, shadow, typography } from "@/constants/theme";
+import { useColor } from "@/hooks/useColor";
 import { MaterialIcons } from "@expo/vector-icons";
 import { StyleSheet, View } from "react-native";
 
@@ -18,22 +19,27 @@ type Props = {
 };
 
 export function TopCategoriesList({ items }: Props) {
+  const { formatCurrency } = useFormatCurrency();
+  const cardColor = useColor("card");
+  const primaryColor = useColor("primary");
+  const onSurfaceVariantColor = useColor("onSurfaceVariant");
+  const platinumMistColor = useColor("platinumMist");
   if (items.length === 0) {
     return (
-      <View style={[styles.card, shadow.card, styles.empty]}>
-        <Text style={styles.emptyText}>No spending yet for this month.</Text>
+      <View style={[styles.card, shadow.card, styles.empty, { backgroundColor: cardColor }]}>
+        <Text style={[styles.emptyText, { color: onSurfaceVariantColor }]}>No spending yet for this month.</Text>
       </View>
     );
   }
 
   return (
-    <View style={[styles.card, shadow.card, { padding: 0 }]}>
+    <View style={[styles.card, shadow.card, { padding: 0, backgroundColor: cardColor }]}>
       {items.map((cat, i) => (
         <View
           key={cat.name}
           style={[
             styles.catRow,
-            i !== items.length - 1 && styles.catRowDivider,
+            i !== items.length - 1 && { borderBottomColor: platinumMistColor + "4d", borderBottomWidth: 1 },
           ]}
         >
           <View style={styles.catLeft}>
@@ -50,15 +56,15 @@ export function TopCategoriesList({ items }: Props) {
               />
             </View>
             <View>
-              <Text style={styles.catName}>{cat.name}</Text>
-              <Text style={styles.catMeta}>{cat.subtitle}</Text>
+              <Text style={[styles.catName, { color: primaryColor }]}>{cat.name}</Text>
+              <Text style={[styles.catMeta, { color: onSurfaceVariantColor }]}>{cat.subtitle}</Text>
             </View>
           </View>
           <View style={{ alignItems: "flex-end" }}>
-            <Text style={styles.catAmount}>
+            <Text style={[styles.catAmount, { color: primaryColor }]}>
               {formatCurrency(cat.amount)}
             </Text>
-            <View style={styles.catProgressTrack}>
+            <View style={[styles.catProgressTrack, { backgroundColor: platinumMistColor + "4d" }]}>
               <View
                 style={[
                   styles.catProgressFill,
@@ -74,17 +80,13 @@ export function TopCategoriesList({ items }: Props) {
 }
 
 const styles = StyleSheet.create({
-  card: { backgroundColor: colors.white, borderRadius: radius.xl, padding: 24 },
+  card: { borderRadius: radius.xl, padding: 24 },
 
   catRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     padding: 20,
-  },
-  catRowDivider: {
-    borderBottomWidth: 1,
-    borderBottomColor: colors.platinumMist + "4d",
   },
   catLeft: {
     flexDirection: "row",
@@ -102,18 +104,15 @@ const styles = StyleSheet.create({
   catName: {
     ...typography.bodyLg,
     fontWeight: "600",
-    color: colors.primary,
   },
-  catMeta: { ...typography.bodySm, color: colors.onSurfaceVariant },
+  catMeta: { ...typography.bodySm },
   catAmount: {
     ...typography.bodyLg,
     fontWeight: "600",
-    color: colors.primary,
   },
   catProgressTrack: {
     width: 96,
     height: 4,
-    backgroundColor: colors.platinumMist + "4d",
     borderRadius: radius.full,
     marginTop: 8,
     overflow: "hidden",
@@ -121,5 +120,5 @@ const styles = StyleSheet.create({
   catProgressFill: { height: "100%", borderRadius: radius.full },
 
   empty: { alignItems: "center", paddingVertical: 32 },
-  emptyText: { ...typography.bodyMd, color: colors.onSurfaceVariant },
+  emptyText: { ...typography.bodyLg },
 });

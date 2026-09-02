@@ -1,3 +1,4 @@
+// migrated to useColor
 import { useEffect, useMemo, useState } from "react";
 import {
   Animated,
@@ -12,7 +13,8 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { colors, radius, spacing, typography, shadow } from "@/constants/theme";
+import { radius, spacing, typography, shadow } from "@/constants/theme";
+import { useColor } from "@/hooks/useColor";
 import { Text } from "@/components/ui/text";
 
 type AiPromptBottomSheetProps = {
@@ -28,6 +30,15 @@ export default function AiPromptBottomSheet({
   onSend,
   onVoicePress,
 }: AiPromptBottomSheetProps) {
+  const cardColor = useColor("card");
+  const handleColor = useColor("border");
+  const textColor = useColor("text");
+  const textMutedColor = useColor("textMuted");
+  const borderColor = useColor("border");
+  const mutedBgColor = useColor("muted");
+  const primaryColor = useColor("primary");
+  const whiteColor = useColor("background");
+
   const [prompt, setPrompt] = useState("");
   const [mounted, setMounted] = useState(visible);
   const [prevVisible, setPrevVisible] = useState(visible);
@@ -107,23 +118,23 @@ export default function AiPromptBottomSheet({
           style={[
             styles.sheet,
             shadow.heroCard,
-            { transform: [{ translateY: sheetTranslateY }] },
+            { backgroundColor: cardColor, transform: [{ translateY: sheetTranslateY }] },
           ]}
         >
-          <View style={styles.handleBar} />
+          <View style={[styles.handleBar, { backgroundColor: handleColor }]} />
 
           <View style={styles.headerRow}>
             <View style={styles.headerTitleGroup}>
               <View style={styles.aiIconChip}>
-                <Ionicons name="sparkles" size={14} color={colors.white} />
+                <Ionicons name="sparkles" size={14} color={whiteColor} />
               </View>
-              <Text style={styles.title}>Ask Dompety AI</Text>
+              <Text style={[styles.title, { color: textColor }]}>Ask Dompety AI</Text>
             </View>
             <TouchableOpacity hitSlop={10} onPress={handleClose}>
               <Ionicons
                 name="close"
                 size={22}
-                color={colors.onSurfaceVariant}
+                color={textMutedColor}
               />
             </TouchableOpacity>
           </View>
@@ -132,19 +143,19 @@ export default function AiPromptBottomSheet({
             value={prompt}
             onChangeText={setPrompt}
             placeholder="Tanyakan sesuatu tentang keuanganmu..."
-            placeholderTextColor={colors.outline}
+            placeholderTextColor={textMutedColor}
             multiline
             autoFocus
-            style={styles.input}
+            style={[styles.input, { color: textColor, backgroundColor: mutedBgColor }]}
           />
 
           <View style={styles.footerRow}>
             <TouchableOpacity
-              style={styles.voiceButton}
+              style={[styles.voiceButton, { borderColor, backgroundColor: cardColor }]}
               activeOpacity={0.85}
               onPress={onVoicePress}
             >
-              <Ionicons name="mic-outline" size={20} color={colors.primary} />
+              <Ionicons name="mic-outline" size={20} color={primaryColor} />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -157,13 +168,13 @@ export default function AiPromptBottomSheet({
                 colors={
                   canSend
                     ? ["#26be0b", "#1b8a07", "#47733f"]
-                    : [colors.outlineVariant, colors.outlineVariant]
+                    : [handleColor, handleColor]
                 }
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={styles.sendButtonGradient}
               >
-                <Ionicons name="arrow-up" size={20} color={colors.white} />
+                <Ionicons name="arrow-up" size={20} color={whiteColor} />
               </LinearGradient>
             </TouchableOpacity>
           </View>
@@ -180,7 +191,6 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(5,17,37,0.5)",
   },
   sheet: {
-    backgroundColor: colors.white,
     borderTopLeftRadius: radius.xl,
     borderTopRightRadius: radius.xl,
     paddingHorizontal: spacing.marginMobile,
@@ -192,7 +202,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 4,
     borderRadius: radius.full,
-    backgroundColor: colors.outlineVariant,
     alignSelf: "center",
   },
   headerRow: {
@@ -209,12 +218,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  title: { ...typography.titleMd, fontSize: 16, color: colors.onSurface },
+  title: { ...typography.titleMd, fontSize: 16 },
 
   input: {
     ...typography.bodyLg,
-    color: colors.onSurface,
-    backgroundColor: colors.platinumMist + "4d",
     borderRadius: radius.lg,
     paddingHorizontal: 16,
     paddingVertical: 14,
@@ -233,8 +240,6 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: radius.full,
     borderWidth: 1.5,
-    borderColor: colors.outlineVariant,
-    backgroundColor: colors.white,
     alignItems: "center",
     justifyContent: "center",
   },

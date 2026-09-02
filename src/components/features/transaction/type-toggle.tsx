@@ -1,5 +1,7 @@
+// migrated to useColor
 import { Text } from "@/components/ui/text";
-import { colors, radius, shadow, typography } from "@/constants/theme";
+import { radius, shadow, typography } from "@/constants/theme";
+import { useColor } from "@/hooks/useColor";
 import { MaterialIcons } from "@expo/vector-icons";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 
@@ -17,6 +19,11 @@ type TypeToggleProps = {
 };
 
 export function TypeToggle({ value, onChange }: TypeToggleProps) {
+  const cardColor = useColor("card");
+  const borderColor = useColor("border");
+  const primaryColor = useColor("primary");
+  const textMutedColor = useColor("textMuted");
+  const whiteColor = useColor("background");
   return (
     <View style={styles.typeRow}>
       {TRANSACTION_TYPES.map((t) => {
@@ -25,18 +32,24 @@ export function TypeToggle({ value, onChange }: TypeToggleProps) {
           <TouchableOpacity
             key={t.key}
             onPress={() => onChange(t.key)}
-            style={[styles.typeButton, active && styles.typeButtonActive]}
+            style={[
+              styles.typeButton,
+              { backgroundColor: cardColor, borderColor },
+              active && { backgroundColor: primaryColor, borderColor: primaryColor },
+              shadow.card,
+            ]}
             activeOpacity={0.85}
           >
             <MaterialIcons
               name={t.icon as any}
               size={16}
-              color={active ? colors.white : colors.onSurfaceVariant}
+              color={active ? whiteColor : textMutedColor}
             />
             <Text
               style={[
                 styles.typeButtonText,
-                active && styles.typeButtonTextActive,
+                { color: textMutedColor },
+                active && { color: whiteColor },
               ]}
             >
               {t.label}
@@ -58,19 +71,10 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingVertical: 12,
     borderRadius: radius.lg,
-    backgroundColor: colors.white,
     borderWidth: 1,
-    borderColor: colors.outlineVariant,
-    ...shadow.card,
-  },
-  typeButtonActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
   },
   typeButtonText: {
     ...typography.labelCaps,
     fontSize: 11,
-    color: colors.onSurfaceVariant,
   },
-  typeButtonTextActive: { color: colors.white },
 });

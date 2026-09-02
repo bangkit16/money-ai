@@ -1,4 +1,5 @@
-import { colors } from "@/constants/theme";
+// migrated to useColor
+import { useColor } from "@/hooks/useColor";
 import Svg, { Circle } from "react-native-svg";
 
 export type DonutSegment = {
@@ -18,6 +19,7 @@ export function DonutChart({
   strokeWidth = 18,
   segments = [],
 }: DonutChartProps) {
+  const trackColor = useColor("surfaceContainer");
   const radiusPx = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radiusPx;
 
@@ -31,7 +33,7 @@ export function DonutChart({
         cx={size / 2}
         cy={size / 2}
         r={radiusPx}
-        stroke={colors.surfaceContainer}
+        stroke={trackColor}
         strokeWidth={strokeWidth}
         fill="transparent"
       />

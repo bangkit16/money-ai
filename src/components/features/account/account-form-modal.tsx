@@ -1,5 +1,7 @@
+// migrated to useColor
 import { Text } from "@/components/ui/text";
-import { colors, radius, shadow, spacing, typography } from "@/constants/theme";
+import { radius, shadow, spacing, typography } from "@/constants/theme";
+import { useColor } from "@/hooks/useColor";
 import type { AccountRow } from "@/services/accountService";
 import {
   ActivityIndicator,
@@ -35,6 +37,15 @@ export function AccountFormModal({
   onClose,
   onSubmit,
 }: AccountFormModalProps) {
+  const cardColor = useColor("card");
+  const handleColor = useColor("border");
+  const textColor = useColor("text");
+  const textMutedColor = useColor("textMuted");
+  const borderColor = useColor("border");
+  const mutedBgColor = useColor("muted");
+  const primaryColor = useColor("primary");
+  const whiteColor = useColor("background");
+
   const [mounted, setMounted] = useState(visible);
   const [prevVisible, setPrevVisible] = useState(visible);
   const backdropOpacity = useMemo(() => new Animated.Value(0), []);
@@ -101,40 +112,44 @@ export function AccountFormModal({
           style={[
             styles.modalSheet,
             shadow.heroCard,
-            { transform: [{ translateY: sheetTranslateY }] },
+            { backgroundColor: cardColor, transform: [{ translateY: sheetTranslateY }] },
           ]}
         >
-          <View style={styles.modalHandle} />
-          <Text style={styles.modalTitle}>
+          <View style={[styles.modalHandle, { backgroundColor: handleColor }]} />
+          <Text style={[styles.modalTitle, { color: textColor }]}>
             {editingAccount ? "Edit Account" : "Add New Account"}
           </Text>
 
-          <Text style={styles.label}>Account Name</Text>
+          <Text style={[styles.label, { color: textMutedColor }]}>Account Name</Text>
           <TextInput
             value={nameInput}
             onChangeText={onChangeName}
             placeholder="e.g. BCA Checking"
-            placeholderTextColor={colors.outline}
-            style={styles.input}
+            placeholderTextColor={textMutedColor}
+            style={[styles.input, { color: textColor, backgroundColor: mutedBgColor }]}
             autoFocus
           />
 
           <View style={styles.modalActions}>
-            <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
-              <Text style={styles.cancelButtonText}>Cancel</Text>
+            <TouchableOpacity
+              style={[styles.cancelButton, { borderColor }]}
+              onPress={onClose}
+            >
+              <Text style={[styles.cancelButtonText, { color: textMutedColor }]}>Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[
                 styles.saveButton,
+                { backgroundColor: primaryColor },
                 (!nameInput.trim() || isSubmitting) && styles.saveButtonDisabled,
               ]}
               onPress={onSubmit}
               disabled={!nameInput.trim() || isSubmitting}
             >
               {isSubmitting ? (
-                <ActivityIndicator color={colors.white} />
+                <ActivityIndicator color={whiteColor} />
               ) : (
-                <Text style={styles.saveButtonText}>
+                <Text style={[styles.saveButtonText, { color: whiteColor }]}>
                   {editingAccount ? "Save Changes" : "Add Account"}
                 </Text>
               )}
@@ -153,7 +168,6 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(5,17,37,0.5)",
   },
   modalSheet: {
-    backgroundColor: colors.white,
     borderTopLeftRadius: radius.xl,
     borderTopRightRadius: radius.xl,
     paddingHorizontal: spacing.marginMobile,
@@ -165,20 +179,16 @@ const styles = StyleSheet.create({
     width: 40,
     height: 4,
     borderRadius: radius.full,
-    backgroundColor: colors.outlineVariant,
     alignSelf: "center",
     marginBottom: 4,
   },
   modalTitle: {
     ...typography.titleMd,
-    color: colors.onSurface,
     marginBottom: 4,
   },
-  label: { ...typography.labelCaps, color: colors.onSurfaceVariant },
+  label: { ...typography.labelCaps },
   input: {
     ...typography.bodyLg,
-    color: colors.onSurface,
-    backgroundColor: colors.platinumMist + "4d",
     borderRadius: radius.lg,
     paddingHorizontal: 16,
     paddingVertical: 14,
@@ -189,23 +199,20 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: radius.xl,
     borderWidth: 1,
-    borderColor: colors.outlineVariant,
     alignItems: "center",
     justifyContent: "center",
   },
   cancelButtonText: {
     ...typography.titleMd,
     fontSize: 15,
-    color: colors.onSurfaceVariant,
   },
   saveButton: {
     flex: 1,
     paddingVertical: 16,
     borderRadius: radius.xl,
-    backgroundColor: colors.primary,
     alignItems: "center",
     justifyContent: "center",
   },
   saveButtonDisabled: { opacity: 0.4 },
-  saveButtonText: { ...typography.titleMd, fontSize: 15, color: colors.white },
+  saveButtonText: { ...typography.titleMd, fontSize: 15 },
 });

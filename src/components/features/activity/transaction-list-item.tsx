@@ -1,5 +1,6 @@
-import { formatCurrency } from "@/utils/formatCurrency";
-import { colors, radius, typography } from "@/constants/theme";
+import { useFormatCurrency } from "@/hooks/useFormatCurrency";
+import { useColor } from "@/hooks/useColor";
+import { radius, typography } from "@/constants/theme";
 import {
   getDisplaySubtitle,
   getDisplayTitle,
@@ -23,23 +24,32 @@ export function TransactionListItem({
   isLast,
   onPress,
 }: TransactionListItemProps) {
+  const cardColor = useColor("card");
+  const onSurfaceColor = useColor("onSurface");
+  const onSurfaceVariantColor = useColor("onSurfaceVariant");
+  const errorColor = useColor("error");
+  const successColor = useColor("successGreen");
+  const primaryColor = useColor("primary");
+  const outlineVariantColor = useColor("outlineVariant");
+  const iconBgColor = useColor("primary");
+
   const title = getDisplayTitle(item);
   const subtitle = getDisplaySubtitle(item);
   const isTransfer = item.transaction_type === "TRANSFER";
   const fromName = item.from_account?.account_name;
   const toName = item.to_account?.account_name;
   const amountColor = isTransfer
-    ? colors.onSurface
+    ? onSurfaceColor
     : item.transaction_type === "EXPENSE"
-      ? colors.error
-      : colors.successGreen;
+      ? errorColor
+      : successColor;
   const amountPrefix = isTransfer
     ? ""
     : item.transaction_type === "EXPENSE"
       ? "-"
       : "+";
+  const { formatCurrency } = useFormatCurrency();
 
-  // Bangun subtitle meta: "Kategori • Rekening • Jam"
   const timeStr = formatTime(item.created_at);
   const metaParts = [subtitle, fromName, timeStr].filter(Boolean);
   const metaText = metaParts.join(" • ");
@@ -50,46 +60,51 @@ export function TransactionListItem({
         styles.row,
         isFirst && styles.rowFirst,
         isLast && styles.rowLast,
-        !isLast && styles.rowDivider,
+        !isLast && { borderBottomColor: outlineVariantColor + "1a", borderBottomWidth: 1 },
+        { backgroundColor: cardColor },
       ]}
       onPress={onPress}
       activeOpacity={0.7}
     >
       <View style={styles.left}>
-        <View style={styles.iconCircle}>
+        <View style={[styles.iconCircle, { backgroundColor: iconBgColor + "1a" }]}>
           <MaterialIcons
             name={getIcon(item.category, item.transaction_type) as any}
             size={20}
-            color={colors.primary}
+            color={primaryColor}
           />
         </View>
         <View style={{ flexShrink: 1 }}>
-          <Text style={styles.name} numberOfLines={1}>
+          <Text style={[styles.name, { color: onSurfaceColor }]} numberOfLines={1}>
             {title}
           </Text>
           {isTransfer && fromName && toName ? (
             <View style={styles.transferRow}>
               <View style={styles.transferAccount}>
-                <Text style={styles.transferLabel}>Dari</Text>
-                <Text style={styles.transferName} numberOfLines={1}>
+                <Text style={[styles.transferLabel, { color: onSurfaceVariantColor }]}>
+                  Dari
+                </Text>
+                <Text style={[styles.transferName, { color: onSurfaceVariantColor }]} numberOfLines={1}>
                   {fromName}
                 </Text>
               </View>
               <MaterialIcons
                 name="trending-flat"
                 size={14}
-                color={colors.onSurfaceVariant}
+                color={onSurfaceVariantColor}
                 style={styles.transferArrow}
               />
               <View style={styles.transferAccount}>
-                <Text style={styles.transferLabel}>Ke</Text>
-                <Text style={styles.transferName} numberOfLines={1}>
+                <Text style={[styles.transferLabel, { color: onSurfaceVariantColor }]}>
+                  Ke
+                </Text>
+                <Text style={[styles.transferName, { color: onSurfaceVariantColor }]} numberOfLines={1}>
                   {toName}
                 </Text>
               </View>
             </View>
           ) : (
-            <Text style={styles.meta} numberOfLines={1}>
+            <Text style={[styles.meta, { color: onSurfaceVariantColor }]} numberOfLines={1}>
               {metaText}
             </Text>
           )}
@@ -111,7 +126,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: colors.white,
     padding: 20,
   },
   rowFirst: {
@@ -121,10 +135,6 @@ const styles = StyleSheet.create({
   rowLast: {
     borderBottomLeftRadius: radius.xl,
     borderBottomRightRadius: radius.xl,
-  },
-  rowDivider: {
-    borderBottomWidth: 1,
-    borderBottomColor: colors.outlineVariant + "1a",
   },
   left: {
     flexDirection: "row",
@@ -136,12 +146,11 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: radius.full,
-    backgroundColor: colors.primary + "1a",
     alignItems: "center",
     justifyContent: "center",
   },
-  name: { ...typography.bodyLg, fontWeight: "600", color: colors.onSurface },
-  meta: { ...typography.bodySm, color: colors.onSurfaceVariant },
+  name: { ...typography.bodyLg, fontWeight: "600" },
+  meta: { ...typography.bodySm },
   amount: { ...typography.titleMd, fontSize: 16 },
   transferRow: {
     flexDirection: "row",
@@ -151,13 +160,11 @@ const styles = StyleSheet.create({
   transferAccount: { flexShrink: 1 },
   transferLabel: {
     ...typography.labelCaps,
-    color: colors.onSurfaceVariant,
     fontSize: 9,
     marginRight: 4,
   },
   transferName: {
     ...typography.bodySm,
-    color: colors.onSurfaceVariant,
     marginRight: 6,
   },
   transferArrow: { marginHorizontal: 2 },

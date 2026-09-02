@@ -1,7 +1,11 @@
+// migrated to useColor
 import { Text } from "@/components/ui/text";
-import { colors, spacing, typography } from "@/constants/theme";
+import { spacing, typography } from "@/constants/theme";
+import { useColor } from "@/hooks/useColor";
 import { MaterialIcons } from "@expo/vector-icons";
-import { Platform, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Image, Platform, StyleSheet, TouchableOpacity, View } from "react-native";
+
+const ICON = require("@/../assets/images/adaptive-icon.png");
 
 type AppBarProps = {
   title?: string;
@@ -14,12 +18,21 @@ export function AppBar({
   showNotifications = true,
   transparent = false,
 }: AppBarProps) {
+  const bgColor = useColor("background");
+  const primaryColor = useColor("primary");
   return (
-    <View style={[styles.header, transparent && { backgroundColor: "transparent" }]}>
-      <Text style={styles.wordmark}>{title}</Text>
+    <View
+      style={[
+        styles.header,
+        { backgroundColor: transparent ? "transparent" : bgColor },
+      ]}
+    >
+      <View style={styles.brand}>
+        <Image source={ICON} style={styles.brandIcon} resizeMode="contain" />
+      </View>
       {showNotifications ? (
         <TouchableOpacity hitSlop={10}>
-          <MaterialIcons name="notifications" size={24} color={colors.primary} />
+          <MaterialIcons name="notifications" size={24} color={primaryColor} />
         </TouchableOpacity>
       ) : null}
     </View>
@@ -34,7 +47,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.marginMobile,
     paddingTop: Platform.OS === "ios" ? 54 : 24,
     paddingBottom: 12,
-    backgroundColor: colors.surface,
   },
-  wordmark: { ...typography.headlineLgMobile, color: colors.primary },
+  brand: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  brandIcon: {
+    width: 32,
+    height: 32,
+  },
+  wordmark: { ...typography.headlineLgMobile },
 });

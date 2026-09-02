@@ -1,4 +1,6 @@
-import { colors, radius, typography } from "@/constants/theme";
+// migrated to useColor
+import { radius, typography } from "@/constants/theme";
+import { useColor } from "@/hooks/useColor";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { Text } from "@/components/ui/text";
 
@@ -16,6 +18,11 @@ type FilterChipsProps = {
 };
 
 export function FilterChips({ activeFilter, onChange }: FilterChipsProps) {
+  const cardColor = useColor("card");
+  const borderColor = useColor("border");
+  const primaryColor = useColor("primary");
+  const textMutedColor = useColor("textMuted");
+  const whiteColor = useColor("background");
   return (
     <View style={styles.row}>
       {FILTERS.map((f) => {
@@ -24,9 +31,19 @@ export function FilterChips({ activeFilter, onChange }: FilterChipsProps) {
           <TouchableOpacity
             key={f.key}
             onPress={() => onChange(f.key)}
-            style={[styles.chip, active && styles.chipActive]}
+            style={[
+              styles.chip,
+              { backgroundColor: cardColor, borderColor },
+              active && { backgroundColor: primaryColor, borderColor: primaryColor },
+            ]}
           >
-            <Text style={[styles.chipText, active && styles.chipTextActive]}>
+            <Text
+              style={[
+                styles.chipText,
+                { color: textMutedColor },
+                active && { color: whiteColor },
+              ]}
+            >
               {f.label}
             </Text>
           </TouchableOpacity>
@@ -42,11 +59,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: radius.full,
-    backgroundColor: colors.white,
     borderWidth: 1,
-    borderColor: colors.outlineVariant + "4d",
   },
-  chipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
-  chipText: { ...typography.labelCaps, color: colors.onSurfaceVariant },
-  chipTextActive: { color: colors.white },
+  chipText: { ...typography.labelCaps },
 });

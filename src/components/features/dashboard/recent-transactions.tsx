@@ -1,5 +1,6 @@
-import { formatCurrency } from "@/utils/formatCurrency";
-import { colors, radius, shadow, typography } from "@/constants/theme";
+import { useFormatCurrency } from "@/hooks/useFormatCurrency";
+import { radius, shadow, typography } from "@/constants/theme";
+import { useColor } from "@/hooks/useColor";
 import type { RecentTxRow } from "@/services/dashboardService";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -47,14 +48,21 @@ function TransactionRow({
   isLast: boolean;
   onPress: () => void;
 }) {
+  const { formatCurrency } = useFormatCurrency();
+  const onSurfaceColor = useColor("onSurface");
+  const errorColor = useColor("error");
+  const successColor = useColor("successGreen");
+  const primaryColor = useColor("primary");
+  const outlineColor = useColor("outline");
+  const secondaryContainerColor = useColor("secondaryContainer");
   const title = getDisplayTitle(tx);
   const subtitle = getDisplaySubtitle(tx);
   const amountColor =
     tx.transaction_type === "TRANSFER"
-      ? colors.onSurface
+      ? onSurfaceColor
       : tx.transaction_type === "EXPENSE"
-        ? colors.error
-        : colors.successGreen;
+        ? errorColor
+        : successColor;
   const amountPrefix =
     tx.transaction_type === "TRANSFER"
       ? ""
@@ -64,28 +72,28 @@ function TransactionRow({
 
   return (
     <TouchableOpacity
-      style={[styles.txRow, !isLast && styles.txRowDivider]}
+      style={styles.txRow}
       onPress={onPress}
       activeOpacity={0.7}
     >
       <View style={styles.txLeft}>
-        <View style={styles.txIconCircle}>
+        <View style={[styles.txIconCircle, { backgroundColor: secondaryContainerColor + "66" }]}>
           <MaterialIcons
             name={getIcon(tx.category, tx.transaction_type) as any}
             size={20}
-            color={colors.primary}
+            color={primaryColor}
           />
         </View>
         <View style={{ flexShrink: 1 }}>
-          <Text style={styles.txName} numberOfLines={1}>
+          <Text style={[styles.txName, { color: onSurfaceColor }]} numberOfLines={1}>
             {title}
           </Text>
           {subtitle ? (
-            <Text style={styles.txMeta} numberOfLines={1}>
+            <Text style={[styles.txMeta, { color: outlineColor }]} numberOfLines={1}>
               {subtitle} • {getRelativeLabel(tx.created_at)}
             </Text>
           ) : (
-            <Text style={styles.txMeta} numberOfLines={1}>
+            <Text style={[styles.txMeta, { color: outlineColor }]} numberOfLines={1}>
               {getRelativeLabel(tx.created_at)}
             </Text>
           )}
@@ -96,7 +104,7 @@ function TransactionRow({
           {amountPrefix}
           {formatCurrency(tx.amount)}
         </Text>
-        <Text style={styles.txSource}>{getSourceLabel(tx)}</Text>
+        <Text style={[styles.txSource, { color: outlineColor }]}>{getSourceLabel(tx)}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -107,6 +115,12 @@ export function RecentTransactions({
 }: {
   transactions: RecentTxRow[] | undefined;
 }) {
+  const cardColor = useColor("card");
+  const onSurfaceColor = useColor("onSurface");
+  const outlineColor = useColor("outline");
+  const primaryColor = useColor("primary");
+  const dividerColor = useColor("surfaceContainerHighest");
+
   const handleEditPress = (tx: RecentTxRow) => {
     router.push({ pathname: "/add-transaction", params: { id: String(tx.id) } });
   };
@@ -114,50 +128,47 @@ export function RecentTransactions({
   return (
     <>
       <View style={styles.sectionHeaderRow}>
-        <Text style={styles.headline}>Recent Transactions</Text>
+        <Text style={[styles.headline, { color: onSurfaceColor }]}>Recent Transactions</Text>
         <TouchableOpacity onPress={() => router.push("/(tabs)/activity")}>
-          <Text style={styles.viewAllLink}>VIEW ALL</Text>
+          <Text style={[styles.viewAllLink, { color: primaryColor }]}>VIEW ALL</Text>
         </TouchableOpacity>
       </View>
 
       {transactions && transactions.length > 0 ? (
-        <View style={[styles.card, shadow.card, { padding: 0 }]}>
+        <View style={[styles.card, shadow.card, { padding: 0, backgroundColor: cardColor }]}>
           {transactions.map((tx, i) => (
-            <TransactionRow
-              key={tx.id}
-              tx={tx}
-              isLast={i === transactions.length - 1}
-              onPress={() => handleEditPress(tx)}
-            />
+            <View key={tx.id} style={i !== transactions.length - 1 ? { borderBottomColor: dividerColor, borderBottomWidth: 1 } : undefined}>
+              <TransactionRow
+                tx={tx}
+                isLast={i === transactions.length - 1}
+                onPress={() => handleEditPress(tx)}
+              />
+            </View>
           ))}
         </View>
       ) : (
-        <Text style={styles.emptyText}>Belum ada transaksi.</Text>
+        <Text style={[styles.emptyText, { color: outlineColor }]}>Belum ada transaksi.</Text>
       )}
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  card: { backgroundColor: colors.white, borderRadius: radius.xl, padding: 24 },
+  card: { borderRadius: radius.xl, padding: 24 },
 
   sectionHeaderRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-end",
   },
-  headline: { ...typography.headlineLgMobile, color: colors.onSurface },
-  viewAllLink: { ...typography.labelCaps, color: colors.primary },
+  headline: { ...typography.headlineLgMobile },
+  viewAllLink: { ...typography.labelCaps },
 
   txRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     padding: 20,
-  },
-  txRowDivider: {
-    borderBottomWidth: 1,
-    borderBottomColor: colors.surfaceContainerHighest,
   },
   txLeft: {
     flexDirection: "row",
@@ -169,19 +180,17 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: radius.full,
-    backgroundColor: colors.secondaryContainer + "66",
     alignItems: "center",
     justifyContent: "center",
   },
-  txName: { ...typography.titleMd, fontSize: 16, color: colors.onSurface },
-  txMeta: { ...typography.bodySm, color: colors.outline },
+  txName: { ...typography.titleMd, fontSize: 16 },
+  txMeta: { ...typography.bodySm },
   txRight: { alignItems: "flex-end" },
   txAmount: { ...typography.titleMd, fontSize: 16 },
-  txSource: { ...typography.labelCaps, color: colors.outline, fontSize: 10 },
+  txSource: { ...typography.labelCaps, fontSize: 10 },
 
   emptyText: {
     ...typography.bodyLg,
-    color: colors.outline,
     textAlign: "center",
     paddingVertical: 24,
   },

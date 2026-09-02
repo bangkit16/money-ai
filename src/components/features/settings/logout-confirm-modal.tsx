@@ -1,5 +1,7 @@
+// migrated to useColor
 import { Text } from "@/components/ui/text";
-import { colors, radius, shadow, spacing, typography } from "@/constants/theme";
+import { radius, shadow, spacing, typography } from "@/constants/theme";
+import { useColor } from "@/hooks/useColor";
 import {
   ActivityIndicator,
   Modal,
@@ -21,6 +23,13 @@ export function LogoutConfirmModal({
   onClose,
   onConfirm,
 }: LogoutConfirmModalProps) {
+  const cardColor = useColor("card");
+  const textColor = useColor("text");
+  const textMutedColor = useColor("textMuted");
+  const borderColor = useColor("border");
+  const errorColor = useColor("destructive");
+  const whiteColor = useColor("background");
+
   return (
     <Modal
       visible={visible}
@@ -29,28 +38,28 @@ export function LogoutConfirmModal({
       onRequestClose={onClose}
     >
       <View style={styles.overlay}>
-        <View style={[styles.confirmCard, shadow.heroCard]}>
-          <Text style={styles.confirmTitle}>Log Out</Text>
-          <Text style={styles.confirmText}>
+        <View style={[styles.confirmCard, shadow.heroCard, { backgroundColor: cardColor }]}>
+          <Text style={[styles.confirmTitle, { color: textColor }]}>Log Out</Text>
+          <Text style={[styles.confirmText, { color: textMutedColor }]}>
             Yakin ingin keluar dari akun kamu?
           </Text>
           <View style={styles.confirmActions}>
             <TouchableOpacity
-              style={styles.cancelButton}
+              style={[styles.cancelButton, { borderColor }]}
               onPress={onClose}
               disabled={isLoggingOut}
             >
-              <Text style={styles.cancelButtonText}>Batal</Text>
+              <Text style={[styles.cancelButtonText, { color: textMutedColor }]}>Batal</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={styles.confirmLogoutButton}
+              style={[styles.confirmLogoutButton, { backgroundColor: errorColor }]}
               onPress={onConfirm}
               disabled={isLoggingOut}
             >
               {isLoggingOut ? (
-                <ActivityIndicator color={colors.white} />
+                <ActivityIndicator color={whiteColor} />
               ) : (
-                <Text style={styles.confirmLogoutText}>Log Out</Text>
+                <Text style={[styles.confirmLogoutText, { color: whiteColor }]}>Log Out</Text>
               )}
             </TouchableOpacity>
           </View>
@@ -70,15 +79,13 @@ const styles = StyleSheet.create({
   },
   confirmCard: {
     width: "100%",
-    backgroundColor: colors.white,
     borderRadius: radius.xl,
     padding: 24,
     gap: 12,
   },
-  confirmTitle: { ...typography.titleMd, color: colors.onSurface },
+  confirmTitle: { ...typography.titleMd },
   confirmText: {
     ...typography.bodyLg,
-    color: colors.onSurfaceVariant,
     lineHeight: 22,
   },
   confirmActions: { flexDirection: "row", gap: 12, marginTop: 8 },
@@ -87,26 +94,22 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: radius.xl,
     borderWidth: 1,
-    borderColor: colors.outlineVariant,
     alignItems: "center",
     justifyContent: "center",
   },
   cancelButtonText: {
     ...typography.titleMd,
     fontSize: 15,
-    color: colors.onSurfaceVariant,
   },
   confirmLogoutButton: {
     flex: 1,
     paddingVertical: 16,
     borderRadius: radius.xl,
-    backgroundColor: colors.error,
     alignItems: "center",
     justifyContent: "center",
   },
   confirmLogoutText: {
     ...typography.titleMd,
     fontSize: 15,
-    color: colors.white,
   },
 });

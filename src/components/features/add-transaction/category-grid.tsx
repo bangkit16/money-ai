@@ -1,5 +1,7 @@
+// migrated to useColor
 import { Text } from "@/components/ui/text";
-import { colors, radius, shadow, typography } from "@/constants/theme";
+import { radius, shadow, typography } from "@/constants/theme";
+import { useColor } from "@/hooks/useColor";
 import type { CategoryRow } from "@/services/addTransactionService";
 import { MaterialIcons } from "@expo/vector-icons";
 import {
@@ -22,10 +24,17 @@ export function CategoryGrid({
   isLoading,
   onSelect,
 }: CategoryGridProps) {
+  const cardColor = useColor("card");
+  const borderColor = useColor("border");
+  const primaryColor = useColor("primary");
+  const textColor = useColor("text");
+  const whiteColor = useColor("background");
+  const secondaryColor = useColor("secondary");
+
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="small" color={colors.primary} />
+        <ActivityIndicator size="small" color={primaryColor} />
         <Text style={styles.loadingText}>Loading categories...</Text>
       </View>
     );
@@ -39,15 +48,26 @@ export function CategoryGrid({
           <TouchableOpacity
             key={cat.id}
             onPress={() => onSelect(cat.id)}
-            style={[styles.chip, active && styles.chipActive]}
+            style={[
+              styles.chip,
+              { backgroundColor: cardColor, borderColor },
+              active && { backgroundColor: primaryColor, borderColor: primaryColor },
+              shadow.card,
+            ]}
             activeOpacity={0.85}
           >
             <MaterialIcons
               name={cat.icon as any}
               size={16}
-              color={active ? colors.white : colors.secondary}
+              color={active ? whiteColor : secondaryColor}
             />
-            <Text style={[styles.chipText, active && styles.chipTextActive]}>
+            <Text
+              style={[
+                styles.chipText,
+                { color: textColor },
+                active && { color: whiteColor },
+              ]}
+            >
               {cat.category}
             </Text>
           </TouchableOpacity>
@@ -72,22 +92,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
     paddingVertical: 8,
     borderRadius: radius.xl,
-    backgroundColor: colors.white,
     borderWidth: 1,
-    borderColor: colors.outlineVariant,
     width: "18%",
-    ...shadow.card,
-  },
-  chipActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
   },
   chipText: {
     ...typography.labelCaps,
     fontSize: 11,
-    color: colors.onSurface,
   },
-  chipTextActive: { color: colors.white },
 
   loadingContainer: {
     flexDirection: "row",
@@ -97,5 +108,5 @@ const styles = StyleSheet.create({
     width: "100%",
     gap: 8,
   },
-  loadingText: { fontSize: 14, color: colors.secondary },
+  loadingText: { fontSize: 14 },
 });

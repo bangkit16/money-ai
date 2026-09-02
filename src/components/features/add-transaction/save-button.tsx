@@ -1,5 +1,7 @@
+// migrated to useColor
 import { Text } from "@/components/ui/text";
-import { colors, radius, typography } from "@/constants/theme";
+import { radius, typography } from "@/constants/theme";
+import { useColor } from "@/hooks/useColor";
 import { MaterialIcons } from "@expo/vector-icons";
 import {
   ActivityIndicator,
@@ -14,19 +16,21 @@ type SaveButtonProps = {
 };
 
 export function SaveButton({ disabled, loading, onPress }: SaveButtonProps) {
+  const primaryColor = useColor("primary");
+  const whiteColor = useColor("background");
   return (
     <TouchableOpacity
-      style={[styles.button, (disabled || loading) && styles.disabled]}
+      style={[styles.button, { backgroundColor: primaryColor }, (disabled || loading) && styles.disabled]}
       onPress={onPress}
       disabled={disabled || loading}
       activeOpacity={0.9}
     >
       {loading ? (
-        <ActivityIndicator color={colors.white} />
+        <ActivityIndicator color={whiteColor} />
       ) : (
         <>
-          <Text style={styles.text}>Save Transaction</Text>
-          <MaterialIcons name="check-circle" size={20} color={colors.white} />
+          <Text style={[styles.text, { color: whiteColor }]}>Save Transaction</Text>
+          <MaterialIcons name="check-circle" size={20} color={whiteColor} />
         </>
       )}
     </TouchableOpacity>
@@ -39,10 +43,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
-    backgroundColor: colors.primary,
     borderRadius: radius.xl,
     paddingVertical: 16,
   },
   disabled: { opacity: 0.4 },
-  text: { ...typography.titleMd, color: colors.white },
+  text: { ...typography.titleMd },
 });

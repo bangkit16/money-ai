@@ -1,5 +1,6 @@
-import { formatCurrency, formatCurrencySigned } from "@/utils/formatCurrency";
-import { colors, radius, shadow, typography } from "@/constants/theme";
+import { useFormatCurrency } from "@/hooks/useFormatCurrency";
+import { useColor } from "@/hooks/useColor";
+import { radius, shadow, typography } from "@/constants/theme";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialIcons } from "@expo/vector-icons";
 import { StyleSheet, View } from "react-native";
@@ -18,10 +19,14 @@ export function HeroBalanceCard({
   trendPct,
   topAccounts,
 }: HeroBalanceCardProps) {
-  console.log("topAccounts", netWorth);
+  const { formatCurrencySigned } = useFormatCurrency();
+  // const primaryColor = useColor("primary");
+  const primaryContainerColor = useColor("primaryContainer");
+  const tertiaryFixedColor = useColor("tertiaryFixed");
+  const whiteColor = useColor("white");
   return (
     <LinearGradient
-      colors={[colors.primary, colors.primaryContainer]}
+      colors={["#0a2505", "#253b21"]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={[styles.heroCard, shadow.heroCard]}
@@ -29,15 +34,17 @@ export function HeroBalanceCard({
       <View style={styles.heroTopRow}>
         <View>
           <Text style={styles.heroLabel}>TOTAL BALANCE</Text>
-          <Text style={styles.heroAmount}>{formatCurrencySigned(netWorth)}</Text>
+          <Text style={[styles.heroAmount, { color: whiteColor }]}>
+            {formatCurrencySigned(netWorth)}
+          </Text>
         </View>
         <View style={styles.trendBadge}>
           <MaterialIcons
             name={trendPct >= 0 ? "trending-up" : "trending-down"}
             size={16}
-            color={colors.tertiaryFixed}
+            color={tertiaryFixedColor}
           />
-          <Text style={styles.trendBadgeText}>
+          <Text style={[styles.trendBadgeText, { color: tertiaryFixedColor }]}>
             {trendPct >= 0 ? "+" : ""}
             {trendPct.toFixed(1)}%
           </Text>
@@ -48,7 +55,7 @@ export function HeroBalanceCard({
           topAccounts.map((acc) => (
             <View key={acc.name}>
               <Text style={styles.heroSubLabel}>{acc.name.toUpperCase()}</Text>
-              <Text style={styles.heroSubAmount}>
+              <Text style={[styles.heroSubAmount, { color: whiteColor }]}>
                 {formatCurrencySigned(acc.balance)}
               </Text>
             </View>
@@ -69,7 +76,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
   },
   heroLabel: { ...typography.labelCaps, color: "rgba(255,255,255,0.7)" },
-  heroAmount: { ...typography.displayLg, color: colors.white, marginTop: 4 },
+  heroAmount: { ...typography.displayLg, marginTop: 4 },
   trendBadge: {
     flexDirection: "row",
     alignItems: "center",
@@ -79,8 +86,8 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: radius.full,
   },
-  trendBadgeText: { ...typography.labelCaps, color: colors.tertiaryFixed },
+  trendBadgeText: { ...typography.labelCaps },
   heroSubRow: { flexDirection: "row", gap: 48, marginTop: 24 },
   heroSubLabel: { ...typography.labelCaps, color: "rgba(255,255,255,0.6)" },
-  heroSubAmount: { ...typography.titleMd, color: colors.white, marginTop: 4 },
+  heroSubAmount: { ...typography.titleMd, marginTop: 4 },
 });

@@ -1,13 +1,17 @@
+// migrated to useColor
 import { Text } from "@/components/ui/text";
-import { colors, radius, spacing, typography } from "@/constants/theme";
+import { radius, spacing, typography } from "@/constants/theme";
+import { useColor } from "@/hooks/useColor";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { StyleSheet, View } from "react-native";
+import { Image, StyleSheet, View } from "react-native";
 
 export function LoginHero() {
+  const primaryColor = useColor("primary");
+  const whiteColor = useColor("background");
   return (
     <LinearGradient
-      colors={[colors.primary, colors.primaryContainer]}
+      colors={[primaryColor, primaryColor]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.hero}
@@ -16,10 +20,11 @@ export function LoginHero() {
         <MaterialCommunityIcons
           name="chart-donut"
           size={32}
-          color={colors.white}
+          color={whiteColor}
         />
+        {/* <Image source={ICON} style={styles.logoImage} resizeMode="contain" /> */}
       </View>
-      <Text style={styles.wordmark}>Dompety</Text>
+      <Text style={[styles.wordmark, { color: whiteColor }]}>Dompety</Text>
       <Text style={styles.tagline}>Quiet confidence for your money</Text>
     </LinearGradient>
   );
@@ -41,7 +46,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 20,
   },
-  wordmark: { ...typography.headlineLg, fontSize: 30, color: colors.white },
+  wordmark: { ...typography.headlineLg, fontSize: 30 },
   tagline: {
     ...typography.bodyLg,
     color: "rgba(255,255,255,0.7)",

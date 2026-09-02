@@ -1,3 +1,4 @@
+// migrated to useColor
 import { AccountChips } from "@/components/features/add-transaction/account-chips";
 import { AmountDisplay } from "@/components/features/add-transaction/amount-display";
 import { CategoryGrid } from "@/components/features/add-transaction/category-grid";
@@ -11,13 +12,15 @@ import {
   type TransactionTypeKey,
 } from "@/components/features/add-transaction/type-toggle";
 import { Text } from "@/components/ui/text";
-import { colors, spacing, typography } from "@/constants/theme";
+import { spacing, typography } from "@/constants/theme";
+import { useColor } from "@/hooks/useColor";
 import {
   AddTransactionService,
   type TransactionType,
 } from "@/services/addTransactionService";
 import { AccountService } from "@/services/accountService";
 import { ActivityService } from "@/services/activityService";
+import { AnalyticsService } from "@/services/analyticsService";
 import { DashboardService } from "@/services/dashboardService";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -46,6 +49,12 @@ export function EditTransactionBottomSheet({
 }: EditTransactionBottomSheetProps) {
   const queryClient = useQueryClient();
   const bottomSheet = useBottomSheet();
+
+  const bgColor = useColor("background");
+  const textColor = useColor("text");
+  const textMutedColor = useColor("textMuted");
+  const primaryColor = useColor("primary");
+  const errorColor = useColor("error");
 
   const entrance = useMemo(() => new Animated.Value(0), []);
 
@@ -117,6 +126,8 @@ export function EditTransactionBottomSheet({
       queryClient.invalidateQueries({
         queryKey: DashboardService.keys.recentTransactions,
       });
+      queryClient.invalidateQueries({ queryKey: AnalyticsService.keys.current });
+      queryClient.invalidateQueries({ queryKey: ["transaction", String(transaction.id)] });
       bottomSheet.close();
       onClose();
       Alert.alert("Tersimpan", "Transaksi berhasil diperbarui.", [
@@ -138,6 +149,8 @@ export function EditTransactionBottomSheet({
       queryClient.invalidateQueries({
         queryKey: DashboardService.keys.recentTransactions,
       });
+      queryClient.invalidateQueries({ queryKey: AnalyticsService.keys.current });
+      queryClient.invalidateQueries({ queryKey: ["transaction", String(transaction.id)] });
       Alert.alert("Terhapus", "Transaksi berhasil dihapus.", [
         { text: "OK", onPress: () => { bottomSheet.close(); onClose(); } },
       ]);
@@ -194,13 +207,14 @@ export function EditTransactionBottomSheet({
       disablePanGesture={false}
     >
       <KeyboardAvoidingView
-        style={[styles.screen, styles.screenBackdrop]}
+        style={[styles.screen, { backgroundColor: bgColor }]}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <Animated.View
           style={[
             styles.screen,
             {
+              backgroundColor: bgColor,
               opacity: entrance,
               transform: [
                 {
@@ -220,9 +234,9 @@ export function EditTransactionBottomSheet({
               hitSlop={10}
               style={styles.headerBtn}
             >
-              <MaterialIcons name="close" size={24} color={colors.onSurface} />
+              <MaterialIcons name="close" size={24} color={textColor} />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>Edit Transaksi</Text>
+            <Text style={[styles.headerTitle, { color: primaryColor }]}>Edit Transaksi</Text>
             <TouchableOpacity
               onPress={handleDelete}
               disabled={isDeleting}
@@ -232,7 +246,7 @@ export function EditTransactionBottomSheet({
               <MaterialIcons
                 name="delete"
                 size={24}
-                color={isDeleting ? colors.onSurfaceVariant : colors.error}
+                color={isDeleting ? textMutedColor : errorColor}
               />
             </TouchableOpacity>
           </View>
@@ -248,12 +262,12 @@ export function EditTransactionBottomSheet({
               <AmountDisplay amount={amount} />
 
               <View style={styles.fieldBlock}>
-                <Text style={styles.label}>Type</Text>
+                <Text style={[styles.label, { color: textMutedColor }]}>Type</Text>
                 <TypeToggle value={transactionType} onChange={setTransactionType} />
               </View>
 
               <View style={styles.fieldBlock}>
-                <Text style={styles.label}>Category</Text>
+                <Text style={[styles.label, { color: textMutedColor }]}>Category</Text>
                 <CategoryGrid
                   categories={categories}
                   selectedId={categoryId}
@@ -263,7 +277,7 @@ export function EditTransactionBottomSheet({
               </View>
 
               <View style={styles.fieldBlock}>
-                <Text style={styles.label}>Account</Text>
+                <Text style={[styles.label, { color: textMutedColor }]}>Account</Text>
                 <AccountChips
                   accounts={accounts}
                   selectedId={accountId}
@@ -286,7 +300,7 @@ export function EditTransactionBottomSheet({
           </View>
 
           {/* Footer */}
-          <View style={styles.footer}>
+          <View style={[styles.footer, { backgroundColor: bgColor }]}>
             <SaveButton
               disabled={!isValid}
               loading={isSaving}
@@ -300,8 +314,7 @@ export function EditTransactionBottomSheet({
 }
 
 const styles = StyleSheet.create({
-  screenBackdrop: { backgroundColor: colors.background },
-  screen: { flex: 1, backgroundColor: colors.background },
+  screen: { flex: 1 },
 
   header: {
     flexDirection: "row",
@@ -317,7 +330,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  headerTitle: { ...typography.titleMd, color: colors.primary },
+  headerTitle: { ...typography.titleMd },
 
   body: { flex: 1 },
 
@@ -331,7 +344,6 @@ const styles = StyleSheet.create({
 
   label: {
     ...typography.labelCaps,
-    color: colors.onSurfaceVariant,
     marginBottom: 8,
   },
   fieldBlock: {},
@@ -342,6 +354,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.marginMobile,
     paddingTop: 12,
     paddingBottom: Platform.OS === "ios" ? 32 : 20,
-    backgroundColor: colors.background,
   },
 });

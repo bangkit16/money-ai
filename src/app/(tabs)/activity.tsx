@@ -1,3 +1,4 @@
+// migrated to useColor
 import { FilterChips } from "@/components/features/activity/filter-chips";
 import { AppBar } from "@/components/features/shared/app-bar";
 import { SearchBar } from "@/components/features/activity/search-bar";
@@ -5,10 +6,9 @@ import { DateSectionHeader } from "@/components/features/activity/date-section-h
 import { TransactionListItem } from "@/components/features/activity/transaction-list-item";
 import { groupByDate } from "@/components/features/activity/utils";
 import { Text } from "@/components/ui/text";
-import { colors, spacing, typography } from "@/constants/theme";
-import {
-  ActivityService,
-} from "@/services/activityService";
+import { spacing, typography } from "@/constants/theme";
+import { useColor } from "@/hooks/useColor";
+import { ActivityService } from "@/services/activityService";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import {
@@ -24,6 +24,11 @@ type TxType = "INCOME" | "EXPENSE";
 export default function ActivityScreen() {
   const [query, setQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<"all" | TxType>("all");
+
+  const bgColor = useColor("background");
+  const primaryColor = useColor("primary");
+  const textMutedColor = useColor("textMuted");
+  const outlineColor = useColor("border");
 
   const {
     data: transactions,
@@ -58,16 +63,18 @@ export default function ActivityScreen() {
   };
 
   return (
-    <View style={styles.screen}>
+    <View style={[styles.screen, { backgroundColor: bgColor }]}>
       <AppBar />
 
       {isLoading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="small" color={colors.primary} />
-          <Text style={styles.loadingText}>Loading transactions...</Text>
+          <ActivityIndicator size="small" color={primaryColor} />
+          <Text style={[styles.loadingText, { color: textMutedColor }]}>
+            Loading transactions...
+          </Text>
         </View>
       ) : error ? (
-        <Text style={styles.emptyText}>
+        <Text style={[styles.emptyText, { color: outlineColor }]}>
           Gagal memuat transaksi: {(error as Error).message}
         </Text>
       ) : (
@@ -97,7 +104,7 @@ export default function ActivityScreen() {
             <View style={{ height: spacing.gutter }} />
           )}
           ListEmptyComponent={
-            <Text style={styles.emptyText}>
+            <Text style={[styles.emptyText, { color: outlineColor }]}>
               Tidak ada transaksi yang cocok.
             </Text>
           }
@@ -108,7 +115,7 @@ export default function ActivityScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
+  screen: { flex: 1 },
 
   loadingContainer: {
     flex: 1,
@@ -116,7 +123,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 8,
   },
-  loadingText: { ...typography.bodySm, color: colors.onSurfaceVariant },
+  loadingText: { ...typography.bodySm },
 
   listContent: { paddingHorizontal: spacing.marginMobile, paddingBottom: 40 },
 
@@ -124,7 +131,6 @@ const styles = StyleSheet.create({
 
   emptyText: {
     ...typography.bodyLg,
-    color: colors.outline,
     textAlign: "center",
     marginTop: 40,
   },

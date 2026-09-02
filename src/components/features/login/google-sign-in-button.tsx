@@ -1,5 +1,7 @@
+// migrated to useColor
 import { Text } from "@/components/ui/text";
-import { colors, radius, shadow, typography } from "@/constants/theme";
+import { radius, shadow, typography } from "@/constants/theme";
+import { useColor } from "@/hooks/useColor";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   ActivityIndicator,
@@ -16,23 +18,26 @@ export function GoogleSignInButton({
   loading,
   onPress,
 }: GoogleSignInButtonProps) {
+  const cardColor = useColor("card");
+  const borderColor = useColor("border");
+  const textColor = useColor("text");
   return (
     <TouchableOpacity
-      style={[styles.button, shadow.card]}
+      style={[styles.button, { backgroundColor: cardColor, borderColor }, shadow.card]}
       onPress={onPress}
       activeOpacity={0.85}
       disabled={loading}
     >
       {loading ? (
-        <ActivityIndicator color={colors.onSurface} />
+        <ActivityIndicator color={textColor} />
       ) : (
         <>
           <MaterialCommunityIcons
             name="google"
             size={20}
-            color={colors.onSurface}
+            color={textColor}
           />
-          <Text style={styles.text}>Continue with Google</Text>
+          <Text style={[styles.text, { color: textColor }]}>Continue with Google</Text>
         </>
       )}
     </TouchableOpacity>
@@ -45,15 +50,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 10,
-    backgroundColor: colors.white,
     borderWidth: 1,
-    borderColor: colors.outlineVariant,
     borderRadius: radius.xl,
     paddingVertical: 16,
   },
   text: {
     ...typography.titleMd,
     fontSize: 15,
-    color: colors.onSurface,
   },
 });

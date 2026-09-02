@@ -1,5 +1,7 @@
+// migrated to useColor
 import { Text } from "@/components/ui/text";
-import { colors, radius, shadow, spacing, typography } from "@/constants/theme";
+import { radius, shadow, spacing, typography } from "@/constants/theme";
+import { useColor } from "@/hooks/useColor";
 import type { AccountRow } from "@/services/accountService";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Modal, Platform, StyleSheet, TouchableOpacity, View } from "react-native";
@@ -17,6 +19,13 @@ export function AccountOptionsSheet({
   onEdit,
   onDelete,
 }: AccountOptionsSheetProps) {
+  const cardColor = useColor("card");
+  const handleColor = useColor("border");
+  const textColor = useColor("text");
+  const textMutedColor = useColor("textMuted");
+  const borderColor = useColor("border");
+  const errorColor = useColor("error");
+
   const handleEdit = () => {
     if (account) onEdit(account);
     onClose();
@@ -41,29 +50,32 @@ export function AccountOptionsSheet({
       >
         <TouchableOpacity
           activeOpacity={1}
-          style={[styles.optionsSheet, shadow.heroCard]}
+          style={[styles.optionsSheet, shadow.heroCard, { backgroundColor: cardColor }]}
         >
-          <View style={styles.modalHandle} />
-          <Text style={styles.optionsTitle}>{account?.account_name}</Text>
+          <View style={[styles.modalHandle, { backgroundColor: handleColor }]} />
+          <Text style={[styles.optionsTitle, { color: textColor }]}>{account?.account_name}</Text>
 
-          <TouchableOpacity style={styles.optionRow} onPress={handleEdit}>
-            <MaterialIcons name="edit" size={20} color={colors.onSurface} />
-            <Text style={styles.optionRowText}>Edit</Text>
+          <TouchableOpacity style={[styles.optionRow, { borderTopColor: borderColor }]} onPress={handleEdit}>
+            <MaterialIcons name="edit" size={20} color={textColor} />
+            <Text style={[styles.optionRowText, { color: textColor }]}>Edit</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.optionRow} onPress={handleDelete}>
+          <TouchableOpacity
+            style={[styles.optionRow, { borderTopColor: borderColor }]}
+            onPress={handleDelete}
+          >
             <MaterialIcons
               name="delete-outline"
               size={20}
-              color={colors.error}
+              color={errorColor}
             />
-            <Text style={[styles.optionRowText, { color: colors.error }]}>
+            <Text style={[styles.optionRowText, { color: errorColor }]}>
               Hapus
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.optionCancelRow} onPress={onClose}>
-            <Text style={styles.optionCancelText}>Batal</Text>
+            <Text style={[styles.optionCancelText, { color: textMutedColor }]}>Batal</Text>
           </TouchableOpacity>
         </TouchableOpacity>
       </TouchableOpacity>
@@ -78,7 +90,6 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(5,17,37,0.5)",
   },
   optionsSheet: {
-    backgroundColor: colors.white,
     borderTopLeftRadius: radius.xl,
     borderTopRightRadius: radius.xl,
     paddingHorizontal: spacing.marginMobile,
@@ -89,13 +100,11 @@ const styles = StyleSheet.create({
     width: 40,
     height: 4,
     borderRadius: radius.full,
-    backgroundColor: colors.outlineVariant,
     alignSelf: "center",
     marginBottom: 4,
   },
   optionsTitle: {
     ...typography.titleMd,
-    color: colors.onSurface,
     textAlign: "center",
     marginBottom: 8,
   },
@@ -105,9 +114,8 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingVertical: 16,
     borderTopWidth: 1,
-    borderTopColor: colors.surfaceContainerHighest,
   },
-  optionRowText: { ...typography.bodyLg, color: colors.onSurface },
+  optionRowText: { ...typography.bodyLg },
   optionCancelRow: {
     paddingVertical: 16,
     alignItems: "center",
@@ -116,6 +124,5 @@ const styles = StyleSheet.create({
   optionCancelText: {
     ...typography.titleMd,
     fontSize: 15,
-    color: colors.onSurfaceVariant,
   },
 });

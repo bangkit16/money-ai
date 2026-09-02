@@ -1,20 +1,25 @@
+// migrated to useColor
 import AddTransactionButton from "@/components/add-transaction-button";
 import AiButton from "@/components/ai-button";
 import { colors, typography } from "@/constants/theme";
+import { useColor } from "@/hooks/useColor";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import { StyleSheet, View } from "react-native";
 
 export default function TabsLayout() {
+  const primaryColor = useColor("primary");
+  const outlineColor = useColor("textMuted");
+  const tabBarBg = useColor("background");
   return (
     <View style={styles.container}>
       <Tabs
         screenOptions={{
           headerShown: false, // tiap screen bikin header sendiri di dalam JSX
-          tabBarActiveTintColor: colors.primary,
-          tabBarInactiveTintColor: colors.outline,
+          tabBarActiveTintColor: primaryColor,
+          tabBarInactiveTintColor: outlineColor,
           tabBarStyle: {
-            backgroundColor: colors.surface,
+            backgroundColor: tabBarBg,
             borderTopWidth: 0,
             height: 84,
             paddingTop: 8,

@@ -1,5 +1,7 @@
+// migrated to useColor
 import { Text } from "@/components/ui/text";
-import { colors, radius, shadow, typography } from "@/constants/theme";
+import { radius, shadow, typography } from "@/constants/theme";
+import { useColor } from "@/hooks/useColor";
 import type { AccountOptionRow } from "@/services/addTransactionService";
 import {
   ActivityIndicator,
@@ -22,11 +24,18 @@ export function AccountChips({
   isLoading,
   onSelect,
 }: AccountChipsProps) {
+  const cardColor = useColor("card");
+  const borderColor = useColor("border");
+  const primaryColor = useColor("primary");
+  const textColor = useColor("text");
+  const whiteColor = useColor("background");
+  const textMutedColor = useColor("textMuted");
+
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="small" color={colors.primary} />
-        <Text style={styles.loadingText}>Loading accounts...</Text>
+        <ActivityIndicator size="small" color={primaryColor} />
+        <Text style={[styles.loadingText, { color: textMutedColor }]}>Loading accounts...</Text>
       </View>
     );
   }
@@ -43,10 +52,21 @@ export function AccountChips({
           <TouchableOpacity
             key={acc.id}
             onPress={() => onSelect(acc.id)}
-            style={[styles.chip, active && styles.chipActive]}
+            style={[
+              styles.chip,
+              { backgroundColor: cardColor, borderColor },
+              active && { backgroundColor: primaryColor, borderColor: primaryColor },
+              shadow.card,
+            ]}
             activeOpacity={0.85}
           >
-            <Text style={[styles.chipText, active && styles.chipTextActive]}>
+            <Text
+              style={[
+                styles.chipText,
+                { color: textColor },
+                active && { color: whiteColor },
+              ]}
+            >
               {acc.account_name}
             </Text>
           </TouchableOpacity>
@@ -61,21 +81,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: radius.full,
-    backgroundColor: colors.white,
     borderWidth: 1,
-    borderColor: colors.outlineVariant,
-    ...shadow.card,
-  },
-  chipActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
   },
   chipText: {
     ...typography.labelCaps,
     fontSize: 11,
-    color: colors.onSurface,
   },
-  chipTextActive: { color: colors.white },
 
   loadingContainer: {
     flexDirection: "row",
@@ -85,5 +96,5 @@ const styles = StyleSheet.create({
     width: "100%",
     gap: 8,
   },
-  loadingText: { fontSize: 14, color: colors.secondary },
+  loadingText: { fontSize: 14 },
 });

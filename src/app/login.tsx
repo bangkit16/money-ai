@@ -1,12 +1,9 @@
+// migrated to useColor
 import { GoogleSignInButton } from "@/components/features/login/google-sign-in-button";
 import { LoginHero } from "@/components/features/login/login-hero";
 import { Text } from "@/components/ui/text";
-import {
-  colors,
-  radius,
-  spacing,
-  typography,
-} from "@/constants/theme";
+import { radius, spacing, typography } from "@/constants/theme";
+import { useColor } from "@/hooks/useColor";
 import * as WebBrowser from "expo-web-browser";
 import * as Linking from "expo-linking";
 import { router } from "expo-router";
@@ -25,6 +22,12 @@ const redirectTo = Linking.createURL("/auth-callback");
 
 export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
+
+  const bgColor = useColor("background");
+  const sheetColor = useColor("card");
+  const textColor = useColor("text");
+  const textMutedColor = useColor("textMuted");
+  const borderColor = useColor("border");
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
@@ -60,25 +63,25 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={styles.screen}>
+    <View style={[styles.screen, { backgroundColor: bgColor }]}>
       {/* Bagian atas: brand hero */}
       <LoginHero />
 
       {/* Bagian bawah: card sign-in */}
-      <View style={styles.sheet}>
+      <View style={[styles.sheet, { backgroundColor: sheetColor }]}>
         <View style={{ marginBottom: 32 }}>
-          <Text style={styles.title}>Welcome back</Text>
-          <Text style={styles.subtitle}>
+          <Text style={[styles.title, { color: textColor }]}>Welcome back</Text>
+          <Text style={[styles.subtitle, { color: textMutedColor }]}>
             Sign in to continue tracking your finances.
           </Text>
         </View>
 
         <GoogleSignInButton loading={loading} onPress={handleGoogleSignIn} />
 
-        <Text style={styles.termsText}>
+        <Text style={[styles.termsText, { color: borderColor }]}>
           By continuing, you agree to {"Dompety's"}{" "}
-          <Text style={styles.termsLink}>Terms of Service</Text> and{" "}
-          <Text style={styles.termsLink}>Privacy Policy</Text>.
+          <Text style={[styles.termsLink, { color: textMutedColor }]}>Terms of Service</Text> and{" "}
+          <Text style={[styles.termsLink, { color: textMutedColor }]}>Privacy Policy</Text>.
         </Text>
       </View>
     </View>
@@ -86,29 +89,26 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
+  screen: { flex: 1 },
 
   sheet: {
-    backgroundColor: colors.white,
     borderTopLeftRadius: radius.xl,
     borderTopRightRadius: radius.xl,
     paddingHorizontal: spacing.marginMobile,
     paddingTop: 32,
     paddingBottom: Platform.OS === "ios" ? 40 : 28,
   },
-  title: { ...typography.headlineLgMobile, color: colors.onSurface },
+  title: { ...typography.headlineLgMobile },
   subtitle: {
     ...typography.bodyLg,
-    color: colors.onSurfaceVariant,
     marginTop: 6,
   },
 
   termsText: {
     ...typography.bodySm,
-    color: colors.outline,
     textAlign: "center",
     marginTop: 20,
     lineHeight: 18,
   },
-  termsLink: { color: colors.onSurfaceVariant, fontWeight: "600" },
+  termsLink: { fontWeight: "600" },
 });

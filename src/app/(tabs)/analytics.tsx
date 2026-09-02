@@ -1,25 +1,28 @@
+// migrated to useColor
 import { SpendingStructureCard } from "@/components/features/analytics/spending-structure-card";
 import { TopCategoriesList } from "@/components/features/analytics/top-categories-list";
 import { AppBar } from "@/components/features/shared/app-bar";
 import { Spinner } from "@/components/ui/spinner";
 import { Text } from "@/components/ui/text";
-import {
-  colors,
-  spacing,
-  typography,
-} from "@/constants/theme";
+import { spacing, typography } from "@/constants/theme";
+import { useColor } from "@/hooks/useColor";
 import { AnalyticsService } from "@/services/analyticsService";
 import { useQuery } from "@tanstack/react-query";
 import { ScrollView, StyleSheet, View } from "react-native";
 
 export default function AnalyticsScreen() {
+  const bgColor = useColor("background");
+  const primaryColor = useColor("primary");
+  const textMutedColor = useColor("textMuted");
+  const textColor = useColor("text");
+
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: AnalyticsService.keys.current,
     queryFn: AnalyticsService.GetCurrentMonth,
   });
 
   return (
-    <View style={styles.screen}>
+    <View style={[styles.screen, { backgroundColor: bgColor }]}>
       <AppBar />
 
       <ScrollView
@@ -27,22 +30,29 @@ export default function AnalyticsScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={{ marginBottom: 8 }}>
-          <Text style={styles.pageTitle}>Financial Analytics</Text>
-          <Text style={styles.pageSubtitle}>
+          <Text style={[styles.pageTitle, { color: primaryColor }]}>
+            Financial Analytics
+          </Text>
+          <Text style={[styles.pageSubtitle, { color: textMutedColor }]}>
             {data?.monthLabel ?? "Loading insights..."}
           </Text>
         </View>
 
         {isLoading && (
           <View style={styles.center}>
-            <Spinner size="lg" variant="circle" color={colors.primary} />
+            <Spinner size="lg" variant="circle" color={primaryColor} />
           </View>
         )}
 
         {isError && (
           <View style={styles.center}>
-            <Text style={styles.errorText}>Failed to load analytics.</Text>
-            <Text style={styles.retry} onPress={() => refetch()}>
+            <Text style={[styles.errorText, { color: textColor }]}>
+              Failed to load analytics.
+            </Text>
+            <Text
+              style={[styles.retry, { color: primaryColor }]}
+              onPress={() => refetch()}
+            >
               Tap to retry
             </Text>
           </View>
@@ -56,7 +66,9 @@ export default function AnalyticsScreen() {
             />
 
             <View style={styles.sectionHeaderRow}>
-              <Text style={styles.titleMd}>Top Spending Categories</Text>
+              <Text style={[styles.titleMd, { color: textColor }]}>
+                Top Spending Categories
+              </Text>
             </View>
 
             <TopCategoriesList items={data.topCategories} />
@@ -68,7 +80,7 @@ export default function AnalyticsScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
+  screen: { flex: 1 },
 
   scrollContent: {
     paddingHorizontal: spacing.marginMobile,
@@ -80,19 +92,18 @@ const styles = StyleSheet.create({
   pageTitle: {
     ...typography.headlineLg,
     fontSize: 28,
-    color: colors.primary,
     marginBottom: 4,
   },
-  pageSubtitle: { ...typography.bodyLg, color: colors.onSurfaceVariant },
+  pageSubtitle: { ...typography.bodyLg },
 
   sectionHeaderRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-end",
   },
-  titleMd: { ...typography.titleMd, color: colors.onSurface },
+  titleMd: { ...typography.titleMd },
 
   center: { alignItems: "center", justifyContent: "center", paddingVertical: 48 },
-  errorText: { ...typography.bodyLg, color: colors.onSurface },
-  retry: { ...typography.bodyMd, color: colors.primary, marginTop: 8 },
+  errorText: { ...typography.bodyLg },
+  retry: { ...typography.titleMd, marginTop: 8 },
 });

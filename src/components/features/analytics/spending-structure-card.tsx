@@ -1,8 +1,9 @@
-import { formatCurrency } from "@/utils/formatCurrency";
+import { useFormatCurrency } from "@/hooks/useFormatCurrency";
+import { useColor } from "@/hooks/useColor";
 import { DonutChart } from "@/components/features/analytics/donut-chart";
 import type { DonutSegment } from "@/components/features/analytics/donut-chart";
 import { Text } from "@/components/ui/text";
-import { colors, radius, shadow, typography } from "@/constants/theme";
+import { radius, shadow, typography } from "@/constants/theme";
 import { StyleSheet, View } from "react-native";
 
 type Props = {
@@ -11,9 +12,14 @@ type Props = {
 };
 
 export function SpendingStructureCard({ segments, totalSpend }: Props) {
+  const { formatCurrency } = useFormatCurrency();
+  const cardColor = useColor("card");
+  const onSurfaceColor = useColor("onSurface");
+  const onSurfaceVariantColor = useColor("onSurfaceVariant");
+  const primaryColor = useColor("primary");
   return (
-    <View style={[styles.card, shadow.card, { alignItems: "center" }]}>
-      <Text style={[styles.titleMd, { alignSelf: "flex-start", marginBottom: 16 }]}>
+    <View style={[styles.card, shadow.card, { alignItems: "center", backgroundColor: cardColor }]}>
+      <Text style={[styles.titleMd, { alignSelf: "flex-start", marginBottom: 16, color: onSurfaceColor }]}>
         Spending Structure
       </Text>
       <View
@@ -26,8 +32,8 @@ export function SpendingStructureCard({ segments, totalSpend }: Props) {
       >
         <DonutChart segments={segments} />
         <View style={styles.donutCenter}>
-          <Text style={styles.mutedLabel}>TOTAL</Text>
-          <Text style={styles.donutTotal}>{formatCurrency(totalSpend)}</Text>
+          <Text style={[styles.mutedLabel, { color: onSurfaceVariantColor }]}>TOTAL</Text>
+          <Text style={[styles.donutTotal, { color: primaryColor }]}>{formatCurrency(totalSpend)}</Text>
         </View>
       </View>
       <View style={styles.legendGrid}>
@@ -36,7 +42,7 @@ export function SpendingStructureCard({ segments, totalSpend }: Props) {
             <View
               style={[styles.legendDot, { backgroundColor: seg.color }]}
             />
-            <Text style={styles.legendText}>{seg.label}</Text>
+            <Text style={[styles.legendText, { color: onSurfaceVariantColor }]}>{seg.label}</Text>
           </View>
         ))}
       </View>
@@ -45,12 +51,12 @@ export function SpendingStructureCard({ segments, totalSpend }: Props) {
 }
 
 const styles = StyleSheet.create({
-  card: { backgroundColor: colors.white, borderRadius: radius.xl, padding: 24 },
-  titleMd: { ...typography.titleMd, color: colors.onSurface },
-  mutedLabel: { ...typography.labelCaps, color: colors.onSurfaceVariant },
+  card: { borderRadius: radius.xl, padding: 24 },
+  titleMd: { ...typography.titleMd },
+  mutedLabel: { ...typography.labelCaps },
 
   donutCenter: { position: "absolute", alignItems: "center" },
-  donutTotal: { ...typography.headlineLgMobile, color: colors.primary },
+  donutTotal: { ...typography.headlineLgMobile },
 
   legendGrid: {
     flexDirection: "row",
@@ -66,5 +72,5 @@ const styles = StyleSheet.create({
     width: "45%",
   },
   legendDot: { width: 10, height: 10, borderRadius: radius.full },
-  legendText: { ...typography.bodySm, color: colors.onSurfaceVariant },
+  legendText: { ...typography.bodySm },
 });

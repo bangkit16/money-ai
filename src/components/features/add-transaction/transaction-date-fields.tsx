@@ -1,6 +1,8 @@
+// migrated to useColor
 import DateTimeField from "@/components/DateTimeField";
 import { Text } from "@/components/ui/text";
-import { colors, radius, spacing, typography } from "@/constants/theme";
+import { spacing, typography } from "@/constants/theme";
+import { useColor } from "@/hooks/useColor";
 import { StyleSheet, TextInput, View } from "react-native";
 
 type TransactionDateFieldsProps = {
@@ -17,21 +19,23 @@ export function TransactionDateFields({
   dateTime,
   onChangeDateTime,
 }: TransactionDateFieldsProps) {
+  const textMutedColor = useColor("textMuted");
+  const borderColor = useColor("border");
   return (
     <View style={styles.block}>
       <View style={styles.row}>
         <View style={[styles.fieldBlock, { flex: 3 }]}>
-          <Text style={styles.label}>Transaction</Text>
+          <Text style={[styles.label, { color: textMutedColor }]}>Transaction</Text>
           <TextInput
             value={transaction}
             onChangeText={onChangeTransaction}
             placeholder="What was this for?"
-            placeholderTextColor={colors.outline}
+            placeholderTextColor={textMutedColor}
             style={styles.inputSoft}
           />
         </View>
         <View style={[styles.fieldBlock, { flex: 2 }]}>
-          <Text style={styles.label}>Date & Time</Text>
+          <Text style={[styles.label, { color: textMutedColor }]}>Date & Time</Text>
           <DateTimeField value={dateTime} onChange={onChangeDateTime} />
         </View>
       </View>
@@ -49,15 +53,13 @@ const styles = StyleSheet.create({
   fieldBlock: {},
   label: {
     ...typography.labelCaps,
-    color: colors.onSurfaceVariant,
     marginBottom: 8,
   },
   inputSoft: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: colors.platinumMist + "4d",
-    borderRadius: radius.lg,
+    borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
   },

@@ -55,10 +55,21 @@ const isMode = (value: unknown): value is Mode =>
  * this call.
  */
 function syncNativeAppearance(mode: Mode) {
+  // react-native-web defines `setColorScheme` but it's a no-op there (the OS
+  // scheme is read-only on web), and calling it on the web bundle can still
+  // fire the `change` event under some RN-web versions, which recurses into
+  // the render loop. Skip the whole thing on web — the provider's context is
+  // already the only source of truth for the in-app theme.
+  if (typeof window !== 'undefined' && typeof document !== 'undefined') return;
   if (typeof Appearance.setColorScheme !== 'function') return;
   // RN 0.86 replaced the old `null` sentinel ("follow the system") with
   // `'unspecified'`.
-  Appearance.setColorScheme(mode === 'system' ? 'unspecified' : mode);
+  const target = mode === 'system' ? 'unspecified' : mode;
+  // No-op when already in sync — calling setColorScheme with the current
+  // value still fires the `change` event, which re-triggers
+  // useRNColorScheme() and can recurse into a render loop under React 19.
+  if (Appearance.getColorScheme?.() === target) return;
+  Appearance.setColorScheme(target);
 }
 
 type Props = {

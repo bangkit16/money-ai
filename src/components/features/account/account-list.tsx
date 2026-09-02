@@ -1,7 +1,8 @@
 import { Text } from "@/components/ui/text";
-import { colors, radius, shadow, typography } from "@/constants/theme";
+import { radius, shadow, typography } from "@/constants/theme";
+import { useColor } from "@/hooks/useColor";
 import type { AccountRow } from "@/services/accountService";
-import { formatCurrencySigned } from "@/utils/formatCurrency";
+import { useFormatCurrency } from "@/hooks/useFormatCurrency";
 import { MaterialIcons } from "@expo/vector-icons";
 import {
   ActivityIndicator,
@@ -23,18 +24,31 @@ export function AccountList({
   error,
   onSelectOptions,
 }: AccountListProps) {
+  const { formatCurrencySigned } = useFormatCurrency();
+  const cardColor = useColor("card");
+  const primaryColor = useColor("primary");
+  const errorColor = useColor("error");
+  const successColor = useColor("successGreen");
+  const outlineColor = useColor("outline");
+  const onSurfaceVariantColor = useColor("onSurfaceVariant");
+  const dividerColor = useColor("surfaceContainerHighest");
+  const onSurfaceColor = useColor("onSurface");
+  const iconBgColor = useColor("primary");
+
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="small" color={colors.primary} />
-        <Text style={styles.loadingText}>Loading accounts...</Text>
+        <ActivityIndicator size="small" color={primaryColor} />
+        <Text style={[styles.loadingText, { color: onSurfaceVariantColor }]}>
+          Loading accounts...
+        </Text>
       </View>
     );
   }
 
   if (error) {
     return (
-      <Text style={styles.errorText}>
+      <Text style={[styles.errorText, { color: errorColor }]}>
         Gagal memuat rekening: {(error as Error).message}
       </Text>
     );
@@ -42,40 +56,42 @@ export function AccountList({
 
   if (!accounts || accounts.length === 0) {
     return (
-      <Text style={styles.emptyText}>
+      <Text style={[styles.emptyText, { color: onSurfaceVariantColor }]}>
         Belum ada rekening. Tambahkan yang pertama.
       </Text>
     );
   }
 
   return (
-    <View style={[styles.card, shadow.card, { padding: 0 }]}>
+    <View style={[styles.card, shadow.card, { padding: 0, backgroundColor: cardColor }]}>
       {accounts.map((account, i) => (
         <View
           key={account.id}
           style={[
             styles.accountRow,
-            i !== accounts.length - 1 && styles.accountRowDivider,
+            i !== accounts.length - 1 && { borderBottomColor: dividerColor, borderBottomWidth: 1 },
           ]}
         >
           <View style={styles.accountLeft}>
-            <View style={styles.accountIconCircle}>
+            <View style={[styles.accountIconCircle, { backgroundColor: iconBgColor + "1a" }]}>
               <MaterialIcons
                 name="account-balance"
                 size={20}
-                color={colors.primary}
+                color={primaryColor}
               />
             </View>
             <View>
-              <Text style={styles.accountName}>{account.account_name}</Text>
+              <Text style={[styles.accountName, { color: onSurfaceColor }]}>
+                {account.account_name}
+              </Text>
               <Text
                 style={[
                   styles.amount,
                   {
                     color:
-                      account.total_amount < 0 
-                        ? colors.error
-                        : colors.successGreen,
+                      account.total_amount < 0
+                        ? errorColor
+                        : successColor,
                   },
                 ]}
               >
@@ -88,7 +104,7 @@ export function AccountList({
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             style={styles.optionsButton}
           >
-            <MaterialIcons name="more-vert" size={20} color={colors.outline} />
+            <MaterialIcons name="more-vert" size={20} color={outlineColor} />
           </TouchableOpacity>
         </View>
       ))}
@@ -97,7 +113,7 @@ export function AccountList({
 }
 
 const styles = StyleSheet.create({
-  card: { backgroundColor: colors.white, borderRadius: radius.xl, padding: 24 },
+  card: { borderRadius: radius.xl, padding: 24 },
   amount: { ...typography.titleMd, fontSize: 16 },
 
   loadingContainer: {
@@ -107,11 +123,10 @@ const styles = StyleSheet.create({
     paddingVertical: 24,
     gap: 8,
   },
-  loadingText: { ...typography.bodySm, color: colors.onSurfaceVariant },
-  errorText: { ...typography.bodySm, color: colors.error, textAlign: "center" },
+  loadingText: { ...typography.bodySm },
+  errorText: { ...typography.bodySm, textAlign: "center" },
   emptyText: {
     ...typography.bodyLg,
-    color: colors.onSurfaceVariant,
     textAlign: "center",
     paddingVertical: 24,
   },
@@ -121,10 +136,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     padding: 20,
-  },
-  accountRowDivider: {
-    borderBottomWidth: 1,
-    borderBottomColor: colors.surfaceContainerHighest,
   },
   accountLeft: {
     flexDirection: "row",
@@ -136,19 +147,12 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: radius.full,
-    backgroundColor: colors.primary + "1a",
     alignItems: "center",
     justifyContent: "center",
   },
   accountName: {
     ...typography.bodyLg,
     fontWeight: "600",
-    color: colors.onSurface,
-  },
-  accountMeta: {
-    ...typography.bodySm,
-    color: colors.onSurfaceVariant,
-    marginTop: 2,
   },
   optionsButton: {
     width: 32,

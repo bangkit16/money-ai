@@ -1,5 +1,16 @@
 const lightColors = {
   // Base colors
+  surface: '#fbf8fb',
+  surfaceDim: '#dcd9db',
+  surfaceContainerLowest: '#ffffff',
+  surfaceContainerLow: '#f5f3f5',
+  surfaceContainer: '#f0edef',
+  surfaceContainerHigh: '#eae7e9',
+  surfaceContainerHighest: '#e4e2e4',
+  onSurface: '#1b1b1d',
+  onSurfaceVariant: '#45474d',
+  outline: '#75777d',
+  outlineVariant: '#c5c6cd',
   background: '#FFFFFF',
   foreground: '#000000',
 
@@ -12,11 +23,18 @@ const lightColors = {
   popoverForeground: '#000000',
 
   // Primary colors
-  primary: '#18181b',
+  primary: '#0a2505',
+  onPrimary: '#ffffff',
+  primaryContainer: '#1b263b',
+  onPrimaryContainer: '#828da7',
+  primaryFixedDim: '#bbc6e2',
   primaryForeground: '#FFFFFF',
 
   // Secondary colors
-  secondary: '#F2F2F7',
+  secondary: '#4c7e47',
+  onSecondary: '#ffffff',
+  secondaryContainer: '#c2dcff',
+  onSecondaryContainer: '#48617e',
   secondaryForeground: '#18181b',
 
   // Muted colors
@@ -27,9 +45,19 @@ const lightColors = {
   accent: '#F2F2F7',
   accentForeground: '#18181b',
 
+  // Tertiary
+  tertiaryFixed: '#fcdeb3',
+  tertiaryFixedDim: '#dfc299',
+  onTertiaryContainer: '#a28963',
+
   // Destructive colors
   destructive: '#ef4444',
   destructiveForeground: '#FFFFFF',
+  error: '#ba1a1a',
+  errorContainer: '#ffdad6',
+  successGreen: '#10b981',
+  platinumMist: '#e0e1dd',
+  white: '#ffffff',
 
   // Border and input
   border: '#C6C6C8',
@@ -80,12 +108,23 @@ const lightColors = {
   warningForeground: '#ffffff',
   info: '#3b82f6',
   infoForeground: '#ffffff',
-  error: '#ef4444',
+  // error: '#ef4444',
   errorForeground: '#ffffff',
 };
 
 const darkColors = {
   // Base colors
+  surface: '#101013',
+  surfaceDim: '#0a0a0c',
+  surfaceContainerLowest: '#000000',
+  surfaceContainerLow: '#0f0f12',
+  surfaceContainer: '#161619',
+  surfaceContainerHigh: '#1d1d21',
+  surfaceContainerHighest: '#26262b',
+  onSurface: '#e6e6ea',
+  onSurfaceVariant: '#b8b9c1',
+  outline: '#7a7c84',
+  outlineVariant: '#3a3b41',
   background: '#000000',
   foreground: '#FFFFFF',
 
@@ -98,11 +137,18 @@ const darkColors = {
   popoverForeground: '#FFFFFF',
 
   // Primary colors
-  primary: '#e4e4e7',
+  primary: '#557a55',
+  onPrimary: '#0a2505',
+  primaryContainer: '#1b263b',
+  onPrimaryContainer: '#c2dcff',
+  primaryFixedDim: '#0a2505',
   primaryForeground: '#18181b',
 
   // Secondary colors
-  secondary: '#1C1C1E',
+  secondary: '#a8dea9',
+  onSecondary: '#0a1f33',
+  secondaryContainer: '#2a3d54',
+  onSecondaryContainer: '#c2dcff',
   secondaryForeground: '#FFFFFF',
 
   // Muted colors
@@ -113,9 +159,19 @@ const darkColors = {
   accent: '#1C1C1E',
   accentForeground: '#FFFFFF',
 
+  // Tertiary
+  tertiaryFixed: '#3a2f1a',
+  tertiaryFixedDim: '#5a4a26',
+  onTertiaryContainer: '#fcdeb3',
+
   // Destructive colors
   destructive: '#dc2626',
   destructiveForeground: '#FFFFFF',
+  // error: '#ffb4ab',
+  errorContainer: '#93000a',
+  successGreen: '#34d399',
+  platinumMist: '#2a2a2e',
+  white: '#ffffff',
 
   // Border and input - using alpha values for better blending
   border: '#38383A',

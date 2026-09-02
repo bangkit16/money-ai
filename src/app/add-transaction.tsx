@@ -1,3 +1,4 @@
+// migrated to useColor
 import { AccountChips } from "@/components/features/add-transaction/account-chips";
 import { AmountDisplay } from "@/components/features/add-transaction/amount-display";
 import { CategoryGrid } from "@/components/features/add-transaction/category-grid";
@@ -9,13 +10,15 @@ import {
   type TransactionTypeKey,
 } from "@/components/features/transaction/type-toggle";
 import { Text } from "@/components/ui/text";
-import { colors, spacing, typography } from "@/constants/theme";
+import { spacing, typography } from "@/constants/theme";
+import { useColor } from "@/hooks/useColor";
 import { AccountService } from "@/services/accountService";
 import {
   AddTransactionService,
   type TransactionType,
 } from "@/services/addTransactionService";
 import { ActivityService } from "@/services/activityService";
+import { AnalyticsService } from "@/services/analyticsService";
 import { DashboardService } from "@/services/dashboardService";
 import { supabase } from "@/lib/supabase";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -63,6 +66,12 @@ export default function TransactionScreen() {
       useNativeDriver: true,
     }).start();
   }, [entrance]);
+
+  const bgColor = useColor("background");
+  const textColor = useColor("text");
+  const textMutedColor = useColor("textMuted");
+  const primaryColor = useColor("primary");
+  const errorColor = useColor("error");
 
   const [amount, setAmount] = useState("");
   const [categoryId, setCategoryId] = useState<number | null>(null);
@@ -199,6 +208,8 @@ export default function TransactionScreen() {
       queryClient.invalidateQueries({
         queryKey: DashboardService.keys.recentTransactions,
       });
+      queryClient.invalidateQueries({ queryKey: AnalyticsService.keys.current });
+      if (editId) queryClient.invalidateQueries({ queryKey: ["transaction", editId] });
       Alert.alert(
         "Tersimpan",
         isTransfer ? "Transfer berhasil disimpan." : "Transaksi berhasil disimpan.",
@@ -219,6 +230,8 @@ export default function TransactionScreen() {
       queryClient.invalidateQueries({
         queryKey: DashboardService.keys.recentTransactions,
       });
+      queryClient.invalidateQueries({ queryKey: AnalyticsService.keys.current });
+      if (editId) queryClient.invalidateQueries({ queryKey: ["transaction", editId] });
       router.back();
       Alert.alert("Terhapus", "Transaksi berhasil dihapus.", [{ text: "OK" }]);
     },
@@ -260,15 +273,15 @@ export default function TransactionScreen() {
 
   if (isEdit && isLoadingTx) {
     return (
-      <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>Loading...</Text>
+      <View style={[styles.loadingContainer, { backgroundColor: bgColor }]}>
+        <Text style={[styles.loadingText, { color: textMutedColor }]}>Loading...</Text>
       </View>
     );
   }
   if (isEdit && (txError || !existing)) {
     return (
-      <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>
+      <View style={[styles.loadingContainer, { backgroundColor: bgColor }]}>
+        <Text style={[styles.loadingText, { color: textMutedColor }]}>
           {txError ? `Error: ${(txError as Error).message}` : "Gagal memuat transaksi"}
         </Text>
       </View>
@@ -278,13 +291,14 @@ export default function TransactionScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={[styles.screen, styles.screenBackdrop]}
+      style={[styles.screen, { backgroundColor: bgColor }]}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <Animated.View
         style={[
           styles.screen,
           {
+            backgroundColor: bgColor,
             opacity: entrance,
             transform: [
               {
@@ -303,9 +317,9 @@ export default function TransactionScreen() {
             hitSlop={10}
             style={styles.headerBtn}
           >
-            <MaterialIcons name="close" size={24} color={colors.onSurface} />
+            <MaterialIcons name="close" size={24} color={textColor} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>
+          <Text style={[styles.headerTitle, { color: primaryColor }]}>
             {isEdit
               ? "Edit Transaksi"
               : isTransfer
@@ -322,7 +336,7 @@ export default function TransactionScreen() {
               <MaterialIcons
                 name="delete"
                 size={24}
-                color={isDeleting ? colors.onSurfaceVariant : colors.error}
+                color={isDeleting ? textMutedColor : errorColor}
               />
             </TouchableOpacity>
           ) : (
@@ -340,7 +354,7 @@ export default function TransactionScreen() {
             <AmountDisplay amount={amount} />
 
             <View style={styles.fieldBlock}>
-              <Text style={styles.label}>Type</Text>
+              <Text style={[styles.label, { color: textMutedColor }]}>Type</Text>
               <TypeToggle
                 value={transactionType}
                 onChange={setTransactionType}
@@ -348,7 +362,7 @@ export default function TransactionScreen() {
             </View>
 
             <View style={styles.fieldBlock}>
-              <Text style={styles.label}>Category</Text>
+              <Text style={[styles.label, { color: textMutedColor }]}>Category</Text>
               <CategoryGrid
                 categories={categories}
                 selectedId={categoryId}
@@ -360,7 +374,7 @@ export default function TransactionScreen() {
             {isTransfer ? (
               <View style={styles.transferAccountsRow}>
                 <View style={styles.transferAccountCol}>
-                  <Text style={styles.label}>From</Text>
+                  <Text style={[styles.label, { color: textMutedColor }]}>From</Text>
                   <AccountChips
                     accounts={accounts}
                     selectedId={fromAccountId}
@@ -378,11 +392,11 @@ export default function TransactionScreen() {
                   <MaterialIcons
                     name="arrow-forward"
                     size={20}
-                    color={colors.onSurfaceVariant}
+                    color={textMutedColor}
                   />
                 </View>
                 <View style={styles.transferAccountCol}>
-                  <Text style={styles.label}>To</Text>
+                  <Text style={[styles.label, { color: textMutedColor }]}>To</Text>
                   <AccountChips
                     accounts={accounts}
                     selectedId={toAccountId}
@@ -399,7 +413,7 @@ export default function TransactionScreen() {
               </View>
             ) : (
               <View style={styles.fieldBlock}>
-                <Text style={styles.label}>Account</Text>
+                <Text style={[styles.label, { color: textMutedColor }]}>Account</Text>
                 <AccountChips
                   accounts={accounts}
                   selectedId={fromAccountId}
@@ -424,7 +438,7 @@ export default function TransactionScreen() {
           </View>
         </View>
 
-        <View style={styles.footer}>
+        <View style={[styles.footer, { backgroundColor: bgColor }]}>
           <SaveButton
             disabled={!isValid}
             loading={isSaving}
@@ -437,10 +451,9 @@ export default function TransactionScreen() {
 }
 
 const styles = StyleSheet.create({
-  screenBackdrop: { backgroundColor: colors.background },
-  screen: { flex: 1, backgroundColor: colors.background },
+  screen: { flex: 1 },
   loadingContainer: { flex: 1, alignItems: "center", justifyContent: "center" },
-  loadingText: { ...typography.bodyLg, color: colors.onSurfaceVariant },
+  loadingText: { ...typography.bodyLg },
 
   header: {
     flexDirection: "row",
@@ -456,7 +469,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  headerTitle: { ...typography.titleMd, color: colors.primary },
+  headerTitle: { ...typography.titleMd },
 
   body: { flex: 1 },
 
@@ -470,7 +483,6 @@ const styles = StyleSheet.create({
 
   label: {
     ...typography.labelCaps,
-    color: colors.onSurfaceVariant,
     marginBottom: 8,
   },
   fieldBlock: {},
@@ -488,6 +500,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.marginMobile,
     paddingTop: 12,
     paddingBottom: Platform.OS === "ios" ? 32 : 20,
-    backgroundColor: colors.background,
   },
 });
