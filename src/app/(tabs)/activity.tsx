@@ -83,7 +83,7 @@ export default function ActivityScreen() {
             </View>
           }
           renderSectionHeader={({ section }) => (
-            <DateSectionHeader title={section.title} />
+            <DateSectionHeader label={section.label} />
           )}
           renderItem={({ item, index, section }) => (
             <TransactionListItem

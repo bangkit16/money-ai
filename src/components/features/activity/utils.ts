@@ -60,7 +60,15 @@ export function formatTime(dateStr: string) {
   });
 }
 
-function getDateLabel(dateStr: string) {
+export type DateLabel =
+  | { kind: "relative"; text: "Today" | "Yesterday"; dateText: string }
+  | { kind: "absolute"; text: string };
+
+function formatDate(date: Date) {
+  return date.toLocaleDateString("en-US", { month: "long", day: "numeric" });
+}
+
+function getDateLabel(dateStr: string): DateLabel {
   const date = new Date(dateStr);
   const today = new Date();
   const yesterday = new Date();
@@ -71,22 +79,29 @@ function getDateLabel(dateStr: string) {
     a.getMonth() === b.getMonth() &&
     a.getDate() === b.getDate();
 
-  if (isSameDay(date, today)) return "Today";
-  if (isSameDay(date, yesterday)) return "Yesterday";
-  return date.toLocaleDateString("en-US", { month: "long", day: "numeric" });
+  if (isSameDay(date, today))
+    return { kind: "relative", text: "Today", dateText: formatDate(date) };
+  if (isSameDay(date, yesterday))
+    return {
+      kind: "relative",
+      text: "Yesterday",
+      dateText: formatDate(date),
+    };
+  return { kind: "absolute", text: formatDate(date) };
 }
 
 // Kelompokkan array transaksi (sudah terurut created_at desc) jadi section per tanggal
 export function groupByDate(transactions: TransactionRow[]) {
-  const sections: { title: string; data: TransactionRow[] }[] = [];
+  const sections: { title: string; label: DateLabel; data: TransactionRow[] }[] = [];
 
   for (const tx of transactions) {
     const label = getDateLabel(tx.created_at);
+    const title = label.text;
     const lastSection = sections[sections.length - 1];
-    if (lastSection && lastSection.title === label) {
+    if (lastSection && lastSection.title === title) {
       lastSection.data.push(tx);
     } else {
-      sections.push({ title: label, data: [tx] });
+      sections.push({ title, label, data: [tx] });
     }
   }
 
