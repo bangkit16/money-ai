@@ -6,24 +6,24 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { StyleSheet, View } from "react-native";
 import { Text } from "@/components/ui/text";
 
-type TopAccount = { name: string; balance: number };
-
 type HeroBalanceCardProps = {
   netWorth: number;
   trendPct: number;
-  topAccounts: TopAccount[];
+  prevMonthNet: number;
 };
 
 export function HeroBalanceCard({
   netWorth,
   trendPct,
-  topAccounts,
+  prevMonthNet,
 }: HeroBalanceCardProps) {
   const { formatCurrencySigned } = useFormatCurrency();
-  // const primaryColor = useColor("primary");
-  const primaryContainerColor = useColor("primaryContainer");
   const tertiaryFixedColor = useColor("tertiaryFixed");
   const whiteColor = useColor("white");
+  const successColor = useColor("successGreen");
+  const dangerColor = useColor("error");
+  const isPositive = prevMonthNet >= 0;
+  const prevMonthColor = isPositive ? successColor : dangerColor;
   return (
     <LinearGradient
       colors={["#0a2505", "#253b21"]}
@@ -51,18 +51,19 @@ export function HeroBalanceCard({
         </View>
       </View>
       <View style={styles.heroSubRow}>
-        {topAccounts.length > 0 ? (
-          topAccounts.map((acc) => (
-            <View key={acc.name}>
-              <Text style={styles.heroSubLabel}>{acc.name.toUpperCase()}</Text>
-              <Text style={[styles.heroSubAmount, { color: whiteColor }]}>
-                {formatCurrencySigned(acc.balance)}
-              </Text>
-            </View>
-          ))
-        ) : (
-          <Text style={styles.heroSubLabel}>Belum ada rekening</Text>
-        )}
+        <View>
+          <Text style={styles.heroSubLabel}>TOTAL KEUANGAN BULAN LALU</Text>
+          <View style={styles.heroSubAmountRow}>
+            <MaterialIcons
+              name={isPositive ? "arrow-upward" : "arrow-downward"}
+              size={20}
+              color={prevMonthColor}
+            />
+            <Text style={[styles.heroSubAmount, { color: prevMonthColor }]}>
+              {formatCurrencySigned(prevMonthNet)}
+            </Text>
+          </View>
+        </View>
       </View>
     </LinearGradient>
   );
@@ -89,5 +90,11 @@ const styles = StyleSheet.create({
   trendBadgeText: { ...typography.labelCaps },
   heroSubRow: { flexDirection: "row", gap: 48, marginTop: 24 },
   heroSubLabel: { ...typography.labelCaps, color: "rgba(255,255,255,0.6)" },
-  heroSubAmount: { ...typography.titleMd, marginTop: 4 },
+  heroSubAmountRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 4,
+  },
+  heroSubAmount: { ...typography.titleMd },
 });

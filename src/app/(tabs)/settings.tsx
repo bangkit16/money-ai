@@ -1,8 +1,8 @@
 import { LogoutButton } from "@/components/features/settings/logout-button";
-import { LogoutConfirmModal } from "@/components/features/settings/logout-confirm-modal";
 import { CurrencyPickerSheet } from "@/components/features/settings/currency-picker-sheet";
 import { SettingRow } from "@/components/features/settings/setting-row";
 import { ThemePickerSheet } from "@/components/features/settings/theme-picker-sheet";
+import { ConfirmDialog } from "@/components/features/shared/confirm-dialog";
 import { Text } from "@/components/ui/text";
 import { useColor } from "@/hooks/useColor";
 import { useModeContext, type Mode } from "@/providers/mode-provider";
@@ -82,9 +82,12 @@ export default function SettingsScreen() {
         </Section>
       </ScrollView>
 
-      <LogoutConfirmModal
+      <ConfirmDialog
         visible={confirmVisible}
-        isLoggingOut={isLoggingOut}
+        title="Log Out"
+        message="Yakin ingin keluar dari akun kamu?"
+        confirmLabel="Log Out"
+        isConfirming={isLoggingOut}
         onClose={() => setConfirmVisible(false)}
         onConfirm={handleLogout}
       />

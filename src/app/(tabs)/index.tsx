@@ -118,7 +118,7 @@ export default function DashboardScreen() {
     return {
       netWorth,
       trendPct,
-      topAccounts,
+      prevMonthNet,
       thisMonthIncome,
       thisMonthExpense,
       incomeBarWidth,
@@ -155,7 +155,7 @@ export default function DashboardScreen() {
           <HeroBalanceCard
             netWorth={summary?.netWorth ?? 0}
             trendPct={summary?.trendPct ?? 0}
-            topAccounts={summary?.topAccounts ?? []}
+            prevMonthNet={summary?.prevMonthNet ?? 0}
           />
 
           <MonthlySummaryCard
