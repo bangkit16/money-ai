@@ -2,8 +2,8 @@
 import { Text } from "@/components/ui/text";
 import { radius, shadow, spacing, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
+import { LANGUAGES, useSettings } from "@/providers/settings-provider";
 import { useT } from "@/i18n";
-import { CURRENCIES, useSettings } from "@/providers/settings-provider";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -22,8 +22,8 @@ type Props = {
   onClose: () => void;
 };
 
-export function CurrencyPickerSheet({ visible, onClose }: Props) {
-  const { currency, setCurrency } = useSettings();
+export function LanguagePickerSheet({ visible, onClose }: Props) {
+  const { language, setLanguage } = useSettings();
   const t = useT();
   const cardColor = useColor("card");
   const handleColor = useColor("border");
@@ -100,24 +100,30 @@ export function CurrencyPickerSheet({ visible, onClose }: Props) {
           ]}
         >
           <View style={[styles.modalHandle, { backgroundColor: handleColor }]} />
-          <Text style={[styles.modalTitle, { color: textColor }]}>{t("currency.title")}</Text>
+          <Text style={[styles.modalTitle, { color: textColor }]}>
+            {t("language.title")}
+          </Text>
 
-          {CURRENCIES.map((c) => {
-            const active = currency === c.code;
+          {LANGUAGES.map((l) => {
+            const active = language === l.code;
             return (
               <TouchableOpacity
-                key={c.code}
+                key={l.code}
                 activeOpacity={0.85}
                 style={[styles.optionRow, { borderTopColor: borderColor }]}
                 onPress={() => {
-                  setCurrency(c.code);
+                  setLanguage(l.code);
                   onClose();
                 }}
               >
-                <Text style={[styles.symbol, { color: textColor }]}>{c.symbol}</Text>
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.code, { color: textColor }]}>{c.code}</Text>
-                </View>
+                <MaterialIcons
+                  name="language"
+                  size={20}
+                  color={active ? primaryColor : textColor}
+                />
+                <Text style={[styles.optionRowText, { color: textColor }]}>
+                  {l.label}
+                </Text>
                 {active ? (
                   <MaterialIcons name="check" size={20} color={primaryColor} />
                 ) : null}
@@ -168,8 +174,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderTopWidth: 1,
   },
-  symbol: { ...typography.titleMd, fontSize: 18, width: 36, textAlign: "center" },
-  code: { ...typography.bodyLg },
+  optionRowText: { ...typography.bodyLg, flex: 1 },
   optionCancelRow: {
     paddingVertical: 16,
     alignItems: "center",

@@ -1,5 +1,7 @@
 import { useFormatCurrency } from "@/hooks/useFormatCurrency";
 import { useColor } from "@/hooks/useColor";
+import { useT } from "@/i18n";
+import { useSettings } from "@/providers/settings-provider";
 import { radius, typography } from "@/constants/theme";
 import {
   getDisplaySubtitle,
@@ -32,8 +34,10 @@ export function TransactionListItem({
   const primaryColor = useColor("primary");
   const outlineVariantColor = useColor("outlineVariant");
   const iconBgColor = useColor("primary");
+  const t = useT();
+  const { language } = useSettings();
 
-  const title = getDisplayTitle(item);
+  const title = getDisplayTitle(item, t);
   const subtitle = getDisplaySubtitle(item);
   const isTransfer = item.transaction_type === "TRANSFER";
   const fromName = item.from_account?.account_name;
@@ -50,7 +54,7 @@ export function TransactionListItem({
       : "+";
   const { formatCurrency } = useFormatCurrency();
 
-  const timeStr = formatTime(item.created_at);
+  const timeStr = formatTime(item.created_at, language);
   const metaParts = [subtitle, fromName, timeStr].filter(Boolean);
   const metaText = metaParts.join(" • ");
 
@@ -82,7 +86,7 @@ export function TransactionListItem({
             <View style={styles.transferRow}>
               <View style={styles.transferAccount}>
                 <Text style={[styles.transferLabel, { color: onSurfaceVariantColor }]}>
-                  Dari
+                  {t("activity.from")}
                 </Text>
                 <Text style={[styles.transferName, { color: onSurfaceVariantColor }]} numberOfLines={1}>
                   {fromName}
@@ -96,7 +100,7 @@ export function TransactionListItem({
               />
               <View style={styles.transferAccount}>
                 <Text style={[styles.transferLabel, { color: onSurfaceVariantColor }]}>
-                  Ke
+                  {t("activity.to")}
                 </Text>
                 <Text style={[styles.transferName, { color: onSurfaceVariantColor }]} numberOfLines={1}>
                   {toName}

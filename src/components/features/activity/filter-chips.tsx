@@ -1,15 +1,16 @@
 // migrated to useColor
 import { radius, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
+import { useT } from "@/i18n";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { Text } from "@/components/ui/text";
 
 type TxType = "INCOME" | "EXPENSE";
 
-const FILTERS: { key: "all" | TxType; label: string }[] = [
-  { key: "all", label: "All" },
-  { key: "EXPENSE", label: "Expenses" },
-  { key: "INCOME", label: "Income" },
+const FILTERS: { key: "all" | TxType; labelKey: string }[] = [
+  { key: "all", labelKey: "activity.filterAll" },
+  { key: "EXPENSE", labelKey: "activity.filterExpenses" },
+  { key: "INCOME", labelKey: "activity.filterIncome" },
 ];
 
 type FilterChipsProps = {
@@ -23,6 +24,7 @@ export function FilterChips({ activeFilter, onChange }: FilterChipsProps) {
   const primaryColor = useColor("primary");
   const textMutedColor = useColor("textMuted");
   const whiteColor = useColor("background");
+  const t = useT();
   return (
     <View style={styles.row}>
       {FILTERS.map((f) => {
@@ -44,7 +46,7 @@ export function FilterChips({ activeFilter, onChange }: FilterChipsProps) {
                 active && { color: whiteColor },
               ]}
             >
-              {f.label}
+              {t(f.labelKey)}
             </Text>
           </TouchableOpacity>
         );

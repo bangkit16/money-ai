@@ -6,6 +6,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { Text } from "@/components/ui/text";
 import { spacing, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
+import { useT } from "@/i18n";
 import { AnalyticsService } from "@/services/analyticsService";
 import { useQuery } from "@tanstack/react-query";
 import { ScrollView, StyleSheet, View } from "react-native";
@@ -15,6 +16,7 @@ export default function AnalyticsScreen() {
   const primaryColor = useColor("primary");
   const textMutedColor = useColor("textMuted");
   const textColor = useColor("text");
+  const t = useT();
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: AnalyticsService.keys.current,
@@ -31,10 +33,10 @@ export default function AnalyticsScreen() {
       >
         <View style={{ marginBottom: 8 }}>
           <Text style={[styles.pageTitle, { color: primaryColor }]}>
-            Financial Analytics
+            {t("analytics.title")}
           </Text>
           <Text style={[styles.pageSubtitle, { color: textMutedColor }]}>
-            {data?.monthLabel ?? "Loading insights..."}
+            {data?.monthLabel ?? t("analytics.loadingInsights")}
           </Text>
         </View>
 
@@ -47,13 +49,13 @@ export default function AnalyticsScreen() {
         {isError && (
           <View style={styles.center}>
             <Text style={[styles.errorText, { color: textColor }]}>
-              Failed to load analytics.
+              {t("analytics.error")}
             </Text>
             <Text
               style={[styles.retry, { color: primaryColor }]}
               onPress={() => refetch()}
             >
-              Tap to retry
+              {t("analytics.retry")}
             </Text>
           </View>
         )}
@@ -67,7 +69,7 @@ export default function AnalyticsScreen() {
 
             <View style={styles.sectionHeaderRow}>
               <Text style={[styles.titleMd, { color: textColor }]}>
-                Top Spending Categories
+                {t("analytics.topCategories")}
               </Text>
             </View>
 

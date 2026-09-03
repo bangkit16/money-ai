@@ -1,9 +1,8 @@
 import type { ActivityTransactionRow } from "@/services/activityService";
+import type { LanguageCode } from "@/providers/settings-provider";
 
 export type TransactionRow = ActivityTransactionRow;
 
-// DB belum punya kolom icon per kategori, jadi kita map manual dari slug.
-// TODO: sesuaikan key-nya dengan slug asli di tabel category_transaction kamu.
 const ICON_BY_SLUG: Record<string, string> = {
   food: "restaurant",
   shopping: "shopping-bag",
@@ -28,8 +27,12 @@ export function getIcon(category: TransactionRow["category"], type: TxType) {
   return type === "INCOME" ? "payments" : "receipt-long";
 }
 
-// Title fallback: transaction > category > "Pemasukan"/"Pengeluaran"/dari akun tujuan
-export function getDisplayTitle(row: TransactionRow): string {
+export type Translator = (key: string) => string;
+
+export function getDisplayTitle(
+  row: TransactionRow,
+  t: Translator
+): string {
   if (row.transaction && row.transaction.trim()) return row.transaction;
   if (row.category?.category) return row.category.category;
   if (row.transaction_type === "TRANSFER") {
@@ -39,36 +42,40 @@ export function getDisplayTitle(row: TransactionRow): string {
     if (to) return `→ ${to}`;
     if (from) return `${from} →`;
   }
-  if (row.transaction_type === "INCOME") return "Pemasukan";
-  if (row.transaction_type === "EXPENSE") return "Pengeluaran";
-  return "Transaksi";
+  if (row.transaction_type === "INCOME") return t("activity.fallbackIncome");
+  if (row.transaction_type === "EXPENSE") return t("activity.fallbackExpense");
+  return t("activity.fallbackTransaction");
 }
 
-// Subtitle: kalau TRANSFER, return "" — baris akun eksplisit sudah cukup.
-// Kalau bukan TRANSFER & ada category, tampilkan category.
-// Kalau kosong semua, tampilkan nothing (return "").
 export function getDisplaySubtitle(row: TransactionRow): string {
   if (row.transaction_type === "TRANSFER") return "";
   if (row.category?.category) return row.category.category;
   return "";
 }
 
-export function formatTime(dateStr: string) {
-  return new Date(dateStr).toLocaleTimeString("en-US", {
+export function formatTime(dateStr: string, lang: LanguageCode) {
+  return new Date(dateStr).toLocaleTimeString(lang === "id" ? "id-ID" : "en-US", {
     hour: "numeric",
     minute: "2-digit",
   });
 }
 
 export type DateLabel =
-  | { kind: "relative"; text: "Today" | "Yesterday"; dateText: string }
+  | { kind: "relative"; text: string; dateText: string }
   | { kind: "absolute"; text: string };
 
-function formatDate(date: Date) {
-  return date.toLocaleDateString("en-US", { month: "long", day: "numeric" });
+function formatDate(date: Date, lang: LanguageCode) {
+  return date.toLocaleDateString(lang === "id" ? "id-ID" : "en-US", {
+    month: "long",
+    day: "numeric",
+  });
 }
 
-function getDateLabel(dateStr: string): DateLabel {
+export function getDateLabel(
+  dateStr: string,
+  t: Translator,
+  lang: LanguageCode
+): DateLabel {
   const date = new Date(dateStr);
   const today = new Date();
   const yesterday = new Date();
@@ -80,22 +87,25 @@ function getDateLabel(dateStr: string): DateLabel {
     a.getDate() === b.getDate();
 
   if (isSameDay(date, today))
-    return { kind: "relative", text: "Today", dateText: formatDate(date) };
+    return { kind: "relative", text: t("activity.today"), dateText: formatDate(date, lang) };
   if (isSameDay(date, yesterday))
     return {
       kind: "relative",
-      text: "Yesterday",
-      dateText: formatDate(date),
+      text: t("activity.yesterday"),
+      dateText: formatDate(date, lang),
     };
-  return { kind: "absolute", text: formatDate(date) };
+  return { kind: "absolute", text: formatDate(date, lang) };
 }
 
-// Kelompokkan array transaksi (sudah terurut created_at desc) jadi section per tanggal
-export function groupByDate(transactions: TransactionRow[]) {
+export function groupByDate(
+  transactions: TransactionRow[],
+  t: Translator,
+  lang: LanguageCode
+) {
   const sections: { title: string; label: DateLabel; data: TransactionRow[]; total: number }[] = [];
 
   for (const tx of transactions) {
-    const label = getDateLabel(tx.created_at);
+    const label = getDateLabel(tx.created_at, t, lang);
     const title = label.text;
     const lastSection = sections[sections.length - 1];
     const amount = Number(tx.amount) || 0;

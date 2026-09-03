@@ -2,13 +2,14 @@
 import { Text } from "@/components/ui/text";
 import { radius, shadow, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
+import { useT } from "@/i18n";
 import { MaterialIcons } from "@expo/vector-icons";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 
 const TRANSACTION_TYPES = [
-  { key: "EXPENSE", label: "Expense", icon: "arrow-upward" },
-  { key: "INCOME", label: "Income", icon: "arrow-downward" },
-  { key: "TRANSFER", label: "Transfer", icon: "swap-horiz" },
+  { key: "EXPENSE", labelKey: "type.expense", icon: "arrow-upward" },
+  { key: "INCOME", labelKey: "type.income", icon: "arrow-downward" },
+  { key: "TRANSFER", labelKey: "type.transfer", icon: "swap-horiz" },
 ] as const;
 
 export type TransactionTypeKey = (typeof TRANSACTION_TYPES)[number]["key"];
@@ -24,6 +25,7 @@ export function TypeToggle({ value, onChange }: TypeToggleProps) {
   const primaryColor = useColor("primary");
   const textMutedColor = useColor("textMuted");
   const whiteColor = useColor("background");
+  const t = useT();
   return (
     <View style={styles.typeRow}>
       {TRANSACTION_TYPES.map((t) => {
@@ -52,7 +54,7 @@ export function TypeToggle({ value, onChange }: TypeToggleProps) {
                 active && { color: whiteColor },
               ]}
             >
-              {t.label}
+              {t.labelKey.startsWith("type.") ? t(t.labelKey) : t.labelKey}
             </Text>
           </TouchableOpacity>
         );

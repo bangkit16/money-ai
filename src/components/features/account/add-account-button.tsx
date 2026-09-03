@@ -2,12 +2,14 @@
 import { Text } from "@/components/ui/text";
 import { radius, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
+import { useT } from "@/i18n";
 import { MaterialIcons } from "@expo/vector-icons";
 import { StyleSheet, TouchableOpacity } from "react-native";
 
 export function AddAccountButton({ onPress }: { onPress: () => void }) {
   const borderColor = useColor("border");
   const primaryColor = useColor("primary");
+  const t = useT();
   return (
     <TouchableOpacity
       style={[styles.button, { borderColor }]}
@@ -19,7 +21,7 @@ export function AddAccountButton({ onPress }: { onPress: () => void }) {
         size={20}
         color={primaryColor}
       />
-      <Text style={[styles.text, { color: primaryColor }]}>Add New Account</Text>
+      <Text style={[styles.text, { color: primaryColor }]}>{t("account.addNew")}</Text>
     </TouchableOpacity>
   );
 }

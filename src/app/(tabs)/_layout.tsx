@@ -3,6 +3,8 @@ import AddTransactionButton from "@/components/add-transaction-button";
 import AiButton from "@/components/ai-button";
 import { colors, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
+import { useT } from "@/i18n";
+import { useSettings } from "@/providers/settings-provider";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import { StyleSheet, View } from "react-native";
@@ -11,11 +13,13 @@ export default function TabsLayout() {
   const primaryColor = useColor("primary");
   const outlineColor = useColor("textMuted");
   const tabBarBg = useColor("background");
+  const t = useT();
+  const lang = useSettings().language;
   return (
-    <View style={styles.container}>
+    <View key={lang} style={styles.container}>
       <Tabs
         screenOptions={{
-          headerShown: false, // tiap screen bikin header sendiri di dalam JSX
+          headerShown: false,
           tabBarActiveTintColor: primaryColor,
           tabBarInactiveTintColor: outlineColor,
           tabBarStyle: {
@@ -36,7 +40,7 @@ export default function TabsLayout() {
         <Tabs.Screen
           name="index"
           options={{
-            title: "Dashboard",
+            title: t("tabs.dashboard"),
             tabBarIcon: ({ color, size }) => (
               <MaterialIcons name="dashboard" size={size} color={color} />
             ),
@@ -45,7 +49,7 @@ export default function TabsLayout() {
         <Tabs.Screen
           name="activity"
           options={{
-            title: "Activity",
+            title: t("tabs.activity"),
             tabBarIcon: ({ color, size }) => (
               <MaterialIcons name="receipt-long" size={size} color={color} />
             ),
@@ -54,7 +58,7 @@ export default function TabsLayout() {
         <Tabs.Screen
           name="analytics"
           options={{
-            title: "Analytics",
+            title: t("tabs.analytics"),
             tabBarIcon: ({ color, size }) => (
               <MaterialIcons name="insert-chart" size={size} color={color} />
             ),
@@ -63,7 +67,7 @@ export default function TabsLayout() {
         <Tabs.Screen
           name="account"
           options={{
-            title: "Account",
+            title: t("tabs.account"),
             tabBarIcon: ({ color, size }) => (
               <MaterialIcons name="attach-money" size={size} color={color} />
             ),
@@ -72,7 +76,7 @@ export default function TabsLayout() {
         <Tabs.Screen
           name="settings"
           options={{
-            title: "Settings",
+            title: t("tabs.settings"),
             tabBarIcon: ({ color, size }) => (
               <MaterialIcons name="settings" size={size} color={color} />
             ),

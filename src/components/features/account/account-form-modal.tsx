@@ -2,6 +2,7 @@
 import { Text } from "@/components/ui/text";
 import { radius, shadow, spacing, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
+import { useT } from "@/i18n";
 import type { AccountRow } from "@/services/accountService";
 import {
   ActivityIndicator,
@@ -45,6 +46,7 @@ export function AccountFormModal({
   const mutedBgColor = useColor("muted");
   const primaryColor = useColor("primary");
   const whiteColor = useColor("background");
+  const t = useT();
 
   const [mounted, setMounted] = useState(visible);
   const [prevVisible, setPrevVisible] = useState(visible);
@@ -117,14 +119,14 @@ export function AccountFormModal({
         >
           <View style={[styles.modalHandle, { backgroundColor: handleColor }]} />
           <Text style={[styles.modalTitle, { color: textColor }]}>
-            {editingAccount ? "Edit Account" : "Add New Account"}
+            {editingAccount ? t("account.editAccount") : t("account.addAccount")}
           </Text>
 
-          <Text style={[styles.label, { color: textMutedColor }]}>Account Name</Text>
+          <Text style={[styles.label, { color: textMutedColor }]}>{t("account.nameLabel")}</Text>
           <TextInput
             value={nameInput}
             onChangeText={onChangeName}
-            placeholder="e.g. BCA Checking"
+            placeholder={t("account.namePlaceholder")}
             placeholderTextColor={textMutedColor}
             style={[styles.input, { color: textColor, backgroundColor: mutedBgColor }]}
             autoFocus
@@ -135,7 +137,7 @@ export function AccountFormModal({
               style={[styles.cancelButton, { borderColor }]}
               onPress={onClose}
             >
-              <Text style={[styles.cancelButtonText, { color: textMutedColor }]}>Cancel</Text>
+              <Text style={[styles.cancelButtonText, { color: textMutedColor }]}>{t("common.cancel")}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[
@@ -150,7 +152,7 @@ export function AccountFormModal({
                 <ActivityIndicator color={whiteColor} />
               ) : (
                 <Text style={[styles.saveButtonText, { color: whiteColor }]}>
-                  {editingAccount ? "Save Changes" : "Add Account"}
+                  {editingAccount ? t("account.saveChanges") : t("account.add")}
                 </Text>
               )}
             </TouchableOpacity>

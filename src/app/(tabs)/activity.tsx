@@ -8,6 +8,8 @@ import { groupByDate } from "@/components/features/activity/utils";
 import { Text } from "@/components/ui/text";
 import { spacing, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
+import { useT } from "@/i18n";
+import { useSettings } from "@/providers/settings-provider";
 import { ActivityService } from "@/services/activityService";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
@@ -29,6 +31,8 @@ export default function ActivityScreen() {
   const primaryColor = useColor("primary");
   const textMutedColor = useColor("textMuted");
   const outlineColor = useColor("border");
+  const t = useT();
+  const { language } = useSettings();
 
   const {
     data: transactions,
@@ -53,8 +57,8 @@ export default function ActivityScreen() {
       return matchesFilter && matchesQuery;
     });
 
-    return groupByDate(filtered);
-  }, [transactions, query, activeFilter]);
+    return groupByDate(filtered, t, language);
+  }, [transactions, query, activeFilter, t, language]);
 
   const handleEditPress = (
     transaction: import("@/services/activityService").ActivityTransactionRow
@@ -70,12 +74,12 @@ export default function ActivityScreen() {
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="small" color={primaryColor} />
           <Text style={[styles.loadingText, { color: textMutedColor }]}>
-            Loading transactions...
+            {t("activity.loading")}
           </Text>
         </View>
       ) : error ? (
         <Text style={[styles.emptyText, { color: outlineColor }]}>
-          Gagal memuat transaksi: {(error as Error).message}
+          {t("activity.loadError", { message: (error as Error).message })}
         </Text>
       ) : (
         <SectionList
@@ -105,7 +109,7 @@ export default function ActivityScreen() {
           )}
           ListEmptyComponent={
             <Text style={[styles.emptyText, { color: outlineColor }]}>
-              Tidak ada transaksi yang cocok.
+              {t("activity.empty")}
             </Text>
           }
         />

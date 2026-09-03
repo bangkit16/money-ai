@@ -9,6 +9,7 @@ import { ConfirmDialog } from "@/components/features/shared/confirm-dialog";
 import { Text } from "@/components/ui/text";
 import { spacing, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
+import { useT } from "@/i18n";
 import { AccountService, type AccountRow } from "@/services/accountService";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -16,6 +17,7 @@ import { ScrollView, StyleSheet, View } from "react-native";
 
 export default function AccountScreen() {
   const queryClient = useQueryClient();
+  const t = useT();
 
   const [formVisible, setFormVisible] = useState(false);
   const [editingAccount, setEditingAccount] = useState<AccountRow | null>(null);
@@ -25,14 +27,11 @@ export default function AccountScreen() {
   const textColor = useColor("text");
   const textMutedColor = useColor("textMuted");
 
-  // Bottom sheet opsi (Edit/Hapus) & konfirmasi hapus — pengganti Alert.alert
-  // (Alert.alert tidak render apa pun di web, jadi harus pakai UI sendiri)
   const [optionsAccount, setOptionsAccount] = useState<AccountRow | null>(null);
   const [deleteConfirmAccount, setDeleteConfirmAccount] =
     useState<AccountRow | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // --- READ ---
   const {
     data: accounts,
     isLoading,
@@ -42,9 +41,6 @@ export default function AccountScreen() {
     queryFn: AccountService.GetAccountsWithTotals,
   });
 
-  console.log("rekening", accounts);
-
-  // --- CREATE ---
   const { mutate: createAccount, isPending: isCreating } = useMutation({
     mutationFn: AccountService.CreateAccount,
     onSuccess: () => {
@@ -52,10 +48,9 @@ export default function AccountScreen() {
       closeForm();
     },
     onError: (err: Error) =>
-      setErrorMessage(err.message ?? "Gagal menambah rekening."),
+      setErrorMessage(err.message ?? t("account.errorCreate")),
   });
 
-  // --- UPDATE ---
   const { mutate: updateAccount, isPending: isUpdating } = useMutation({
     mutationFn: ({ id, accountName }: { id: number; accountName: string }) =>
       AccountService.UpdateAccount(id, accountName),
@@ -64,10 +59,9 @@ export default function AccountScreen() {
       closeForm();
     },
     onError: (err: Error) =>
-      setErrorMessage(err.message ?? "Gagal mengubah rekening."),
+      setErrorMessage(err.message ?? t("account.errorUpdate")),
   });
 
-  // --- DELETE ---
   const { mutate: deleteAccount } = useMutation({
     mutationFn: AccountService.DeleteAccount,
     onSuccess: () => {
@@ -76,7 +70,7 @@ export default function AccountScreen() {
     },
     onError: (err: Error) => {
       setDeleteConfirmAccount(null);
-      setErrorMessage(err.message ?? "Gagal menghapus rekening.");
+      setErrorMessage(err.message ?? t("account.errorDelete"));
     },
   });
 
@@ -114,6 +108,7 @@ export default function AccountScreen() {
   };
 
   const isSubmitting = isCreating || isUpdating;
+  const count = accounts?.length ?? 0;
 
   return (
     <View style={[styles.screen, { backgroundColor: bgColor }]}>
@@ -126,9 +121,12 @@ export default function AccountScreen() {
         <TransferCard />
 
         <View style={styles.sectionHeaderRow}>
-          <Text style={[styles.titleMd, { color: textColor }]}>My Accounts</Text>
+          <Text style={[styles.titleMd, { color: textColor }]}>{t("account.myAccounts")}</Text>
           <Text style={[styles.mutedLabel, { color: textMutedColor }]}>
-            {accounts?.length ?? 0} account{accounts?.length === 1 ? "" : "s"}
+            {t("account.count", {
+              count,
+              plural: count === 1 ? "" : "s",
+            })}
           </Text>
         </View>
 
@@ -161,16 +159,18 @@ export default function AccountScreen() {
 
       <ConfirmDialog
         visible={!!deleteConfirmAccount}
-        title="Hapus Rekening"
-        message={`Yakin ingin menghapus "${deleteConfirmAccount?.account_name}"? Tindakan ini tidak bisa dibatalkan.`}
+        title={t("account.deleteAccountTitle")}
+        message={t("account.deleteAccountMsg", {
+          name: deleteConfirmAccount?.account_name ?? "",
+        })}
         onClose={() => setDeleteConfirmAccount(null)}
         onConfirm={confirmDelete}
-        confirmLabel="Hapus"
+        confirmLabel={t("account.deleteAccountBtn")}
       />
 
       <ConfirmDialog
         visible={!!errorMessage}
-        title="Terjadi Kesalahan"
+        title={t("account.errorTitle")}
         message={errorMessage ?? ""}
         onClose={() => setErrorMessage(null)}
       />

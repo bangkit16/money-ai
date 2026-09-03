@@ -14,6 +14,7 @@ import {
 import { Text } from "@/components/ui/text";
 import { spacing, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
+import { useT } from "@/i18n";
 import {
   AddTransactionService,
   type TransactionType,
@@ -55,6 +56,7 @@ export function EditTransactionBottomSheet({
   const textMutedColor = useColor("textMuted");
   const primaryColor = useColor("primary");
   const errorColor = useColor("error");
+  const t = useT();
 
   const entrance = useMemo(() => new Animated.Value(0), []);
 
@@ -108,7 +110,7 @@ export function EditTransactionBottomSheet({
   const { mutate: updateTransaction, isPending: isSaving } = useMutation({
     mutationFn: () => {
       if (categoryId === null) {
-        throw new Error("Kategori wajib dipilih.");
+        throw new Error(t("add.categoryRequired"));
       }
       return AddTransactionService.UpdateTransaction(transaction.id, {
         amount: parseFloat(amount),
@@ -130,12 +132,12 @@ export function EditTransactionBottomSheet({
       queryClient.invalidateQueries({ queryKey: ["transaction", String(transaction.id)] });
       bottomSheet.close();
       onClose();
-      Alert.alert("Tersimpan", "Transaksi berhasil diperbarui.", [
-        { text: "OK" },
+      Alert.alert(t("add.saved"), t("edit.savedMsg"), [
+        { text: t("common.ok") },
       ]);
     },
     onError: (error: Error) => {
-      Alert.alert("Gagal menyimpan", error.message ?? "Terjadi kesalahan.");
+      Alert.alert(t("add.saveError"), error.message ?? t("add.saveGenericError"));
     },
   });
 
@@ -151,12 +153,12 @@ export function EditTransactionBottomSheet({
       });
       queryClient.invalidateQueries({ queryKey: AnalyticsService.keys.current });
       queryClient.invalidateQueries({ queryKey: ["transaction", String(transaction.id)] });
-      Alert.alert("Terhapus", "Transaksi berhasil dihapus.", [
-        { text: "OK", onPress: () => { bottomSheet.close(); onClose(); } },
+      Alert.alert(t("add.deleted"), t("add.deletedMsg"), [
+        { text: t("common.ok"), onPress: () => { bottomSheet.close(); onClose(); } },
       ]);
     },
     onError: (error: Error) => {
-      Alert.alert("Gagal menghapus", error.message ?? "Terjadi kesalahan.");
+      Alert.alert(t("add.deleteError"), error.message ?? t("add.saveGenericError"));
     },
   });
 
@@ -186,11 +188,11 @@ export function EditTransactionBottomSheet({
 
   const handleDelete = () => {
     Alert.alert(
-      "Hapus Transaksi",
-      "Apakah Anda yakin ingin menghapus transaksi ini?",
+      t("add.deleteConfirmTitle"),
+      t("edit.deleteConfirmMsg"),
       [
-        { text: "Batal", style: "cancel" },
-        { text: "Hapus", style: "destructive", onPress: () => deleteTransaction() },
+        { text: t("common.cancel"), style: "cancel" },
+        { text: t("common.delete"), style: "destructive", onPress: () => deleteTransaction() },
       ]
     );
   };
@@ -202,7 +204,7 @@ export function EditTransactionBottomSheet({
         bottomSheet.close();
         onClose();
       }}
-      title="Edit Transaksi"
+      title={t("edit.title")}
       snapPoints={[0.9]}
       disablePanGesture={false}
     >
@@ -236,7 +238,7 @@ export function EditTransactionBottomSheet({
             >
               <MaterialIcons name="close" size={24} color={textColor} />
             </TouchableOpacity>
-            <Text style={[styles.headerTitle, { color: primaryColor }]}>Edit Transaksi</Text>
+            <Text style={[styles.headerTitle, { color: primaryColor }]}>{t("edit.title")}</Text>
             <TouchableOpacity
               onPress={handleDelete}
               disabled={isDeleting}
@@ -262,12 +264,12 @@ export function EditTransactionBottomSheet({
               <AmountDisplay amount={amount} />
 
               <View style={styles.fieldBlock}>
-                <Text style={[styles.label, { color: textMutedColor }]}>Type</Text>
+                <Text style={[styles.label, { color: textMutedColor }]}>{t("edit.type")}</Text>
                 <TypeToggle value={transactionType} onChange={setTransactionType} />
               </View>
 
               <View style={styles.fieldBlock}>
-                <Text style={[styles.label, { color: textMutedColor }]}>Category</Text>
+                <Text style={[styles.label, { color: textMutedColor }]}>{t("edit.category")}</Text>
                 <CategoryGrid
                   categories={categories}
                   selectedId={categoryId}
@@ -277,7 +279,7 @@ export function EditTransactionBottomSheet({
               </View>
 
               <View style={styles.fieldBlock}>
-                <Text style={[styles.label, { color: textMutedColor }]}>Account</Text>
+                <Text style={[styles.label, { color: textMutedColor }]}>{t("edit.account")}</Text>
                 <AccountChips
                   accounts={accounts}
                   selectedId={accountId}

@@ -4,6 +4,7 @@ import { LoginHero } from "@/components/features/login/login-hero";
 import { Text } from "@/components/ui/text";
 import { spacing, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
+import { useT } from "@/i18n";
 import * as WebBrowser from "expo-web-browser";
 import * as Linking from "expo-linking";
 import { router } from "expo-router";
@@ -22,6 +23,7 @@ const redirectTo = Linking.createURL("/auth-callback");
 
 export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
+  const t = useT();
 
   const bgColor = useColor("background");
   const sheetColor = useColor("card");
@@ -70,18 +72,19 @@ export default function LoginScreen() {
       {/* Bagian bawah: card sign-in (overlap ke hero) */}
       <View style={[styles.sheet, { backgroundColor: sheetColor }]}>
         <View style={{ marginBottom: 32 }}>
-          <Text style={[styles.title, { color: textColor }]}>Welcome back</Text>
+          <Text style={[styles.title, { color: textColor }]}>{t("login.welcome")}</Text>
           <Text style={[styles.subtitle, { color: textMutedColor }]}>
-            Sign in to continue tracking your finances.
+            {t("login.subtitle")}
           </Text>
         </View>
 
         <GoogleSignInButton loading={loading} onPress={handleGoogleSignIn} />
 
         <Text style={[styles.termsText, { color: borderColor }]}>
-          By continuing, you agree to {"Dompety's"}{" "}
-          <Text style={[styles.termsLink, { color: textMutedColor }]}>Terms of Service</Text> and{" "}
-          <Text style={[styles.termsLink, { color: textMutedColor }]}>Privacy Policy</Text>.
+          {t("login.terms", { brand: "Dompety's" })}
+          <Text style={[styles.termsLink, { color: textMutedColor }]}>{t("login.termsOfService")}</Text>
+          {t("login.termsAnd")}
+          <Text style={[styles.termsLink, { color: textMutedColor }]}>{t("login.privacyPolicy")}</Text>.
         </Text>
       </View>
     </View>

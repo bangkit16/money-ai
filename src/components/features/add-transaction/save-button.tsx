@@ -2,6 +2,7 @@
 import { Text } from "@/components/ui/text";
 import { radius, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
+import { useT } from "@/i18n";
 import { MaterialIcons } from "@expo/vector-icons";
 import {
   ActivityIndicator,
@@ -18,6 +19,7 @@ type SaveButtonProps = {
 export function SaveButton({ disabled, loading, onPress }: SaveButtonProps) {
   const primaryColor = useColor("primary");
   const whiteColor = useColor("background");
+  const t = useT();
   return (
     <TouchableOpacity
       style={[styles.button, { backgroundColor: primaryColor }, (disabled || loading) && styles.disabled]}
@@ -29,7 +31,7 @@ export function SaveButton({ disabled, loading, onPress }: SaveButtonProps) {
         <ActivityIndicator color={whiteColor} />
       ) : (
         <>
-          <Text style={[styles.text, { color: whiteColor }]}>Save Transaction</Text>
+          <Text style={[styles.text, { color: whiteColor }]}>{t("add.saveButton")}</Text>
           <MaterialIcons name="check-circle" size={20} color={whiteColor} />
         </>
       )}

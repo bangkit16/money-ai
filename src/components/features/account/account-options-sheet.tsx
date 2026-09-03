@@ -2,6 +2,7 @@
 import { Text } from "@/components/ui/text";
 import { radius, shadow, spacing, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
+import { useT } from "@/i18n";
 import type { AccountRow } from "@/services/accountService";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Modal, Platform, StyleSheet, TouchableOpacity, View } from "react-native";
@@ -25,6 +26,7 @@ export function AccountOptionsSheet({
   const textMutedColor = useColor("textMuted");
   const borderColor = useColor("border");
   const errorColor = useColor("error");
+  const t = useT();
 
   const handleEdit = () => {
     if (account) onEdit(account);
@@ -57,7 +59,7 @@ export function AccountOptionsSheet({
 
           <TouchableOpacity style={[styles.optionRow, { borderTopColor: borderColor }]} onPress={handleEdit}>
             <MaterialIcons name="edit" size={20} color={textColor} />
-            <Text style={[styles.optionRowText, { color: textColor }]}>Edit</Text>
+            <Text style={[styles.optionRowText, { color: textColor }]}>{t("common.edit")}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -70,12 +72,12 @@ export function AccountOptionsSheet({
               color={errorColor}
             />
             <Text style={[styles.optionRowText, { color: errorColor }]}>
-              Hapus
+              {t("common.delete")}
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.optionCancelRow} onPress={onClose}>
-            <Text style={[styles.optionCancelText, { color: textMutedColor }]}>Batal</Text>
+            <Text style={[styles.optionCancelText, { color: textMutedColor }]}>{t("common.cancel")}</Text>
           </TouchableOpacity>
         </TouchableOpacity>
       </TouchableOpacity>

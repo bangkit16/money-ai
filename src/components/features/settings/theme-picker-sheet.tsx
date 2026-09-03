@@ -3,6 +3,7 @@ import { Text } from "@/components/ui/text";
 import { radius, shadow, spacing, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
 import { useModeContext, type Mode } from "@/providers/mode-provider";
+import { useT } from "@/i18n";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -21,14 +22,15 @@ type Props = {
   onClose: () => void;
 };
 
-const OPTIONS: { value: Mode; label: string; icon: keyof typeof MaterialIcons.glyphMap }[] = [
-  { value: "light", label: "Light", icon: "light-mode" },
-  { value: "dark", label: "Dark", icon: "dark-mode" },
-  { value: "system", label: "System", icon: "settings-brightness" },
+const OPTIONS: { value: Mode; key: string; icon: keyof typeof MaterialIcons.glyphMap }[] = [
+  { value: "light", key: "theme.light", icon: "light-mode" },
+  { value: "dark", key: "theme.dark", icon: "dark-mode" },
+  { value: "system", key: "theme.system", icon: "settings-brightness" },
 ];
 
 export function ThemePickerSheet({ visible, onClose }: Props) {
   const modeCtx = useModeContext();
+  const t = useT();
   const cardColor = useColor("card");
   const handleColor = useColor("border");
   const textColor = useColor("text");
@@ -104,7 +106,7 @@ export function ThemePickerSheet({ visible, onClose }: Props) {
           ]}
         >
           <View style={[styles.modalHandle, { backgroundColor: handleColor }]} />
-          <Text style={[styles.modalTitle, { color: textColor }]}>Theme</Text>
+          <Text style={[styles.modalTitle, { color: textColor }]}>{t("theme.title")}</Text>
 
           {OPTIONS.map((opt) => {
             const active = modeCtx?.mode === opt.value;
@@ -124,7 +126,7 @@ export function ThemePickerSheet({ visible, onClose }: Props) {
                   color={active ? primaryColor : textColor}
                 />
                 <Text style={[styles.optionRowText, { color: textColor }]}>
-                  {opt.label}
+                  {t(opt.key)}
                 </Text>
                 {active ? (
                   <MaterialIcons name="check" size={20} color={primaryColor} />
@@ -135,7 +137,7 @@ export function ThemePickerSheet({ visible, onClose }: Props) {
 
           <TouchableOpacity style={styles.optionCancelRow} onPress={onClose}>
             <Text style={[styles.optionCancelText, { color: textMutedColor }]}>
-              Cancel
+              {t("common.cancel")}
             </Text>
           </TouchableOpacity>
         </Animated.View>

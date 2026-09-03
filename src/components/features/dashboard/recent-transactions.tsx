@@ -1,6 +1,9 @@
 import { useFormatCurrency } from "@/hooks/useFormatCurrency";
 import { radius, shadow, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
+import { useT } from "@/i18n";
+import { useSettings } from "@/providers/settings-provider";
+import type { LanguageCode } from "@/providers/settings-provider";
 import type { RecentTxRow } from "@/services/dashboardService";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -12,7 +15,7 @@ import {
   getIcon,
 } from "@/components/features/activity/utils";
 
-function getRelativeLabel(dateStr: string) {
+function getRelativeLabel(dateStr: string, lang: LanguageCode, t: (k: string) => string) {
   const date = new Date(dateStr);
   const today = new Date();
   const yesterday = new Date();
@@ -23,9 +26,12 @@ function getRelativeLabel(dateStr: string) {
     a.getMonth() === b.getMonth() &&
     a.getDate() === b.getDate();
 
-  if (isSameDay(date, today)) return "Today";
-  if (isSameDay(date, yesterday)) return "Yesterday";
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  if (isSameDay(date, today)) return t("activity.today");
+  if (isSameDay(date, yesterday)) return t("activity.yesterday");
+  return date.toLocaleDateString(lang === "id" ? "id-ID" : "en-US", {
+    month: "short",
+    day: "numeric",
+  });
 }
 
 function getSourceLabel(tx: RecentTxRow): string {
@@ -49,13 +55,15 @@ function TransactionRow({
   onPress: () => void;
 }) {
   const { formatCurrency } = useFormatCurrency();
+  const t = useT();
+  const { language } = useSettings();
   const onSurfaceColor = useColor("onSurface");
   const errorColor = useColor("error");
   const successColor = useColor("successGreen");
   const primaryColor = useColor("primary");
   const outlineColor = useColor("outline");
   const secondaryContainerColor = useColor("secondaryContainer");
-  const title = getDisplayTitle(tx);
+  const title = getDisplayTitle(tx, t);
   const subtitle = getDisplaySubtitle(tx);
   const amountColor =
     tx.transaction_type === "TRANSFER"
@@ -90,11 +98,11 @@ function TransactionRow({
           </Text>
           {subtitle ? (
             <Text style={[styles.txMeta, { color: outlineColor }]} numberOfLines={1}>
-              {subtitle} • {getRelativeLabel(tx.created_at)}
+              {subtitle} • {getRelativeLabel(tx.created_at, language, t)}
             </Text>
           ) : (
             <Text style={[styles.txMeta, { color: outlineColor }]} numberOfLines={1}>
-              {getRelativeLabel(tx.created_at)}
+              {getRelativeLabel(tx.created_at, language, t)}
             </Text>
           )}
         </View>
@@ -120,6 +128,7 @@ export function RecentTransactions({
   const outlineColor = useColor("outline");
   const primaryColor = useColor("primary");
   const dividerColor = useColor("surfaceContainerHighest");
+  const t = useT();
 
   const handleEditPress = (tx: RecentTxRow) => {
     router.push({ pathname: "/add-transaction", params: { id: String(tx.id) } });
@@ -128,9 +137,9 @@ export function RecentTransactions({
   return (
     <>
       <View style={styles.sectionHeaderRow}>
-        <Text style={[styles.headline, { color: onSurfaceColor }]}>Recent Transactions</Text>
+        <Text style={[styles.headline, { color: onSurfaceColor }]}>{t("dashboard.recentTransactions")}</Text>
         <TouchableOpacity onPress={() => router.push("/(tabs)/activity")}>
-          <Text style={[styles.viewAllLink, { color: primaryColor }]}>VIEW ALL</Text>
+          <Text style={[styles.viewAllLink, { color: primaryColor }]}>{t("dashboard.viewAll")}</Text>
         </TouchableOpacity>
       </View>
 
@@ -147,7 +156,7 @@ export function RecentTransactions({
           ))}
         </View>
       ) : (
-        <Text style={[styles.emptyText, { color: outlineColor }]}>Belum ada transaksi.</Text>
+        <Text style={[styles.emptyText, { color: outlineColor }]}>{t("dashboard.emptyTransactions")}</Text>
       )}
     </>
   );

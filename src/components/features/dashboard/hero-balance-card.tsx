@@ -1,5 +1,6 @@
 import { useFormatCurrency } from "@/hooks/useFormatCurrency";
 import { useColor } from "@/hooks/useColor";
+import { useT } from "@/i18n";
 import { radius, shadow, typography } from "@/constants/theme";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -18,6 +19,7 @@ export function HeroBalanceCard({
   prevMonthNet,
 }: HeroBalanceCardProps) {
   const { formatCurrencySigned } = useFormatCurrency();
+  const t = useT();
   const tertiaryFixedColor = useColor("tertiaryFixed");
   const whiteColor = useColor("white");
   const successColor = useColor("successGreen");
@@ -33,7 +35,7 @@ export function HeroBalanceCard({
     >
       <View style={styles.heroTopRow}>
         <View>
-          <Text style={styles.heroLabel}>TOTAL BALANCE</Text>
+          <Text style={styles.heroLabel}>{t("dashboard.totalBalance")}</Text>
           <Text style={[styles.heroAmount, { color: whiteColor }]}>
             {formatCurrencySigned(netWorth)}
           </Text>
@@ -52,7 +54,7 @@ export function HeroBalanceCard({
       </View>
       <View style={styles.heroSubRow}>
         <View>
-          <Text style={styles.heroSubLabel}>TOTAL KEUANGAN BULAN LALU</Text>
+          <Text style={styles.heroSubLabel}>{t("dashboard.prevMonthTotal")}</Text>
           <View style={styles.heroSubAmountRow}>
             <MaterialIcons
               name={isPositive ? "arrow-upward" : "arrow-downward"}

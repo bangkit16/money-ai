@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { radius, shadow, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
+import { useT } from "@/i18n";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { StyleSheet, View } from "react-native";
@@ -13,12 +14,13 @@ export function TransferCard() {
   const onPrimaryColor = useColor("onPrimary");
   const onPrimaryContainerColor = useColor("onPrimaryContainer");
   const whiteColor = useColor("white");
+  const t = useT();
   return (
     <View
       style={[styles.card, { backgroundColor: "#253b21" }, shadow.heroCard]}
     >
       <Text style={[styles.heroLabel, { color: whiteColor }]}>
-        TRANSFER SALDO
+        {t("account.transferBalance")}
       </Text>
       <View
         style={[
@@ -37,7 +39,7 @@ export function TransferCard() {
         style={[styles.buttonTransfer, { backgroundColor: "#0a2505" }]}
       >
         <Text style={[styles.buttonTransferText, { color: whiteColor }]}>
-          Transfer Antar Rekening
+          {t("account.transferButton")}
         </Text>
         <MaterialIcons name="arrow-forward" size={24} color={whiteColor} />
       </Button>

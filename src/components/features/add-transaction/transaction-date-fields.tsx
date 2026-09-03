@@ -3,6 +3,7 @@ import DateTimeField from "@/components/DateTimeField";
 import { Text } from "@/components/ui/text";
 import { spacing, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
+import { useT } from "@/i18n";
 import { StyleSheet, TextInput, View } from "react-native";
 
 type TransactionDateFieldsProps = {
@@ -22,17 +23,18 @@ export function TransactionDateFields({
   const textMutedColor = useColor("textMuted");
   const borderColor = useColor("border");
   const cardColor = useColor("card");
+  const t = useT();
   return (
     <View style={styles.block}>
       <View style={styles.row}>
         <View style={[styles.fieldBlock, { flex: 3 }]}>
           <Text style={[styles.label, { color: textMutedColor }]}>
-            Transaction
+            {t("add.transactionLabel")}
           </Text>
           <TextInput
             value={transaction}
             onChangeText={onChangeTransaction}
-            placeholder="What was this for?"
+            placeholder={t("add.transactionPlaceholder")}
             placeholderTextColor={textMutedColor}
             style={[
               ,
@@ -43,7 +45,7 @@ export function TransactionDateFields({
         </View>
         <View style={[styles.fieldBlock, { flex: 2 }]}>
           <Text style={[styles.label, { color: textMutedColor }]}>
-            Date & Time
+            {t("add.dateTimeLabel")}
           </Text>
           <DateTimeField value={dateTime} onChange={onChangeDateTime} />
         </View>

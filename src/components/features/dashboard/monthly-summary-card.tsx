@@ -1,5 +1,6 @@
 import { useFormatCurrency } from "@/hooks/useFormatCurrency";
 import { useColor } from "@/hooks/useColor";
+import { useT } from "@/i18n";
 import { radius, shadow, typography } from "@/constants/theme";
 import { MaterialIcons } from "@expo/vector-icons";
 import { StyleSheet, View } from "react-native";
@@ -21,6 +22,7 @@ export function MonthlySummaryCard({
   monthLabel,
 }: MonthlySummaryCardProps) {
   const { formatCurrency } = useFormatCurrency();
+  const t = useT();
   const cardColor = useColor("card");
   const onSecondaryContainerColor = useColor("onSecondaryContainer");
   const onSurfaceVariantColor = useColor("onSurfaceVariant");
@@ -40,7 +42,7 @@ export function MonthlySummaryCard({
             size={18}
             color={onSecondaryContainerColor}
           />
-          <Text style={[styles.summaryLabel, { color: onSurfaceVariantColor }]}>INCOME</Text>
+          <Text style={[styles.summaryLabel, { color: onSurfaceVariantColor }]}>{t("dashboard.income")}</Text>
         </View>
         <Text style={[styles.summaryAmount, { color: onSurfaceColor }]}>{formatCurrency(income)}</Text>
         <View style={[styles.progressTrack, { backgroundColor: surfaceContainerColor }]}>
@@ -61,7 +63,7 @@ export function MonthlySummaryCard({
       <View style={[styles.summaryCol, { borderLeftColor: outlineVariantColor, borderLeftWidth: 1, paddingLeft: 24, marginLeft: 8 }]}>
         <View style={styles.summaryLabelRow}>
           <MaterialIcons name="arrow-upward" size={18} color={errorColor} />
-          <Text style={[styles.summaryLabel, { color: onSurfaceVariantColor }]}>EXPENSES</Text>
+          <Text style={[styles.summaryLabel, { color: onSurfaceVariantColor }]}>{t("dashboard.expense")}</Text>
         </View>
         <Text style={[styles.summaryAmount, { color: onSurfaceColor }]}>{formatCurrency(expense)}</Text>
         <View style={[styles.progressTrack, { backgroundColor: surfaceContainerColor }]}>

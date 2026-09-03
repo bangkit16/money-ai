@@ -2,6 +2,7 @@
 import { Text } from "@/components/ui/text";
 import { radius, shadow, spacing, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
+import { useT } from "@/i18n";
 import {
   Modal,
   StyleSheet,
@@ -39,6 +40,7 @@ export function ConfirmDialog({
   const errorColor = useColor("destructive");
   const primaryColor = useColor("primary");
   const whiteColor = useColor("card");
+  const t = useT();
 
   return (
     <Modal
@@ -59,7 +61,7 @@ export function ConfirmDialog({
                   onPress={onClose}
                   disabled={isConfirming}
                 >
-                  <Text style={[styles.cancelButtonText, { color: textMutedColor }]}>Batal</Text>
+                  <Text style={[styles.cancelButtonText, { color: textMutedColor }]}>{t("common.cancel")}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.deleteButton, { backgroundColor: errorColor }]}

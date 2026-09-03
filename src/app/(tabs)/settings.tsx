@@ -1,32 +1,36 @@
 import { LogoutButton } from "@/components/features/settings/logout-button";
 import { CurrencyPickerSheet } from "@/components/features/settings/currency-picker-sheet";
+import { LanguagePickerSheet } from "@/components/features/settings/language-picker-sheet";
 import { SettingRow } from "@/components/features/settings/setting-row";
 import { ThemePickerSheet } from "@/components/features/settings/theme-picker-sheet";
 import { ConfirmDialog } from "@/components/features/shared/confirm-dialog";
 import { Text } from "@/components/ui/text";
 import { useColor } from "@/hooks/useColor";
 import { useModeContext, type Mode } from "@/providers/mode-provider";
-import { useSettings, CURRENCIES } from "@/providers/settings-provider";
+import { CURRENCIES, LANGUAGES, useSettings } from "@/providers/settings-provider";
 import { radius, spacing, typography } from "@/constants/theme";
 import { router } from "expo-router";
 import { useState } from "react";
 import { Platform, ScrollView, StyleSheet, View } from "react-native";
 import { supabase } from "@/lib/supabase";
 import { AppBar } from "@/components/features/shared/app-bar";
+import { useT } from "@/i18n";
 
 const MODE_LABEL: Record<Mode, string> = {
-  light: "Light",
-  dark: "Dark",
-  system: "System",
+  light: "Terang",
+  dark: "Gelap",
+  system: "Sistem",
 };
 
 export default function SettingsScreen() {
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [themeVisible, setThemeVisible] = useState(false);
   const [currencyVisible, setCurrencyVisible] = useState(false);
+  const [languageVisible, setLanguageVisible] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const modeCtx = useModeContext();
-  const { currency } = useSettings();
+  const { currency, language } = useSettings();
+  const t = useT();
   const bg = useColor("background");
   const primary = useColor("primary");
   const errorColor = useColor("error");
@@ -46,47 +50,53 @@ export default function SettingsScreen() {
   };
 
   const currencyMeta = CURRENCIES.find((c) => c.code === currency) ?? CURRENCIES[0];
+  const languageMeta = LANGUAGES.find((l) => l.code === language) ?? LANGUAGES[0];
 
   return (
     <View style={[styles.screen, { backgroundColor: bg }]}>
-      {/* <View style={styles.header}>
-        <Text style={[styles.wordmark, { color: primary }]}>Settings</Text>
-      </View> */}
       <AppBar />
 
       <ScrollView
         contentContainerStyle={styles.body}
         showsVerticalScrollIndicator={false}
       >
-        <Section title="Preferences">
+        <Section title={t("settings.preferences")}>
           <SettingRow
             icon="dark-mode"
             iconColor={primary}
-            title="Theme"
-            description="Light, dark, or follow system"
-            value={modeCtx ? MODE_LABEL[modeCtx.mode] : "System"}
+            title={t("settings.theme")}
+            description={t("settings.themeDesc")}
+            value={modeCtx ? MODE_LABEL[modeCtx.mode] : "Sistem"}
             onPress={() => setThemeVisible(true)}
           />
           <SettingRow
             icon="attach-money"
             iconColor={primary}
-            title="Currency"
-            description="Display format for amounts"
+            title={t("settings.currency")}
+            description={t("settings.currencyDesc")}
             value={`${currencyMeta.symbol}  ${currencyMeta.code}`}
             onPress={() => setCurrencyVisible(true)}
           />
+          <SettingRow
+            icon="language"
+            iconColor={primary}
+            title={t("settings.language")}
+            description={t("settings.languageDesc")}
+            value={languageMeta.label}
+            onPress={() => setLanguageVisible(true)}
+          />
         </Section>
 
-        <Section title="Account">
+        <Section title={t("settings.account")}>
           <LogoutButton onPress={() => setConfirmVisible(true)} />
         </Section>
       </ScrollView>
 
       <ConfirmDialog
         visible={confirmVisible}
-        title="Log Out"
-        message="Yakin ingin keluar dari akun kamu?"
-        confirmLabel="Log Out"
+        title={t("settings.logoutConfirmTitle")}
+        message={t("settings.logoutConfirmMessage")}
+        confirmLabel={t("settings.logoutConfirmButton")}
         isConfirming={isLoggingOut}
         onClose={() => setConfirmVisible(false)}
         onConfirm={handleLogout}
@@ -98,6 +108,10 @@ export default function SettingsScreen() {
       <CurrencyPickerSheet
         visible={currencyVisible}
         onClose={() => setCurrencyVisible(false)}
+      />
+      <LanguagePickerSheet
+        visible={languageVisible}
+        onClose={() => setLanguageVisible(false)}
       />
     </View>
   );

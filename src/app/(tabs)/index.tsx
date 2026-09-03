@@ -15,6 +15,8 @@ import {
   View,
 } from "react-native";
 import { Text } from "@/components/ui/text";
+import { useT } from "@/i18n";
+import { useSettings } from "@/providers/settings-provider";
 
 export default function DashboardScreen() {
   const bgColor = useColor("background");
@@ -22,8 +24,9 @@ export default function DashboardScreen() {
   const textMutedColor = useColor("textMuted");
   const textColor = useColor("text");
   const errorColor = useColor("error");
+  const t = useT();
+  const { language } = useSettings();
 
-  // Semua transaksi (dipakai untuk hitung net worth, ringkasan bulan ini, & saldo per rekening)
   const {
     data: allTx,
     isLoading: isLoadingAll,
@@ -33,7 +36,6 @@ export default function DashboardScreen() {
     queryFn: DashboardService.GetTransactions,
   });
 
-  // 3 transaksi terbaru buat list "Recent Transactions"
   const {
     data: recentTx,
     isLoading: isLoadingRecent,
@@ -100,20 +102,16 @@ export default function DashboardScreen() {
           ? 100
           : 0;
 
-    const topAccounts = Array.from(accountBalances.values())
-      .sort((a, b) => b.balance - a.balance)
-      .slice(0, 2);
-
     const flowTotal = thisMonthIncome + thisMonthExpense;
     const incomeBarWidth =
       flowTotal > 0 ? (thisMonthIncome / flowTotal) * 100 : 0;
     const expenseBarWidth =
       flowTotal > 0 ? (thisMonthExpense / flowTotal) * 100 : 0;
 
-    const monthLabel = now.toLocaleDateString("en-US", {
-      month: "long",
-      year: "numeric",
-    });
+    const monthLabel = now.toLocaleDateString(
+      language === "id" ? "id-ID" : "en-US",
+      { month: "long", year: "numeric" }
+    );
 
     return {
       netWorth,
@@ -125,7 +123,7 @@ export default function DashboardScreen() {
       expenseBarWidth,
       monthLabel,
     };
-  }, [allTx]);
+  }, [allTx, language]);
 
   const isLoading = isLoadingAll || isLoadingRecent;
   const error = errorAll || errorRecent;
@@ -138,13 +136,13 @@ export default function DashboardScreen() {
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="small" color={primaryColor} />
           <Text style={[styles.loadingText, { color: textMutedColor }]}>
-            Loading dashboard...
+            {t("dashboard.loading")}
           </Text>
         </View>
       ) : error ? (
         <View style={styles.loadingContainer}>
           <Text style={[styles.errorText, { color: errorColor }]}>
-            Gagal memuat data: {(error as Error).message}
+            {t("dashboard.loadError", { message: (error as Error).message })}
           </Text>
         </View>
       ) : (

@@ -12,6 +12,7 @@ import {
 import { Text } from "@/components/ui/text";
 import { spacing, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
+import { useT } from "@/i18n";
 import { AccountService } from "@/services/accountService";
 import {
   AddTransactionService,
@@ -55,6 +56,7 @@ export default function TransactionScreen() {
   const params = useLocalSearchParams<{ id?: string; type?: string }>();
   const editId = typeof params.id === "string" ? params.id : undefined;
   const isEdit = !!editId;
+  const t = useT();
 
   const entrance = useMemo(() => new Animated.Value(0), []);
 
@@ -165,7 +167,7 @@ export default function TransactionScreen() {
       };
       if (isTransfer) {
         if (fromAccountId === null || toAccountId === null) {
-          throw new Error("Akun asal dan tujuan wajib dipilih.");
+          throw new Error(t("add.fromAccountRequired"));
         }
         const transferPayload = {
           ...basePayload,
@@ -182,7 +184,7 @@ export default function TransactionScreen() {
         return AddTransactionService.InsertTransfer(transferPayload);
       }
       if (categoryId === null) {
-        throw new Error("Kategori wajib dipilih.");
+        throw new Error(t("add.categoryRequired"));
       }
       if (isEdit && editId) {
         return AddTransactionService.UpdateTransaction(Number(editId), {
@@ -211,13 +213,13 @@ export default function TransactionScreen() {
       queryClient.invalidateQueries({ queryKey: AnalyticsService.keys.current });
       if (editId) queryClient.invalidateQueries({ queryKey: ["transaction", editId] });
       Alert.alert(
-        "Tersimpan",
-        isTransfer ? "Transfer berhasil disimpan." : "Transaksi berhasil disimpan.",
-        [{ text: "OK", onPress: () => router.back() }],
+        t("add.saved"),
+        isTransfer ? t("add.transferSaved") : t("add.transactionSaved"),
+        [{ text: t("common.ok"), onPress: () => router.back() }],
       );
     },
     onError: (error: Error) => {
-      Alert.alert("Gagal menyimpan", error.message ?? "Terjadi kesalahan.");
+      Alert.alert(t("add.saveError"), error.message ?? t("add.saveGenericError"));
     },
   });
 
@@ -233,10 +235,10 @@ export default function TransactionScreen() {
       queryClient.invalidateQueries({ queryKey: AnalyticsService.keys.current });
       if (editId) queryClient.invalidateQueries({ queryKey: ["transaction", editId] });
       router.back();
-      Alert.alert("Terhapus", "Transaksi berhasil dihapus.", [{ text: "OK" }]);
+      Alert.alert(t("add.deleted"), t("add.deletedMsg"), [{ text: t("common.ok") }]);
     },
     onError: (error: Error) => {
-      Alert.alert("Gagal menghapus", error.message ?? "Terjadi kesalahan.");
+      Alert.alert(t("add.deleteError"), error.message ?? t("add.saveGenericError"));
     },
   });
 
@@ -265,16 +267,16 @@ export default function TransactionScreen() {
   };
 
   const handleDelete = () => {
-    Alert.alert("Hapus Transaksi", "Yakin ingin menghapus transaksi ini?", [
-      { text: "Batal", style: "cancel" },
-      { text: "Hapus", style: "destructive", onPress: () => deleteTransaction() },
+    Alert.alert(t("add.deleteConfirmTitle"), t("add.deleteConfirmMsg"), [
+      { text: t("common.cancel"), style: "cancel" },
+      { text: t("common.delete"), style: "destructive", onPress: () => deleteTransaction() },
     ]);
   };
 
   if (isEdit && isLoadingTx) {
     return (
       <View style={[styles.loadingContainer, { backgroundColor: bgColor }]}>
-        <Text style={[styles.loadingText, { color: textMutedColor }]}>Loading...</Text>
+        <Text style={[styles.loadingText, { color: textMutedColor }]}>{t("add.loading")}</Text>
       </View>
     );
   }
@@ -282,7 +284,7 @@ export default function TransactionScreen() {
     return (
       <View style={[styles.loadingContainer, { backgroundColor: bgColor }]}>
         <Text style={[styles.loadingText, { color: textMutedColor }]}>
-          {txError ? `Error: ${(txError as Error).message}` : "Gagal memuat transaksi"}
+          {txError ? t("add.txError", { message: (txError as Error).message }) : t("add.loadError")}
         </Text>
       </View>
     );
@@ -321,10 +323,10 @@ export default function TransactionScreen() {
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: primaryColor }]}>
             {isEdit
-              ? "Edit Transaksi"
+              ? t("add.editTitle")
               : isTransfer
-                ? "Transfer"
-                : "Add Transaction"}
+                ? t("add.transferTitle")
+                : t("add.newTitle")}
           </Text>
           {isEdit ? (
             <TouchableOpacity
@@ -354,7 +356,7 @@ export default function TransactionScreen() {
             <AmountDisplay amount={amount} />
 
             <View style={styles.fieldBlock}>
-              <Text style={[styles.label, { color: textMutedColor }]}>Type</Text>
+              <Text style={[styles.label, { color: textMutedColor }]}>{t("add.type")}</Text>
               <TypeToggle
                 value={transactionType}
                 onChange={setTransactionType}
@@ -362,7 +364,7 @@ export default function TransactionScreen() {
             </View>
 
             <View style={styles.fieldBlock}>
-              <Text style={[styles.label, { color: textMutedColor }]}>Category</Text>
+              <Text style={[styles.label, { color: textMutedColor }]}>{t("add.category")}</Text>
               <CategoryGrid
                 categories={categories}
                 selectedId={categoryId}
@@ -374,7 +376,7 @@ export default function TransactionScreen() {
             {isTransfer ? (
               <View style={styles.transferAccountsRow}>
                 <View style={styles.transferAccountCol}>
-                  <Text style={[styles.label, { color: textMutedColor }]}>From</Text>
+                  <Text style={[styles.label, { color: textMutedColor }]}>{t("add.from")}</Text>
                   <AccountChips
                     accounts={accounts}
                     selectedId={fromAccountId}
@@ -396,7 +398,7 @@ export default function TransactionScreen() {
                   />
                 </View>
                 <View style={styles.transferAccountCol}>
-                  <Text style={[styles.label, { color: textMutedColor }]}>To</Text>
+                  <Text style={[styles.label, { color: textMutedColor }]}>{t("add.to")}</Text>
                   <AccountChips
                     accounts={accounts}
                     selectedId={toAccountId}
@@ -413,7 +415,7 @@ export default function TransactionScreen() {
               </View>
             ) : (
               <View style={styles.fieldBlock}>
-                <Text style={[styles.label, { color: textMutedColor }]}>Account</Text>
+                <Text style={[styles.label, { color: textMutedColor }]}>{t("add.account")}</Text>
                 <AccountChips
                   accounts={accounts}
                   selectedId={fromAccountId}
