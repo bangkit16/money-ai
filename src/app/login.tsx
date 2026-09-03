@@ -2,7 +2,7 @@
 import { GoogleSignInButton } from "@/components/features/login/google-sign-in-button";
 import { LoginHero } from "@/components/features/login/login-hero";
 import { Text } from "@/components/ui/text";
-import { radius, spacing, typography } from "@/constants/theme";
+import { spacing, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
 import * as WebBrowser from "expo-web-browser";
 import * as Linking from "expo-linking";
@@ -67,7 +67,7 @@ export default function LoginScreen() {
       {/* Bagian atas: brand hero */}
       <LoginHero />
 
-      {/* Bagian bawah: card sign-in */}
+      {/* Bagian bawah: card sign-in (overlap ke hero) */}
       <View style={[styles.sheet, { backgroundColor: sheetColor }]}>
         <View style={{ marginBottom: 32 }}>
           <Text style={[styles.title, { color: textColor }]}>Welcome back</Text>
@@ -92,11 +92,12 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
 
   sheet: {
-    borderTopLeftRadius: radius.xl,
-    borderTopRightRadius: radius.xl,
+    borderTopLeftRadius: 40,
+    borderTopRightRadius: 40,
     paddingHorizontal: spacing.marginMobile,
     paddingTop: 32,
     paddingBottom: Platform.OS === "ios" ? 40 : 28,
+    marginTop: -40,
   },
   title: { ...typography.headlineLgMobile },
   subtitle: {

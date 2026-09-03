@@ -2,27 +2,21 @@
 import { Text } from "@/components/ui/text";
 import { radius, spacing, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Image, StyleSheet, View } from "react-native";
+import ICON from "@/assets/images/adaptive-icon.png";
 
 export function LoginHero() {
-  const primaryColor = useColor("primary");
-  const whiteColor = useColor("background");
+  const whiteColor = useColor("white");
   return (
     <LinearGradient
-      colors={[primaryColor, primaryColor]}
+      colors={["#102010", "#0a430a", "#034903"]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.hero}
     >
       <View style={styles.logoCircle}>
-        <MaterialCommunityIcons
-          name="chart-donut"
-          size={32}
-          color={whiteColor}
-        />
-        {/* <Image source={ICON} style={styles.logoImage} resizeMode="contain" /> */}
+        <Image source={ICON} style={styles.logoImage} resizeMode="contain" />
       </View>
       <Text style={[styles.wordmark, { color: whiteColor }]}>Dompety</Text>
       <Text style={styles.tagline}>Quiet confidence for your money</Text>
@@ -38,13 +32,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.marginMobile,
   },
   logoCircle: {
-    width: 72,
-    height: 72,
+    width: 88,
+    height: 88,
     borderRadius: radius.full,
-    backgroundColor: "rgba(255,255,255,0.12)",
+    backgroundColor: "rgba(255,255,255,0.15)",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 20,
+    borderWidth: 2,
+    borderColor: "rgba(255,255,255,0.25)",
+  },
+  logoImage: {
+    width: 56,
+    height: 56,
   },
   wordmark: { ...typography.headlineLg, fontSize: 30 },
   tagline: {

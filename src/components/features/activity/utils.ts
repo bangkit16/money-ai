@@ -92,16 +92,19 @@ function getDateLabel(dateStr: string): DateLabel {
 
 // Kelompokkan array transaksi (sudah terurut created_at desc) jadi section per tanggal
 export function groupByDate(transactions: TransactionRow[]) {
-  const sections: { title: string; label: DateLabel; data: TransactionRow[] }[] = [];
+  const sections: { title: string; label: DateLabel; data: TransactionRow[]; total: number }[] = [];
 
   for (const tx of transactions) {
     const label = getDateLabel(tx.created_at);
     const title = label.text;
     const lastSection = sections[sections.length - 1];
+    const amount = Number(tx.amount) || 0;
+    const signed = tx.transaction_type === "EXPENSE" ? -amount : amount;
     if (lastSection && lastSection.title === title) {
       lastSection.data.push(tx);
+      lastSection.total += signed;
     } else {
-      sections.push({ title, label, data: [tx] });
+      sections.push({ title, label, data: [tx], total: signed });
     }
   }
 

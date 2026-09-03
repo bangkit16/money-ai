@@ -15,7 +15,7 @@ function toLocalInputValue(date: Date) {
 }
 
 export default function DateTimeField({ value, onChange }: Props) {
-  const bgColor = useColor("muted");
+  const bgColor = useColor("card");
   const textColor = useColor("text");
   const cardColor = useColor("card");
   return (

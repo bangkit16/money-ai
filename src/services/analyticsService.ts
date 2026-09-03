@@ -17,7 +17,7 @@ export type AnalyticsData = {
 export type AnalyticsSegment = {
   id: number;
   label: string;
-  percent: number;
+  value: number;
   color: string;
 };
 
@@ -106,7 +106,7 @@ export class AnalyticsService {
     const segments: AnalyticsSegment[] = sorted.slice(0, 4).map((c, i) => ({
       id: c.id,
       label: `${c.name} (${total > 0 ? Math.round((c.total / total) * 100) : 0}%)`,
-      percent: total > 0 ? (c.total / total) * 100 : 0,
+      value: total > 0 ? (c.total / total) * 100 : 0,
       color: PALETTE[i % PALETTE.length],
     }));
 
@@ -116,7 +116,7 @@ export class AnalyticsService {
       segments.push({
         id: -1,
         label: `Other (${total > 0 ? Math.round((otherTotal / total) * 100) : 0}%)`,
-        percent: total > 0 ? (otherTotal / total) * 100 : 0,
+        value: total > 0 ? (otherTotal / total) * 100 : 0,
         color: PALETTE[4 % PALETTE.length],
       });
     }
