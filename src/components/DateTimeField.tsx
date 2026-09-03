@@ -17,6 +17,7 @@ function toLocalInputValue(date: Date) {
 export default function DateTimeField({ value, onChange }: Props) {
   const bgColor = useColor("muted");
   const textColor = useColor("text");
+  const cardColor = useColor("card");
   return (
     <input
       type="datetime-local"
@@ -26,7 +27,7 @@ export default function DateTimeField({ value, onChange }: Props) {
         if (!isNaN(next.getTime())) onChange(next);
       }}
       style={{
-        backgroundColor: bgColor,
+        backgroundColor: cardColor,
         borderRadius: radius.lg,
         border: "none",
         outline: "none",

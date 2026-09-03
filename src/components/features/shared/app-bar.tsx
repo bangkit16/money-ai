@@ -29,6 +29,7 @@ export function AppBar({
     >
       <View style={styles.brand}>
         <Image source={ICON} style={styles.brandIcon} resizeMode="contain" />
+        <Text style={[styles.wordmark, { color: primaryColor }]}>{title}</Text>
       </View>
       {showNotifications ? (
         <TouchableOpacity hitSlop={10}>
@@ -54,8 +55,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   brandIcon: {
-    width: 32,
-    height: 32,
+    width: 36,
+    height: 36,
   },
   wordmark: { ...typography.headlineLgMobile },
 });

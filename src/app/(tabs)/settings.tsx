@@ -12,6 +12,7 @@ import { router } from "expo-router";
 import { useState } from "react";
 import { Platform, ScrollView, StyleSheet, View } from "react-native";
 import { supabase } from "@/lib/supabase";
+import { AppBar } from "@/components/features/shared/app-bar";
 
 const MODE_LABEL: Record<Mode, string> = {
   light: "Light",
@@ -48,9 +49,10 @@ export default function SettingsScreen() {
 
   return (
     <View style={[styles.screen, { backgroundColor: bg }]}>
-      <View style={styles.header}>
+      {/* <View style={styles.header}>
         <Text style={[styles.wordmark, { color: primary }]}>Settings</Text>
-      </View>
+      </View> */}
+      <AppBar />
 
       <ScrollView
         contentContainerStyle={styles.body}

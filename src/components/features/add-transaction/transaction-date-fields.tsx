@@ -21,21 +21,30 @@ export function TransactionDateFields({
 }: TransactionDateFieldsProps) {
   const textMutedColor = useColor("textMuted");
   const borderColor = useColor("border");
+  const cardColor = useColor("card");
   return (
     <View style={styles.block}>
       <View style={styles.row}>
         <View style={[styles.fieldBlock, { flex: 3 }]}>
-          <Text style={[styles.label, { color: textMutedColor }]}>Transaction</Text>
+          <Text style={[styles.label, { color: textMutedColor }]}>
+            Transaction
+          </Text>
           <TextInput
             value={transaction}
             onChangeText={onChangeTransaction}
             placeholder="What was this for?"
             placeholderTextColor={textMutedColor}
-            style={styles.inputSoft}
+            style={[
+              ,
+              { backgroundColor: cardColor, borderColor },
+              styles.inputSoft,
+            ]}
           />
         </View>
         <View style={[styles.fieldBlock, { flex: 2 }]}>
-          <Text style={[styles.label, { color: textMutedColor }]}>Date & Time</Text>
+          <Text style={[styles.label, { color: textMutedColor }]}>
+            Date & Time
+          </Text>
           <DateTimeField value={dateTime} onChange={onChangeDateTime} />
         </View>
       </View>
