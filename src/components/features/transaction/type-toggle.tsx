@@ -28,12 +28,12 @@ export function TypeToggle({ value, onChange }: TypeToggleProps) {
   const t = useT();
   return (
     <View style={styles.typeRow}>
-      {TRANSACTION_TYPES.map((t) => {
-        const active = value === t.key;
+      {TRANSACTION_TYPES.map((type) => {
+        const active = value === type.key;
         return (
           <TouchableOpacity
-            key={t.key}
-            onPress={() => onChange(t.key)}
+            key={type.key}
+            onPress={() => onChange(type.key)}
             style={[
               styles.typeButton,
               { backgroundColor: cardColor, borderColor },
@@ -43,7 +43,7 @@ export function TypeToggle({ value, onChange }: TypeToggleProps) {
             activeOpacity={0.85}
           >
             <MaterialIcons
-              name={t.icon as any}
+              name={type.icon as any}
               size={16}
               color={active ? whiteColor : textMutedColor}
             />
@@ -54,7 +54,7 @@ export function TypeToggle({ value, onChange }: TypeToggleProps) {
                 active && { color: whiteColor },
               ]}
             >
-              {t.labelKey.startsWith("type.") ? t(t.labelKey) : t.labelKey}
+              {type.labelKey.startsWith("type.") ? t(type.labelKey) : type.labelKey}
             </Text>
           </TouchableOpacity>
         );
