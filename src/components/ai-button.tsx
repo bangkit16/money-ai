@@ -11,8 +11,15 @@ import {
 import { supabase } from "@/lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useEffect, useState } from "react";
-import { Modal, StyleSheet, TouchableOpacity, View } from "react-native";
+import { useEffect, useMemo, useState } from "react";
+import {
+  Animated,
+  Easing,
+  Modal,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import AiPromptBottomSheet from "./ai/AiPromptBottomSheet";
 import AiTransactionConfirmModal from "./ai/AiTransactionConfirmModal";
 // import AiTransactionConfirmModal from "../ai/AiTransactionConfirmModal";
@@ -35,6 +42,7 @@ function AiButton({ accountId }: AiButtonProps) {
   const [draft, setDraft] = useState<AiTransactionDraft | null>(null);
   const [saving, setSaving] = useState(false);
   const [resultMessage, setResultMessage] = useState<string | null>(null);
+  const [resultVisible, setResultVisible] = useState(false);
   const [fallbackAccountId, setFallbackAccountId] = useState<number | null>(
     null,
   );
@@ -82,6 +90,81 @@ function AiButton({ accountId }: AiButtonProps) {
     }
   };
 
+  // Animated values for loading state: logo spin + dot pulse.
+  const spinAnim = useMemo(() => new Animated.Value(0), []);
+  const dot1 = useMemo(() => new Animated.Value(0), []);
+  const dot2 = useMemo(() => new Animated.Value(0), []);
+  const dot3 = useMemo(() => new Animated.Value(0), []);
+
+  useEffect(() => {
+    if (!loading) {
+      spinAnim.stopAnimation();
+      dot1.stopAnimation();
+      dot2.stopAnimation();
+      dot3.stopAnimation();
+      spinAnim.setValue(0);
+      dot1.setValue(0);
+      dot2.setValue(0);
+      dot3.setValue(0);
+      return;
+    }
+
+    const spin = Animated.loop(
+      Animated.timing(spinAnim, {
+        toValue: 1,
+        duration: 1200,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }),
+    );
+
+    const pulse = (val: Animated.Value, delay: number) =>
+      Animated.loop(
+        Animated.sequence([
+          Animated.delay(delay),
+          Animated.timing(val, {
+            toValue: 1,
+            duration: 400,
+            useNativeDriver: true,
+          }),
+          Animated.timing(val, {
+            toValue: 0,
+            duration: 400,
+            useNativeDriver: true,
+          }),
+        ]),
+      );
+
+    spin.start();
+    pulse(dot1, 0).start();
+    pulse(dot2, 200).start();
+    pulse(dot3, 400).start();
+
+    return () => {
+      spin.stop();
+      dot1.stopAnimation();
+      dot2.stopAnimation();
+      dot3.stopAnimation();
+    };
+  }, [loading, spinAnim, dot1, dot2, dot3]);
+
+  const spinInterpolate = spinAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0deg", "360deg"],
+  });
+
+  const dotStyle = (val: Animated.Value) => ({
+    opacity: val.interpolate({ inputRange: [0, 1], outputRange: [0.3, 1] }),
+    transform: [
+      {
+        translateY: val.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0, -3],
+        }),
+      },
+    ],
+  });
+
   const handleVoicePress = () => {
     // TODO: hubungkan ke fitur voice-to-text kamu.
     // Setelah dapat hasil teksnya, panggil handleSend(hasilTeks).
@@ -118,9 +201,12 @@ function AiButton({ accountId }: AiButtonProps) {
       if (error) throw error;
 
       setDraft(null);
-      setResultMessage("Transaksi tersimpan.");
+      // Sequence: close modal first, then show result after.
+      setTimeout(() => setResultMessage("Transaksi tersimpan."), 50);
+      setTimeout(() => setResultVisible(true), 300);
     } catch (e) {
       setResultMessage("Gagal menyimpan transaksi. Coba lagi.");
+      setResultVisible(true);
     } finally {
       setSaving(false);
     }
@@ -129,7 +215,11 @@ function AiButton({ accountId }: AiButtonProps) {
   return (
     <>
       <TouchableOpacity
-        style={[styles.fabContainer, { borderColor: whiteColor }]}
+        style={[
+          styles.fabContainer,
+          loading && styles.fabLoading,
+          { borderColor: whiteColor },
+        ]}
         onPress={() => setOpen(true)}
         activeOpacity={0.85}
         disabled={loading}
@@ -138,13 +228,37 @@ function AiButton({ accountId }: AiButtonProps) {
           colors={["#26be0b", "#1b8a07", "#47733f"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
-          style={styles.gradient}
+          style={[styles.gradient, loading && styles.gradientLoading]}
         >
-          <Ionicons
-            name={loading ? "hourglass-outline" : "sparkles"}
-            size={18}
-            color={whiteColor}
-          />
+          {loading ? (
+            <View style={styles.loadingRow}>
+              <Animated.View style={{ transform: [{ rotate: spinInterpolate }] }}>
+                <Ionicons name="sparkles" size={14} color={whiteColor} />
+              </Animated.View>
+              <Text style={[styles.loadingText, { color: whiteColor }]}>
+                sedang memroses
+              </Text>
+              <View style={styles.dotsRow}>
+                <Animated.Text
+                  style={[styles.dot, { color: whiteColor }, dotStyle(dot1)]}
+                >
+                  •
+                </Animated.Text>
+                <Animated.Text
+                  style={[styles.dot, { color: whiteColor }, dotStyle(dot2)]}
+                >
+                  •
+                </Animated.Text>
+                <Animated.Text
+                  style={[styles.dot, { color: whiteColor }, dotStyle(dot3)]}
+                >
+                  •
+                </Animated.Text>
+              </View>
+            </View>
+          ) : (
+            <Ionicons name="sparkles" size={18} color={whiteColor} />
+          )}
         </LinearGradient>
       </TouchableOpacity>
 
@@ -164,10 +278,13 @@ function AiButton({ accountId }: AiButtonProps) {
       />
 
       <Modal
-        visible={!!resultMessage}
+        visible={resultVisible}
         transparent
         animationType="fade"
-        onRequestClose={() => setResultMessage(null)}
+        onRequestClose={() => {
+          setResultVisible(false);
+          setResultMessage(null);
+        }}
       >
         <View style={styles.resultOverlay}>
           <View
@@ -182,7 +299,10 @@ function AiButton({ accountId }: AiButtonProps) {
             </Text>
             <TouchableOpacity
               style={[styles.resultButton, { backgroundColor: primaryColor }]}
-              onPress={() => setResultMessage(null)}
+              onPress={() => {
+                  setResultVisible(false);
+                  setResultMessage(null);
+                }}
               activeOpacity={0.85}
             >
               <Text style={[styles.resultButtonText, { color: bgColor }]}>
@@ -216,6 +336,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  fabLoading: { width: 160, height: 48 },
+  gradientLoading: { paddingHorizontal: 12 },
   resultOverlay: {
     flex: 1,
     backgroundColor: "rgba(5,17,37,0.5)",
@@ -238,6 +360,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   resultButtonText: { fontSize: 14, fontWeight: "600" },
+  loadingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 10,
+    gap: 6,
+  },
+  loadingText: { fontSize: 12, fontWeight: "600" },
+  dotsRow: { flexDirection: "row", marginLeft: 1 },
+  dot: { fontSize: 16, lineHeight: 16, marginHorizontal: 0.5 },
 });
 
 export default AiButton;
