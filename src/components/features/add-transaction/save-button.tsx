@@ -1,4 +1,3 @@
-// migrated to useColor
 import { Text } from "@/components/ui/text";
 import { radius, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";

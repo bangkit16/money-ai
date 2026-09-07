@@ -1,3 +1,4 @@
+import { QueryKeys } from "@/lib/query-keys";
 import { supabase } from "@/lib/supabase";
 import type { TransactionType } from "@/services/addTransactionService";
 
@@ -14,7 +15,7 @@ export type ActivityTransactionRow = {
 
 export class ActivityService {
   static readonly keys = {
-    transactions: ["transactions"] as const,
+    transactions: QueryKeys.transactions,
   };
 
   static async GetTransactions() {

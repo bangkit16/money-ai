@@ -1,4 +1,3 @@
-// migrated to useColor
 import { AccountChips } from "@/components/features/add-transaction/account-chips";
 import { AmountDisplay } from "@/components/features/add-transaction/amount-display";
 import { CategoryGrid } from "@/components/features/add-transaction/category-grid";
@@ -10,7 +9,7 @@ import {
 import {
   TypeToggle,
   type TransactionTypeKey,
-} from "@/components/features/add-transaction/type-toggle";
+} from "@/components/features/transaction/type-toggle";
 import { Text } from "@/components/ui/text";
 import { spacing, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
@@ -19,10 +18,8 @@ import {
   AddTransactionService,
   type TransactionType,
 } from "@/services/addTransactionService";
-import { AccountService } from "@/services/accountService";
-import { ActivityService } from "@/services/activityService";
-import { AnalyticsService } from "@/services/analyticsService";
-import { DashboardService } from "@/services/dashboardService";
+import { invalidateAfterDelete, invalidateTransactionCaches } from "@/lib/query-invalidation";
+import { QueryKeys } from "@/lib/query-keys";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
@@ -94,13 +91,13 @@ export function EditTransactionBottomSheet({
 
   // --- Categories ---
   const { data: categories, isLoading: isLoadingCategory } = useQuery({
-    queryKey: AddTransactionService.keys.categories(transactionType),
+    queryKey: QueryKeys.categories(transactionType),
     queryFn: () => AddTransactionService.GetCategories(transactionType),
   });
 
-  // --- Accounts milik user yang lagi login ---
+  // --- Accounts ---
   const { data: accounts, isLoading: isLoadingAccounts } = useQuery({
-    queryKey: AddTransactionService.keys.accounts,
+    queryKey: QueryKeys.accounts,
     queryFn: AddTransactionService.GetAccountOptions,
   });
 
@@ -122,14 +119,8 @@ export function EditTransactionBottomSheet({
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ActivityService.keys.transactions });
-      queryClient.invalidateQueries({ queryKey: AccountService.keys.all });
-      queryClient.invalidateQueries({ queryKey: DashboardService.keys.transactions });
-      queryClient.invalidateQueries({
-        queryKey: DashboardService.keys.recentTransactions,
-      });
-      queryClient.invalidateQueries({ queryKey: AnalyticsService.keys.current });
-      queryClient.invalidateQueries({ queryKey: ["transaction", String(transaction.id)] });
+      invalidateTransactionCaches(queryClient);
+      queryClient.invalidateQueries({ queryKey: QueryKeys.transaction(transaction.id) });
       bottomSheet.close();
       onClose();
       Alert.alert(t("add.saved"), t("edit.savedMsg"), [
@@ -145,14 +136,7 @@ export function EditTransactionBottomSheet({
   const { mutate: deleteTransaction, isPending: isDeleting } = useMutation({
     mutationFn: () => AddTransactionService.DeleteTransaction(transaction.id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ActivityService.keys.transactions });
-      queryClient.invalidateQueries({ queryKey: AccountService.keys.all });
-      queryClient.invalidateQueries({ queryKey: DashboardService.keys.transactions });
-      queryClient.invalidateQueries({
-        queryKey: DashboardService.keys.recentTransactions,
-      });
-      queryClient.invalidateQueries({ queryKey: AnalyticsService.keys.current });
-      queryClient.invalidateQueries({ queryKey: ["transaction", String(transaction.id)] });
+      invalidateAfterDelete(queryClient, transaction.id);
       Alert.alert(t("add.deleted"), t("add.deletedMsg"), [
         { text: t("common.ok"), onPress: () => { bottomSheet.close(); onClose(); } },
       ]);

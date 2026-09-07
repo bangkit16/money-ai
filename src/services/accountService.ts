@@ -16,6 +16,8 @@ export class AccountService {
     all: ["account"] as const,
   };
 
+  // TODO: migrate to QueryKeys.accounts when ready (breaking change for external consumers)
+
   static async GetAccountsWithTotals() {
     const { data, error } = await supabase
       .from("account")

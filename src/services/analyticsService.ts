@@ -1,3 +1,4 @@
+import { QueryKeys } from "@/lib/query-keys";
 import { supabase } from "@/lib/supabase";
 import type { LanguageCode } from "@/providers/settings-provider";
 import { tFor } from "@/i18n";
@@ -55,7 +56,7 @@ function startEndOfMonth(d: Date) {
 
 export class AnalyticsService {
   static readonly keys = {
-    current: ["analytics-current-month"] as const,
+    current: QueryKeys.analyticsCurrentMonth,
   };
 
   /**

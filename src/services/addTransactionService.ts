@@ -1,3 +1,4 @@
+import { QueryKeys } from "@/lib/query-keys";
 import { supabase } from "@/lib/supabase";
 
 export type TransactionType = "INCOME" | "EXPENSE" | "TRANSFER";
@@ -28,9 +29,8 @@ export type InsertTransactionParams = {
 
 export class AddTransactionService {
   static readonly keys = {
-    categories: (type: TransactionType) =>
-      ["category_transaction", type] as const,
-    accounts: ["account"] as const,
+    categories: QueryKeys.categories,
+    accounts: QueryKeys.accounts,
   };
 
   static async GetCategories(transactionType: TransactionType) {
