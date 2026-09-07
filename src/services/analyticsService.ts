@@ -70,7 +70,7 @@ export class AnalyticsService {
     const { data, error } = await supabase
       .from("transaction")
       .select(
-        "amount, category:category_transaction(id, category, icon)",
+        "amount, category:category_transaction(id, category, category_en, slug, icon)",
       )
       .eq("transaction_type", "EXPENSE")
       .gte("transaction_date", start)
@@ -80,7 +80,7 @@ export class AnalyticsService {
 
     type Row = {
       amount: number;
-      category: { id: number; category: string; icon: string } | null;
+      category: { id: number; category: string; category_en: string | null; slug: string | null; icon: string } | null;
     };
     const rows = (data ?? []) as unknown as Row[];
 
@@ -97,7 +97,7 @@ export class AnalyticsService {
       } else {
         byCat.set(r.category.id, {
           id: r.category.id,
-          name: r.category.category,
+          name: lang === "en" && r.category.category_en ? r.category.category_en : r.category.category,
           icon: r.category.icon,
           total: amt,
         });

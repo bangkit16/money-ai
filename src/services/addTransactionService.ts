@@ -5,6 +5,7 @@ export type TransactionType = "INCOME" | "EXPENSE" | "TRANSFER";
 export type CategoryRow = {
   id: number;
   category: string;
+  category_en: string | null;
   slug: string;
   icon: string;
   category_type: string | null;
@@ -27,8 +28,9 @@ export type InsertTransactionParams = {
 
 export class AddTransactionService {
   static readonly keys = {
-    categories: (type: TransactionType) => ["category_transaction", type] as const,
-    accounts: ["account"] as const, 
+    categories: (type: TransactionType) =>
+      ["category_transaction", type] as const,
+    accounts: ["account"] as const,
   };
 
   static async GetCategories(transactionType: TransactionType) {
@@ -37,7 +39,17 @@ export class AddTransactionService {
       .select("*")
       .or(`category_type.eq.${transactionType},category_type.is.null`);
     if (error) throw new Error(error.message);
-    return data as CategoryRow[];
+    if (transactionType === "TRANSFER") {
+      const filteredData = data.filter((row) => row.slug === "transfer" || row.id === 8);
+      return filteredData as CategoryRow[];
+    }
+     const sortedData = data.sort((a, b) => {
+       if (a.id === 8) return 1; // Jika id adalah 8, geser ke belakang
+       if (b.id === 8) return -1; // Jika id lawan adalah 8, geser lawan ke belakang
+       return 0; // Biarkan urutan item lainnya tetap sama
+     });
+    console.log("AddTransactionService GetCategories:", sortedData);
+    return sortedData as CategoryRow[];
   }
 
   static async GetAccountOptions() {
@@ -62,7 +74,9 @@ export class AddTransactionService {
     if (error) throw error;
   }
 
-  static async InsertTransfer(params: Omit<InsertTransactionParams, "transaction_type">) {
+  static async InsertTransfer(
+    params: Omit<InsertTransactionParams, "transaction_type">,
+  ) {
     const {
       data: { user },
       error: userError,
@@ -80,7 +94,7 @@ export class AddTransactionService {
 
   static async UpdateTransaction(
     id: number,
-    params: Partial<InsertTransactionParams>
+    params: Partial<InsertTransactionParams>,
   ) {
     const {
       data: { user },

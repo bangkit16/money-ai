@@ -2,6 +2,7 @@
 import { Text } from "@/components/ui/text";
 import { radius, shadow, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
+import { useSettings } from "@/providers/settings-provider";
 import type { CategoryRow } from "@/services/addTransactionService";
 import { MaterialIcons } from "@expo/vector-icons";
 import {
@@ -24,6 +25,7 @@ export function CategoryGrid({
   isLoading,
   onSelect,
 }: CategoryGridProps) {
+  const { language } = useSettings();
   const cardColor = useColor("card");
   const borderColor = useColor("border");
   const primaryColor = useColor("primary");
@@ -68,7 +70,7 @@ export function CategoryGrid({
                 active && { color: whiteColor },
               ]}
             >
-              {cat.category}
+              {language === "en" && cat.category_en ? cat.category_en : cat.category}
             </Text>
           </TouchableOpacity>
         );

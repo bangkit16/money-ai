@@ -23,6 +23,7 @@ export function TransactionDateFields({
   const textMutedColor = useColor("textMuted");
   const borderColor = useColor("border");
   const cardColor = useColor("card");
+  const textColor = useColor("text");
   const t = useT();
   return (
     <View style={styles.block}>
@@ -37,8 +38,7 @@ export function TransactionDateFields({
             placeholder={t("add.transactionPlaceholder")}
             placeholderTextColor={textMutedColor}
             style={[
-              ,
-              { backgroundColor: cardColor, borderColor },
+              { backgroundColor: cardColor, borderColor, color: textColor },
               styles.inputSoft,
             ]}
           />

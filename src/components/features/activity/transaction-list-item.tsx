@@ -37,8 +37,8 @@ export function TransactionListItem({
   const t = useT();
   const { language } = useSettings();
 
-  const title = getDisplayTitle(item, t);
-  const subtitle = getDisplaySubtitle(item);
+  const title = getDisplayTitle(item, t, language);
+  const subtitle = getDisplaySubtitle(item, language);
   const isTransfer = item.transaction_type === "TRANSFER";
   const fromName = item.from_account?.account_name;
   const toName = item.to_account?.account_name;

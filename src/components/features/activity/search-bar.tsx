@@ -1,6 +1,7 @@
 // migrated to useColor
 import { radius, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
+import { useT } from "@/i18n";
 import { MaterialIcons } from "@expo/vector-icons";
 import { StyleSheet, TextInput, View } from "react-native";
 
@@ -14,6 +15,7 @@ export function SearchBar({ value, onChangeText }: SearchBarProps) {
   const textMutedColor = useColor("textMuted");
   const mutedBgColor = useColor("muted");
   const textColor = useColor("text");
+  const t = useT();
   return (
     <View style={[styles.wrap, { backgroundColor: mutedBgColor }]}>
       <MaterialIcons
@@ -25,7 +27,7 @@ export function SearchBar({ value, onChangeText }: SearchBarProps) {
       <TextInput
         value={value}
         onChangeText={onChangeText}
-        placeholder="Search transactions..."
+        placeholder={t("activity.searchPlaceholder")}
         placeholderTextColor={textMutedColor}
         style={[styles.input, { color: textColor }]}
       />

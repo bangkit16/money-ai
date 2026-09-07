@@ -43,6 +43,8 @@ export default function ActivityScreen() {
     queryFn: ActivityService.GetTransactions,
   });
 
+  console.log("ActivityScreen transactions:", transactions);
+
   const filteredSections = useMemo(() => {
     if (!transactions) return [];
 
@@ -53,7 +55,8 @@ export default function ActivityScreen() {
       const matchesQuery =
         q.length === 0 ||
         (tx.transaction ?? "").toLowerCase().includes(q) ||
-        (tx.category?.category ?? "").toLowerCase().includes(q);
+        (tx.category?.category ?? "").toLowerCase().includes(q) ||
+        (tx.category?.category_en ?? "").toLowerCase().includes(q);
       return matchesFilter && matchesQuery;
     });
 

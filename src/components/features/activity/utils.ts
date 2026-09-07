@@ -13,9 +13,57 @@ const ICON_BY_SLUG: Record<string, string> = {
   health: "medical-services",
   fun: "movie",
   entertainment: "movie",
-  housing: "house",
+  housing: "home",
   salary: "payments",
   others: "more-horiz",
+  drinks: "local-cafe",
+  fuel: "local-gas-station",
+  parking: "local-parking",
+  electric: "bolt",
+  water: "water-drop",
+  medicine: "medication",
+  sports: "fitness-center",
+  movies: "theaters",
+  gaming: "sports-esports",
+  concert: "music-note",
+  education: "school",
+  books: "menu-book",
+  course: "workspace-premium",
+  beauty: "spa",
+  haircut: "content-cut",
+  rent: "apartment",
+  repair: "build",
+  cleaning: "cleaning-services",
+  subscription: "autorenew",
+  donation: "volunteer-activism",
+  insurance: "security",
+  tax: "account-balance",
+  childcare: "child-care",
+  pet: "pets",
+  snacks: "cookie",
+  "street-food": "storefront",
+  coffee: "coffee",
+  cigarette: "smoking-rooms",
+  maintenance: "build",
+  "car-wash": "local-car-wash",
+  toll: "toll",
+  train: "train",
+  bus: "directions-bus",
+  "flight-cat": "flight",
+  ship: "directions-boat",
+  hotel: "hotel",
+  tour: "tour",
+  printing: "print",
+  business: "store",
+  freelance: "work",
+  investment: "trending-up",
+  dividend: "account-balance",
+  interest: "savings",
+  bonus: "stars",
+  "holiday-bonus": "celebration",
+  sales: "sell",
+  resale: "redo",
+  transfer: "swap-horiz",
 };
 
 type TxType = "INCOME" | "EXPENSE" | "TRANSFER";
@@ -31,10 +79,14 @@ export type Translator = (key: string) => string;
 
 export function getDisplayTitle(
   row: TransactionRow,
-  t: Translator
+  t: Translator,
+  lang: LanguageCode = "id"
 ): string {
   if (row.transaction && row.transaction.trim()) return row.transaction;
-  if (row.category?.category) return row.category.category;
+  if (row.category?.category) {
+    const cat = row.category;
+    return lang === "en" && cat.category_en ? cat.category_en : cat.category;
+  }
   if (row.transaction_type === "TRANSFER") {
     const from = row.from_account?.account_name;
     const to = row.to_account?.account_name;
@@ -47,9 +99,12 @@ export function getDisplayTitle(
   return t("activity.fallbackTransaction");
 }
 
-export function getDisplaySubtitle(row: TransactionRow): string {
+export function getDisplaySubtitle(row: TransactionRow, lang: LanguageCode = "id"): string {
   if (row.transaction_type === "TRANSFER") return "";
-  if (row.category?.category) return row.category.category;
+  if (row.category?.category) {
+    const cat = row.category;
+    return lang === "en" && cat.category_en ? cat.category_en : cat.category;
+  }
   return "";
 }
 

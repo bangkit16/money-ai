@@ -63,8 +63,8 @@ function TransactionRow({
   const primaryColor = useColor("primary");
   const outlineColor = useColor("outline");
   const secondaryContainerColor = useColor("secondaryContainer");
-  const title = getDisplayTitle(tx, t);
-  const subtitle = getDisplaySubtitle(tx);
+  const title = getDisplayTitle(tx, t, language);
+  const subtitle = getDisplaySubtitle(tx, language);
   const amountColor =
     tx.transaction_type === "TRANSFER"
       ? onSurfaceColor

@@ -47,7 +47,7 @@ type LoadedTx = {
   category_id: number | null;
   account_id: number | null;
   to_account_id: number | null;
-  category: { id: number; category: string; slug: string } | null;
+  category: { id: number; category: string; category_en: string | null; slug: string; icon: string } | null;
   account: { id: number; account_name: string } | null;
 };
 
@@ -92,7 +92,7 @@ export default function TransactionScreen() {
       const { data, error } = await supabase
         .from("transaction")
         .select(
-          "id, created_at, transaction_date, transaction, amount, transaction_type, category_id, account_id, to_account_id, category:category_transaction(id, category, slug), from_account:account!account_id(id, account_name), to_account:account!to_account_id(id, account_name)"
+          "id, created_at, transaction_date, transaction, amount, transaction_type, category_id, account_id, to_account_id, category:category_transaction(id, category, category_en, slug, icon), from_account:account!account_id(id, account_name), to_account:account!to_account_id(id, account_name)"
         )
         .eq("id", Number(editId))
         .single();
@@ -138,11 +138,13 @@ export default function TransactionScreen() {
   }, [existing]);
 
   // TRANSFER uses EXPENSE category set (DB enum has no TRANSFER) — picks the most common type
-  const categoryKey: TransactionType = transactionType === "TRANSFER" ? "EXPENSE" : transactionType;
+  const categoryKey: TransactionType = transactionType
   const { data: categories, isLoading: isLoadingCategory } = useQuery({
     queryKey: AddTransactionService.keys.categories(categoryKey),
     queryFn: () => AddTransactionService.GetCategories(categoryKey),
   });
+
+  console.log("TransactionScreen categories:", categoryKey);
 
   const { data: accounts, isLoading: isLoadingAccounts } = useQuery({
     queryKey: AddTransactionService.keys.accounts,
@@ -363,16 +365,6 @@ export default function TransactionScreen() {
               />
             </View>
 
-            <View style={styles.fieldBlock}>
-              <Text style={[styles.label, { color: textMutedColor }]}>{t("add.category")}</Text>
-              <CategoryGrid
-                categories={categories}
-                selectedId={categoryId}
-                isLoading={isLoadingCategory}
-                onSelect={setCategoryId}
-              />
-            </View>
-
             {isTransfer ? (
               <View style={styles.transferAccountsRow}>
                 <View style={styles.transferAccountCol}>
@@ -426,6 +418,16 @@ export default function TransactionScreen() {
                 />
               </View>
             )}
+
+            <View style={styles.fieldBlock}>
+              <Text style={[styles.label, { color: textMutedColor }]}>{t("add.category")}</Text>
+              <CategoryGrid
+                categories={categories}
+                selectedId={categoryId}
+                isLoading={isLoadingCategory}
+                onSelect={setCategoryId}
+              />
+            </View>
           </ScrollView>
 
           <TransactionDateFields
