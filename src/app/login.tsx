@@ -6,7 +6,7 @@ import { spacing, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
 import { useT } from "@/i18n";
 import * as WebBrowser from "expo-web-browser";
-import * as Linking from "expo-linking";
+import { makeRedirectUri } from "expo-auth-session";
 import { router } from "expo-router";
 import { useState } from "react";
 import { Platform, StyleSheet, View } from "react-native";
@@ -17,9 +17,13 @@ import { createSessionFromUrl } from "@/lib/auth";
 // menutup sesi auth-nya sendiri saat browser di-redirect balik ke app.
 WebBrowser.maybeCompleteAuthSession();
 
-// Harus SAMA PERSIS dengan salah satu "Redirect URLs" yang kamu daftarkan
-// di Supabase Dashboard -> Authentication -> URL Configuration.
-const redirectTo = Linking.createURL("/auth-callback");
+// Returns the correct URI for the current environment:
+// - Expo Go:    https://auth.expo.io/@username/project-slug/auth-callback
+// - Standalone: dompety:///auth-callback
+const redirectTo = makeRedirectUri({
+  scheme: "dompety",
+  path: "auth-callback",
+});
 
 export default function LoginScreen() {
   const [loading, setLoading] = useState(false);

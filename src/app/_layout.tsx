@@ -10,6 +10,7 @@ import { SplashScreen, Stack } from "expo-router";
 import { useEffect } from "react";
 import { ModeProvider } from "@/providers/mode-provider";
 import { SettingsProvider } from "@/providers/settings-provider";
+import { ToastProvider } from "@/components/ui/toast";
 import "../global.css";
 
 const queryClient = new QueryClient({
@@ -38,6 +39,7 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <ModeProvider storage={AsyncStorage} storageKey="app.theme">
         <SettingsProvider>
+        <ToastProvider>
         <AuthGuard>
           <Stack
             screenOptions={{
@@ -52,6 +54,7 @@ export default function RootLayout() {
             />
           </Stack>
         </AuthGuard>
+        </ToastProvider>
         </SettingsProvider>
       </ModeProvider>
     </QueryClientProvider>

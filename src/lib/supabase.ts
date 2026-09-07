@@ -1,8 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { createClient } from '@supabase/supabase-js'
 
-// Expo Router static-renders web in Node, where AsyncStorage's window
-// access crashes. No-op adapter keeps SSR from loading a session.
 const isServer = typeof window === 'undefined'
 const noopStorage = {
   getItem: () => Promise.resolve(null),

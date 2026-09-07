@@ -3,28 +3,31 @@ import { AmountDisplay } from "@/components/features/add-transaction/amount-disp
 import { CategoryGrid } from "@/components/features/add-transaction/category-grid";
 import { Keypad } from "@/components/features/add-transaction/keypad";
 import { SaveButton } from "@/components/features/add-transaction/save-button";
-import {
-  TransactionDateFields,
-} from "@/components/features/add-transaction/transaction-date-fields";
+import { TransactionDateFields } from "@/components/features/add-transaction/transaction-date-fields";
+import { ConfirmDialog } from "@/components/features/shared/confirm-dialog";
 import {
   TypeToggle,
   type TransactionTypeKey,
 } from "@/components/features/transaction/type-toggle";
+import { BottomSheet, useBottomSheet } from "@/components/ui/bottom-sheet";
 import { Text } from "@/components/ui/text";
+import { useToast } from "@/components/ui/toast";
 import { spacing, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
 import { useT } from "@/i18n";
 import {
+  invalidateAfterDelete,
+  invalidateTransactionCaches,
+} from "@/lib/query-invalidation";
+import { QueryKeys } from "@/lib/query-keys";
+import {
   AddTransactionService,
   type TransactionType,
 } from "@/services/addTransactionService";
-import { invalidateAfterDelete, invalidateTransactionCaches } from "@/lib/query-invalidation";
-import { QueryKeys } from "@/lib/query-keys";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import {
-  Alert,
   Animated,
   Easing,
   KeyboardAvoidingView,
@@ -34,7 +37,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { BottomSheet, useBottomSheet } from "@/components/ui/bottom-sheet";
 
 type EditTransactionBottomSheetProps = {
   transaction: import("@/services/activityService").ActivityTransactionRow;
@@ -54,8 +56,10 @@ export function EditTransactionBottomSheet({
   const primaryColor = useColor("primary");
   const errorColor = useColor("error");
   const t = useT();
+  const toast = useToast();
 
   const entrance = useMemo(() => new Animated.Value(0), []);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Open bottom sheet on mount
   useEffect(() => {
@@ -75,18 +79,18 @@ export function EditTransactionBottomSheet({
 
   // Initialize state from transaction prop using lazy initialization
   const [amount, setAmount] = useState(() => String(transaction.amount));
-  const [categoryId, setCategoryId] = useState(() =>
-    transaction.category?.id ?? null
+  const [categoryId, setCategoryId] = useState(
+    () => transaction.category?.id ?? null,
   );
   const [accountId, setAccountId] = useState<number | null>(() => null);
   const [transactionType, setTransactionType] = useState<TransactionTypeKey>(
-    () => transaction.transaction_type
+    () => transaction.transaction_type,
   );
-  const [dateTime, setDateTime] = useState(() =>
-    new Date(transaction.created_at)
+  const [dateTime, setDateTime] = useState(
+    () => new Date(transaction.created_at),
   );
-  const [transactionName, setTransactionName] = useState(() =>
-    transaction.transaction ?? ""
+  const [transactionName, setTransactionName] = useState(
+    () => transaction.transaction ?? "",
   );
 
   // --- Categories ---
@@ -115,20 +119,23 @@ export function EditTransactionBottomSheet({
         transaction_type: transactionType as TransactionType,
         category_id: categoryId,
         account_id: accountId,
-        created_at: dateTime.toISOString(),
+        transaction_date: dateTime.toISOString(),
       });
     },
     onSuccess: () => {
       invalidateTransactionCaches(queryClient);
-      queryClient.invalidateQueries({ queryKey: QueryKeys.transaction(transaction.id) });
+      queryClient.invalidateQueries({
+        queryKey: QueryKeys.transaction(transaction.id),
+      });
       bottomSheet.close();
       onClose();
-      Alert.alert(t("add.saved"), t("edit.savedMsg"), [
-        { text: t("common.ok") },
-      ]);
+      toast.success(t("add.saved"), t("edit.savedMsg"));
     },
     onError: (error: Error) => {
-      Alert.alert(t("add.saveError"), error.message ?? t("add.saveGenericError"));
+      toast.error(
+        t("add.saveError"),
+        error.message ?? t("add.saveGenericError"),
+      );
     },
   });
 
@@ -137,12 +144,15 @@ export function EditTransactionBottomSheet({
     mutationFn: () => AddTransactionService.DeleteTransaction(transaction.id),
     onSuccess: () => {
       invalidateAfterDelete(queryClient, transaction.id);
-      Alert.alert(t("add.deleted"), t("add.deletedMsg"), [
-        { text: t("common.ok"), onPress: () => { bottomSheet.close(); onClose(); } },
-      ]);
+      toast.success(t("add.deleted"), t("add.deletedMsg"));
+      bottomSheet.close();
+      onClose();
     },
     onError: (error: Error) => {
-      Alert.alert(t("add.deleteError"), error.message ?? t("add.saveGenericError"));
+      toast.error(
+        t("add.deleteError"),
+        error.message ?? t("add.saveGenericError"),
+      );
     },
   });
 
@@ -171,131 +181,148 @@ export function EditTransactionBottomSheet({
   };
 
   const handleDelete = () => {
-    Alert.alert(
-      t("add.deleteConfirmTitle"),
-      t("edit.deleteConfirmMsg"),
-      [
-        { text: t("common.cancel"), style: "cancel" },
-        { text: t("common.delete"), style: "destructive", onPress: () => deleteTransaction() },
-      ]
-    );
+    setShowDeleteConfirm(true);
   };
 
   return (
-    <BottomSheet
-      isVisible={bottomSheet.isVisible}
-      onClose={() => {
-        bottomSheet.close();
-        onClose();
-      }}
-      title={t("edit.title")}
-      snapPoints={[0.9]}
-      disablePanGesture={false}
-    >
-      <KeyboardAvoidingView
-        style={[styles.screen, { backgroundColor: bgColor }]}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+    <>
+      <BottomSheet
+        isVisible={bottomSheet.isVisible}
+        onClose={() => {
+          bottomSheet.close();
+          onClose();
+        }}
+        title={t("edit.title")}
+        snapPoints={[0.9]}
+        disablePanGesture={false}
       >
-        <Animated.View
-          style={[
-            styles.screen,
-            {
-              backgroundColor: bgColor,
-              opacity: entrance,
-              transform: [
-                {
-                  translateY: entrance.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [60, 0],
-                  }),
-                },
-              ],
-            },
-          ]}
+        <KeyboardAvoidingView
+          style={[styles.screen, { backgroundColor: bgColor }]}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
-          {/* Header */}
-          <View style={styles.header}>
-            <TouchableOpacity
-              onPress={bottomSheet.close}
-              hitSlop={10}
-              style={styles.headerBtn}
-            >
-              <MaterialIcons name="close" size={24} color={textColor} />
-            </TouchableOpacity>
-            <Text style={[styles.headerTitle, { color: primaryColor }]}>{t("edit.title")}</Text>
-            <TouchableOpacity
-              onPress={handleDelete}
-              disabled={isDeleting}
-              hitSlop={10}
-              style={styles.headerBtn}
-            >
-              <MaterialIcons
-                name="delete"
-                size={24}
-                color={isDeleting ? textMutedColor : errorColor}
-              />
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.body}>
-            {/* Hanya Amount, Type, Category, Account yang scrollable */}
-            <ScrollView
-              style={styles.topScroll}
-              contentContainerStyle={styles.topScrollContent}
-              keyboardShouldPersistTaps="handled"
-              showsVerticalScrollIndicator={false}
-            >
-              <AmountDisplay amount={amount} />
-
-              <View style={styles.fieldBlock}>
-                <Text style={[styles.label, { color: textMutedColor }]}>{t("edit.type")}</Text>
-                <TypeToggle value={transactionType} onChange={setTransactionType} />
-              </View>
-
-              <View style={styles.fieldBlock}>
-                <Text style={[styles.label, { color: textMutedColor }]}>{t("edit.category")}</Text>
-                <CategoryGrid
-                  categories={categories}
-                  selectedId={categoryId}
-                  isLoading={isLoadingCategory}
-                  onSelect={(id) => setCategoryId(id)}
+          <Animated.View
+            style={[
+              styles.screen,
+              {
+                backgroundColor: bgColor,
+                opacity: entrance,
+                transform: [
+                  {
+                    translateY: entrance.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [60, 0],
+                    }),
+                  },
+                ],
+              },
+            ]}
+          >
+            {/* Header */}
+            <View style={styles.header}>
+              <TouchableOpacity
+                onPress={bottomSheet.close}
+                hitSlop={10}
+                style={styles.headerBtn}
+              >
+                <MaterialIcons name="close" size={24} color={textColor} />
+              </TouchableOpacity>
+              <Text style={[styles.headerTitle, { color: primaryColor }]}>
+                {t("edit.title")}
+              </Text>
+              <TouchableOpacity
+                onPress={handleDelete}
+                disabled={isDeleting}
+                hitSlop={10}
+                style={styles.headerBtn}
+              >
+                <MaterialIcons
+                  name="delete"
+                  size={24}
+                  color={isDeleting ? textMutedColor : errorColor}
                 />
-              </View>
-
-              <View style={styles.fieldBlock}>
-                <Text style={[styles.label, { color: textMutedColor }]}>{t("edit.account")}</Text>
-                <AccountChips
-                  accounts={accounts}
-                  selectedId={accountId}
-                  isLoading={isLoadingAccounts}
-                  onSelect={(id) => setAccountId((prev) => (prev === id ? null : id))}
-                />
-              </View>
-            </ScrollView>
-
-            <TransactionDateFields
-              transaction={transactionName}
-              onChangeTransaction={setTransactionName}
-              dateTime={dateTime}
-              onChangeDateTime={setDateTime}
-            />
-
-            <View style={styles.keypadWrap}>
-              <Keypad onKeyPress={handleKeyPress} />
+              </TouchableOpacity>
             </View>
-          </View>
 
-          {/* Footer */}
-          <View style={[styles.footer, { backgroundColor: bgColor }]}>
-            <SaveButton
-              disabled={!isValid}
-              loading={isSaving}
-              onPress={handleSave}
-            />
-          </View>
-        </Animated.View>
-      </KeyboardAvoidingView>
-    </BottomSheet>
+            <View style={styles.body}>
+              {/* Hanya Amount, Type, Category, Account yang scrollable */}
+              <ScrollView
+                style={styles.topScroll}
+                contentContainerStyle={styles.topScrollContent}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+              >
+                <AmountDisplay amount={amount} />
+
+                <View style={styles.fieldBlock}>
+                  <Text style={[styles.label, { color: textMutedColor }]}>
+                    {t("edit.type")}
+                  </Text>
+                  <TypeToggle
+                    value={transactionType}
+                    onChange={setTransactionType}
+                  />
+                </View>
+
+                <View style={styles.fieldBlock}>
+                  <Text style={[styles.label, { color: textMutedColor }]}>
+                    {t("edit.category")}
+                  </Text>
+                  <CategoryGrid
+                    categories={categories}
+                    selectedId={categoryId}
+                    isLoading={isLoadingCategory}
+                    onSelect={(id) => setCategoryId(id)}
+                  />
+                </View>
+
+                <View style={styles.fieldBlock}>
+                  <Text style={[styles.label, { color: textMutedColor }]}>
+                    {t("edit.account")}
+                  </Text>
+                  <AccountChips
+                    accounts={accounts}
+                    selectedId={accountId}
+                    isLoading={isLoadingAccounts}
+                    onSelect={(id) =>
+                      setAccountId((prev) => (prev === id ? null : id))
+                    }
+                  />
+                </View>
+              </ScrollView>
+
+              <TransactionDateFields
+                transaction={transactionName}
+                onChangeTransaction={setTransactionName}
+                dateTime={dateTime}
+                onChangeDateTime={setDateTime}
+              />
+
+              <View style={styles.keypadWrap}>
+                <Keypad onKeyPress={handleKeyPress} />
+              </View>
+            </View>
+
+            {/* Footer */}
+            <View style={[styles.footer, { backgroundColor: bgColor }]}>
+              <SaveButton
+                disabled={!isValid}
+                loading={isSaving}
+                onPress={handleSave}
+              />
+            </View>
+          </Animated.View>
+        </KeyboardAvoidingView>
+      </BottomSheet>
+      <ConfirmDialog
+        visible={showDeleteConfirm}
+        title={t("add.deleteConfirmTitle")}
+        message={t("edit.deleteConfirmMsg")}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={deleteTransaction}
+        confirmLabel={t("common.delete")}
+        isConfirming={isDeleting}
+      />
+    </>
   );
 }
 

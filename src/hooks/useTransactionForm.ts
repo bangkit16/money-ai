@@ -1,5 +1,4 @@
 import { useState, useCallback, useEffect } from "react";
-import { Alert } from "react-native";
 import { router } from "expo-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
@@ -11,6 +10,7 @@ import { invalidateAfterDelete, invalidateTransactionCaches } from "@/lib/query-
 import { QueryKeys } from "@/lib/query-keys";
 import type { TransactionTypeKey } from "@/components/features/transaction/type-toggle";
 import { useT } from "@/i18n";
+import { useToast } from "@/components/ui/toast";
 
 type LoadedTx = {
   id: number;
@@ -42,6 +42,7 @@ export function useTransactionForm(
 ) {
   const queryClient = useQueryClient();
   const t = useT();
+  const toast = useToast();
   const isEdit = !!editId;
 
   // --- Form State ---
@@ -170,14 +171,14 @@ export function useTransactionForm(
     onSuccess: () => {
       invalidateTransactionCaches(queryClient);
       if (editId) queryClient.invalidateQueries({ queryKey: QueryKeys.transaction(editId) });
-      Alert.alert(
+      toast.success(
         t("add.saved"),
         isTransfer ? t("add.transferSaved") : t("add.transactionSaved"),
-        [{ text: t("common.ok"), onPress: () => router.back() }],
       );
+      setTimeout(() => router.back(), 400);
     },
     onError: (error: Error) => {
-      Alert.alert(t("add.saveError"), error.message ?? t("add.saveGenericError"));
+      toast.error(t("add.saveError"), error.message ?? t("add.saveGenericError"));
     },
   });
 
@@ -190,10 +191,10 @@ export function useTransactionForm(
     onSuccess: () => {
       if (editId) invalidateAfterDelete(queryClient, Number(editId));
       router.back();
-      Alert.alert(t("add.deleted"), t("add.deletedMsg"), [{ text: t("common.ok") }]);
+      toast.success(t("add.deleted"), t("add.deletedMsg"));
     },
     onError: (error: Error) => {
-      Alert.alert(t("add.deleteError"), error.message ?? t("add.saveGenericError"));
+      toast.error(t("add.deleteError"), error.message ?? t("add.saveGenericError"));
     },
   });
 
