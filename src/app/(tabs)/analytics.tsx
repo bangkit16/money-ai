@@ -7,6 +7,7 @@ import { Text } from "@/components/ui/text";
 import { spacing, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
 import { useT } from "@/i18n";
+import { useSettings } from "@/providers/settings-provider";
 import { AnalyticsService } from "@/services/analyticsService";
 import { useQuery } from "@tanstack/react-query";
 import { ScrollView, StyleSheet, View } from "react-native";
@@ -17,10 +18,11 @@ export default function AnalyticsScreen() {
   const textMutedColor = useColor("textMuted");
   const textColor = useColor("text");
   const t = useT();
+  const { language } = useSettings();
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: AnalyticsService.keys.current,
-    queryFn: AnalyticsService.GetCurrentMonth,
+    queryFn: () => AnalyticsService.GetCurrentMonth(language),
   });
 
   return (

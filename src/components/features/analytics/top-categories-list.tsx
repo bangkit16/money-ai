@@ -2,6 +2,7 @@ import { useFormatCurrency } from "@/hooks/useFormatCurrency";
 import { Text } from "@/components/ui/text";
 import { radius, shadow, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
+import { useT } from "@/i18n";
 import { MaterialIcons } from "@expo/vector-icons";
 import { StyleSheet, View } from "react-native";
 
@@ -24,10 +25,11 @@ export function TopCategoriesList({ items }: Props) {
   const primaryColor = useColor("primary");
   const onSurfaceVariantColor = useColor("onSurfaceVariant");
   const platinumMistColor = useColor("platinumMist");
+  const t = useT();
   if (items.length === 0) {
     return (
       <View style={[styles.card, shadow.card, styles.empty, { backgroundColor: cardColor }]}>
-        <Text style={[styles.emptyText, { color: onSurfaceVariantColor }]}>No spending yet for this month.</Text>
+        <Text style={[styles.emptyText, { color: onSurfaceVariantColor }]}>{t("analytics.noSpending")}</Text>
       </View>
     );
   }

@@ -141,6 +141,11 @@ export const translations: Record<LanguageCode, Dict> = {
     "add.saveButton": "Simpan Transaksi",
     // analytics — categories section
     "analytics.loadingInsights": "Memuat insight...",
+    "analytics.spendingStructure": "Struktur Pengeluaran",
+    "analytics.total": "TOTAL",
+    "analytics.insightsFor": "Insights untuk {month}",
+    "analytics.monthlyTotal": "Total Bulanan",
+    "analytics.noSpending": "Belum ada pengeluaran bulan ini.",
   },
   en: {
     "settings.preferences": "Preferences",
@@ -264,6 +269,11 @@ export const translations: Record<LanguageCode, Dict> = {
     "add.transactionPlaceholder": "What was this for?",
     "add.saveButton": "Save Transaction",
     "analytics.loadingInsights": "Loading insights...",
+    "analytics.spendingStructure": "Spending Structure",
+    "analytics.total": "TOTAL",
+    "analytics.insightsFor": "Insights for {month}",
+    "analytics.monthlyTotal": "Monthly Total",
+    "analytics.noSpending": "No spending yet for this month.",
   },
 };
 

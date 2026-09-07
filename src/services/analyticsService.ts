@@ -1,4 +1,6 @@
 import { supabase } from "@/lib/supabase";
+import type { LanguageCode } from "@/providers/settings-provider";
+import { tFor } from "@/i18n";
 
 export type CategorySummary = {
   id: number;
@@ -40,8 +42,9 @@ const PALETTE = [
   "#d4e3c4", // pale sage
 ];
 
-function monthLabel(d: Date) {
-  return d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+function monthLabel(d: Date, lang: LanguageCode) {
+  const locale = lang === "id" ? "id-ID" : "en-US";
+  return d.toLocaleDateString(locale, { month: "long", year: "numeric" });
 }
 
 function startEndOfMonth(d: Date) {
@@ -60,7 +63,7 @@ export class AnalyticsService {
    * Hanya transaksi EXPENSE (exclude TRANSFER & INCOME).
    * Filter user_id via RLS otomatis karena pakai supabase.auth.getUser().
    */
-  static async GetCurrentMonth() {
+  static async GetCurrentMonth(lang: LanguageCode = "id") {
     const now = new Date();
     const { start, end } = startEndOfMonth(now);
 
@@ -124,14 +127,14 @@ export class AnalyticsService {
     const topCategories: TopCategory[] = sorted.slice(0, 5).map((c, i) => ({
       icon: c.icon || "more-horiz",
       name: c.name,
-      subtitle: "Monthly total",
+      subtitle: tFor(lang, "analytics.monthlyTotal"),
       amount: c.total,
       percent: total > 0 ? Math.min(100, (c.total / total) * 100) : 0,
       color: PALETTE[i % PALETTE.length],
     }));
 
     return {
-      monthLabel: `Insights for ${monthLabel(now)}`,
+      monthLabel: tFor(lang, "analytics.insightsFor", { month: monthLabel(now, lang) }),
       totalSpend: total,
       segments,
       topCategories,

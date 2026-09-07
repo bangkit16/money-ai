@@ -5,6 +5,7 @@ import type { DonutSegment } from "@/components/features/analytics/donut-chart";
 import { Text } from "@/components/ui/text";
 import { radius, shadow, typography } from "@/constants/theme";
 import { StyleSheet, View } from "react-native";
+import { useT } from "@/i18n";
 
 type Props = {
   segments: DonutSegment[];
@@ -17,10 +18,11 @@ export function SpendingStructureCard({ segments, totalSpend }: Props) {
   const onSurfaceColor = useColor("onSurface");
   const onSurfaceVariantColor = useColor("onSurfaceVariant");
   const primaryColor = useColor("primary");
+  const t = useT();
   return (
     <View style={[styles.card, shadow.card, { alignItems: "center", backgroundColor: cardColor }]}>
       <Text style={[styles.titleMd, { alignSelf: "flex-start", marginBottom: 16, color: onSurfaceColor }]}>
-        Spending Structure
+        {t("analytics.spendingStructure")}
       </Text>
       <View
         style={{
@@ -32,7 +34,7 @@ export function SpendingStructureCard({ segments, totalSpend }: Props) {
       >
         <DonutChart segments={segments} />
         <View style={styles.donutCenter}>
-          <Text style={[styles.mutedLabel, { color: onSurfaceVariantColor }]}>TOTAL</Text>
+          <Text style={[styles.mutedLabel, { color: onSurfaceVariantColor }]}>{t("analytics.total")}</Text>
           <Text style={[styles.donutTotal, { color: primaryColor }]}>{formatCurrency(totalSpend)}</Text>
         </View>
       </View>
