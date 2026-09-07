@@ -19,6 +19,7 @@ import { useMemo, useEffect } from "react";
 import {
   Animated,
   Easing,
+  KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
@@ -108,6 +109,10 @@ export default function TransactionScreen() {
   if (editId && !hydrated) return null;
 
   return (
+    <KeyboardAvoidingView
+      style={[styles.screen, { backgroundColor: bgColor }]}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
       <Animated.View
         style={[
           styles.screen,
@@ -262,6 +267,7 @@ export default function TransactionScreen() {
           />
         </View>
       </Animated.View>
+    </KeyboardAvoidingView>
   );
 }
 

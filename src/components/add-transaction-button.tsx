@@ -1,4 +1,3 @@
-// migrated to useColor
 import { radius } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
 import { MaterialIcons } from "@expo/vector-icons";
