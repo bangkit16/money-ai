@@ -43,7 +43,6 @@ export default function ActivityScreen() {
     queryFn: ActivityService.GetTransactions,
   });
 
-  console.log("ActivityScreen transactions:", transactions);
 
   const filteredSections = useMemo(() => {
     if (!transactions) return [];

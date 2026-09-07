@@ -40,16 +40,15 @@ export class AddTransactionService {
       .or(`category_type.eq.${transactionType},category_type.is.null`);
     if (error) throw new Error(error.message);
     if (transactionType === "TRANSFER") {
-      const filteredData = data.filter((row) => row.slug === "transfer" || row.id === 8);
-      return filteredData as CategoryRow[];
+      return (data.filter((row) => row.slug === "transfer" || row.slug === "others")) as CategoryRow[];
     }
-     const sortedData = data.sort((a, b) => {
-       if (a.id === 8) return 1; // Jika id adalah 8, geser ke belakang
-       if (b.id === 8) return -1; // Jika id lawan adalah 8, geser lawan ke belakang
-       return 0; // Biarkan urutan item lainnya tetap sama
-     });
-    console.log("AddTransactionService GetCategories:", sortedData);
-    return sortedData as CategoryRow[];
+    // Push "others" to end for non-TRANSFER types
+    const sorted = [...data].sort((a, b) => {
+      if (a.slug === "others") return 1;
+      if (b.slug === "others") return -1;
+      return 0;
+    });
+    return sorted as CategoryRow[];
   }
 
   static async GetAccountOptions() {

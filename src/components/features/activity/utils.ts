@@ -77,16 +77,21 @@ export function getIcon(category: TransactionRow["category"], type: TxType) {
 
 export type Translator = (key: string) => string;
 
+function getCategoryDisplayName(
+  cat: { category: string; category_en: string | null } | null,
+  lang: LanguageCode
+): string {
+  if (!cat) return "";
+  return lang === "en" && cat.category_en ? cat.category_en : cat.category;
+}
+
 export function getDisplayTitle(
   row: TransactionRow,
   t: Translator,
   lang: LanguageCode = "id"
 ): string {
   if (row.transaction && row.transaction.trim()) return row.transaction;
-  if (row.category?.category) {
-    const cat = row.category;
-    return lang === "en" && cat.category_en ? cat.category_en : cat.category;
-  }
+  if (row.category?.category) return getCategoryDisplayName(row.category, lang);
   if (row.transaction_type === "TRANSFER") {
     const from = row.from_account?.account_name;
     const to = row.to_account?.account_name;
@@ -101,11 +106,7 @@ export function getDisplayTitle(
 
 export function getDisplaySubtitle(row: TransactionRow, lang: LanguageCode = "id"): string {
   if (row.transaction_type === "TRANSFER") return "";
-  if (row.category?.category) {
-    const cat = row.category;
-    return lang === "en" && cat.category_en ? cat.category_en : cat.category;
-  }
-  return "";
+  return getCategoryDisplayName(row.category ?? null, lang);
 }
 
 export function formatTime(dateStr: string, lang: LanguageCode) {

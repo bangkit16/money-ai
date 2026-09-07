@@ -144,7 +144,6 @@ export default function TransactionScreen() {
     queryFn: () => AddTransactionService.GetCategories(categoryKey),
   });
 
-  console.log("TransactionScreen categories:", categoryKey);
 
   const { data: accounts, isLoading: isLoadingAccounts } = useQuery({
     queryKey: AddTransactionService.keys.accounts,
