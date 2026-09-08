@@ -27,6 +27,8 @@ export const LANGUAGES: { code: LanguageCode; label: string }[] = [
 
 const CURRENCY_STORAGE_KEY = "app.currency";
 const LANGUAGE_STORAGE_KEY = "app.language";
+const AI_USE_PRIMARY_ACCOUNT_KEY = "app.ai.usePrimaryAccount";
+const AI_AUTO_SAVE_KEY = "app.ai.autoSaveTransaction";
 const DEFAULT_CURRENCY: CurrencyCode = "IDR";
 const DEFAULT_LANGUAGE: LanguageCode = "id";
 
@@ -35,6 +37,10 @@ type SettingsContextValue = {
   setCurrency: (c: CurrencyCode) => void;
   language: LanguageCode;
   setLanguage: (l: LanguageCode) => void;
+  usePrimaryAccount: boolean;
+  setUsePrimaryAccount: (v: boolean) => void;
+  autoSaveTransaction: boolean;
+  setAutoSaveTransaction: (v: boolean) => void;
 };
 
 const SettingsContext = createContext<SettingsContextValue | null>(null);
@@ -42,14 +48,18 @@ const SettingsContext = createContext<SettingsContextValue | null>(null);
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [currency, setCurrencyState] = useState<CurrencyCode>(DEFAULT_CURRENCY);
   const [language, setLanguageState] = useState<LanguageCode>(DEFAULT_LANGUAGE);
+  const [usePrimaryAccount, setUsePrimaryAccountState] = useState(false);
+  const [autoSaveTransaction, setAutoSaveTransactionState] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     Promise.all([
       AsyncStorage.getItem(CURRENCY_STORAGE_KEY),
       AsyncStorage.getItem(LANGUAGE_STORAGE_KEY),
+      AsyncStorage.getItem(AI_USE_PRIMARY_ACCOUNT_KEY),
+      AsyncStorage.getItem(AI_AUTO_SAVE_KEY),
     ])
-      .then(([savedCurrency, savedLanguage]) => {
+      .then(([savedCurrency, savedLanguage, savedUsePrimary, savedAutoSave]) => {
         if (cancelled) return;
         if (savedCurrency && CURRENCIES.some((c) => c.code === savedCurrency)) {
           setCurrencyState(savedCurrency as CurrencyCode);
@@ -57,6 +67,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         if (savedLanguage && LANGUAGES.some((l) => l.code === savedLanguage)) {
           setLanguageState(savedLanguage as LanguageCode);
         }
+        if (savedUsePrimary === "true") setUsePrimaryAccountState(true);
+        if (savedAutoSave === "true") setAutoSaveTransactionState(true);
       })
       .catch(() => {});
     return () => {
@@ -74,9 +86,24 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     Promise.resolve(AsyncStorage.setItem(LANGUAGE_STORAGE_KEY, l)).catch(() => {});
   }, []);
 
+  const setUsePrimaryAccount = useCallback((v: boolean) => {
+    setUsePrimaryAccountState(v);
+    Promise.resolve(AsyncStorage.setItem(AI_USE_PRIMARY_ACCOUNT_KEY, String(v))).catch(() => {});
+  }, []);
+
+  const setAutoSaveTransaction = useCallback((v: boolean) => {
+    setAutoSaveTransactionState(v);
+    Promise.resolve(AsyncStorage.setItem(AI_AUTO_SAVE_KEY, String(v))).catch(() => {});
+  }, []);
+
   const value = useMemo(
-    () => ({ currency, setCurrency, language, setLanguage }),
-    [currency, setCurrency, language, setLanguage]
+    () => ({
+      currency, setCurrency,
+      language, setLanguage,
+      usePrimaryAccount, setUsePrimaryAccount,
+      autoSaveTransaction, setAutoSaveTransaction,
+    }),
+    [currency, setCurrency, language, setLanguage, usePrimaryAccount, setUsePrimaryAccount, autoSaveTransaction, setAutoSaveTransaction]
   );
 
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;

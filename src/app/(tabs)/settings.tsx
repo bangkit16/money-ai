@@ -2,6 +2,7 @@ import { LogoutButton } from "@/components/features/settings/logout-button";
 import { CurrencyPickerSheet } from "@/components/features/settings/currency-picker-sheet";
 import { LanguagePickerSheet } from "@/components/features/settings/language-picker-sheet";
 import { SettingRow } from "@/components/features/settings/setting-row";
+import { SettingToggle } from "@/components/features/settings/setting-toggle";
 import { ThemePickerSheet } from "@/components/features/settings/theme-picker-sheet";
 import { ConfirmDialog } from "@/components/features/shared/confirm-dialog";
 import { Text } from "@/components/ui/text";
@@ -29,7 +30,7 @@ export default function SettingsScreen() {
   const [languageVisible, setLanguageVisible] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const modeCtx = useModeContext();
-  const { currency, language } = useSettings();
+  const { currency, language, usePrimaryAccount, setUsePrimaryAccount, autoSaveTransaction, setAutoSaveTransaction } = useSettings();
   const t = useT();
   const bg = useColor("background");
   const primary = useColor("primary");
@@ -84,6 +85,25 @@ export default function SettingsScreen() {
             description={t("settings.languageDesc")}
             value={languageMeta.label}
             onPress={() => setLanguageVisible(true)}
+          />
+        </Section>
+
+        <Section title={t("settings.aiSettings")}>
+          <SettingToggle
+            icon="account-balance"
+            iconColor={primary}
+            title={t("settings.usePrimaryAccount")}
+            description={t("settings.usePrimaryAccountDesc")}
+            value={usePrimaryAccount}
+            onValueChange={setUsePrimaryAccount}
+          />
+          <SettingToggle
+            icon="save"
+            iconColor={primary}
+            title={t("settings.autoSaveTransaction")}
+            description={t("settings.autoSaveTransactionDesc")}
+            value={autoSaveTransaction}
+            onValueChange={setAutoSaveTransaction}
           />
         </Section>
 
