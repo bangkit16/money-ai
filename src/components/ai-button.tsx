@@ -11,6 +11,7 @@ import {
 } from "@/lib/ai";
 import { invalidateTransactionCaches } from "@/lib/query-invalidation";
 import { supabase } from "@/lib/supabase";
+import { useSettings } from "@/providers/settings-provider";
 import { Ionicons } from "@expo/vector-icons";
 import { useQueryClient } from "@tanstack/react-query";
 import { LinearGradient } from "expo-linear-gradient";
@@ -50,6 +51,45 @@ function AiButton({ accountId }: AiButtonProps) {
   const queryClient = useQueryClient();
   const t = useT();
   const toast = useToast();
+  const { autoSaveTransaction } = useSettings();
+
+  console.log("apa nih" + autoSaveTransaction)
+
+  const saveTransaction = async (d: AiTransactionDraft) => {
+    const sourceAccountId = d.account_id ?? accountId;
+    setSaving(true);
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("Unauthorized");
+
+      const { error } = await supabase.from("transaction").insert({
+        transaction: d.description,
+        amount: d.amount,
+        transaction_type: d.transaction_type,
+        category_id: d.category?.id ?? null,
+        account_id: sourceAccountId,
+        to_account_id: d.to_account_id ?? null,
+        user_id: user.id,
+        transaction_date: new Date().toISOString(),
+      });
+
+      if (error) throw error;
+
+      invalidateTransactionCaches(queryClient);
+      const isTransfer = d.transaction_type === "TRANSFER";
+      toast.success(
+        t("add.saved"),
+        isTransfer ? t("add.transferSaved") : t("add.transactionSaved"),
+      );
+    } catch (e) {
+      setResultMessage("Gagal menyimpan transaksi. Coba lagi.");
+      setResultVisible(true);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const handleSend = async (prompt: string) => {
     setOpen(false);
@@ -58,7 +98,11 @@ function AiButton({ accountId }: AiButtonProps) {
       const result: AiPromptResult = await askAi(prompt);
 
       if (result.action === "confirm_transaction") {
-        setDraft(result.data);
+        if (autoSaveTransaction) {
+          await saveTransaction(result.data);
+        } else {
+          setDraft(result.data);
+        }
       } else if (result.action === "show_result") {
         setResultMessage(formatQueryResult(result.tool, result.data));
       } else if (result.action === "text_answer") {
@@ -153,43 +197,8 @@ function AiButton({ accountId }: AiButtonProps) {
 
   const handleConfirmTransaction = async () => {
     if (!draft) return;
-
-    const sourceAccountId = draft.account_id ?? accountId;
-
-    setSaving(true);
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Unauthorized");
-
-      const { error } = await supabase.from("transaction").insert({
-        transaction: draft.description,
-        amount: draft.amount,
-        transaction_type: draft.transaction_type,
-        category_id: draft.category?.id ?? null,
-        account_id: sourceAccountId,
-        to_account_id: draft.to_account_id ?? null,
-        user_id: user.id,
-        transaction_date: new Date().toISOString(),
-      });
-
-      if (error) throw error;
-
-      setDraft(null);
-      // Sequence: close modal first, then show result after.
-      invalidateTransactionCaches(queryClient);
-      const isTransfer = draft.transaction_type === "TRANSFER";
-      toast.success(
-        t("add.saved"),
-        isTransfer ? t("add.transferSaved") : t("add.transactionSaved"),
-      );
-    } catch (e) {
-      setResultMessage("Gagal menyimpan transaksi. Coba lagi.");
-      setResultVisible(true);
-    } finally {
-      setSaving(false);
-    }
+    await saveTransaction(draft);
+    setDraft(null);
   };
 
   return (
