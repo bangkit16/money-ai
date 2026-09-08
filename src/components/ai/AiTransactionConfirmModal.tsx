@@ -87,7 +87,7 @@ export default function AiTransactionConfirmModal({
               {draft.account_id && (
                 <View style={styles.row}>
                   <Text style={[styles.label, { color: textMutedColor }]}>
-                    Disimpan di Akun
+                    Disimpan di Rekening
                   </Text>
                   <Text
                     style={[

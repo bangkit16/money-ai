@@ -99,6 +99,7 @@ export function Toast({
   const errorColor = useColor('error');
   const warningColor = useColor('warning');
   const infoColor = useColor('info');
+  const onSurfaceColor = useColor("onSurface");
 
   const backgroundColor = cardColor;
   const mutedTextColor = textMutedColor;
@@ -323,7 +324,7 @@ export function Toast({
                   <Text
                     variant='subtitle'
                     style={{
-                      color: '#FFFFFF',
+                      color: onSurfaceColor,
                       fontSize: 15,
                       fontWeight: '600',
                       marginBottom: description ? 2 : 0,

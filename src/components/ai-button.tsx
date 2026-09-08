@@ -51,12 +51,26 @@ function AiButton({ accountId }: AiButtonProps) {
   const queryClient = useQueryClient();
   const t = useT();
   const toast = useToast();
-  const { autoSaveTransaction } = useSettings();
+  const { autoSaveTransaction, usePrimaryAccount } = useSettings();
 
-  console.log("apa nih" + autoSaveTransaction)
+  const applyPrimaryAccount = async (d: AiTransactionDraft) => {
+    if (usePrimaryAccount && d.account_id) return d;
+    if (!usePrimaryAccount) return d;
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return d;
+    const { data: primaryAcc } = await supabase
+      .from("account")
+      .select("id, account_name")
+      .eq("user_id", user.id)
+      .eq("is_primary", true)
+      .single();
+    if (!primaryAcc) return d;
+    return { ...d, account_id: primaryAcc.id, account_name: primaryAcc.account_name };
+  };
 
   const saveTransaction = async (d: AiTransactionDraft) => {
-    const sourceAccountId = d.account_id ?? accountId;
     setSaving(true);
     try {
       const {
@@ -64,13 +78,16 @@ function AiButton({ accountId }: AiButtonProps) {
       } = await supabase.auth.getUser();
       if (!user) throw new Error("Unauthorized");
 
+      const resolved = await applyPrimaryAccount(d);
+      const sourceAccountId = resolved.account_id ?? accountId;
+
       const { error } = await supabase.from("transaction").insert({
-        transaction: d.description,
-        amount: d.amount,
-        transaction_type: d.transaction_type,
-        category_id: d.category?.id ?? null,
+        transaction: resolved.description,
+        amount: resolved.amount,
+        transaction_type: resolved.transaction_type,
+        category_id: resolved.category?.id ?? null,
         account_id: sourceAccountId,
-        to_account_id: d.to_account_id ?? null,
+        to_account_id: resolved.to_account_id ?? null,
         user_id: user.id,
         transaction_date: new Date().toISOString(),
       });
@@ -98,10 +115,12 @@ function AiButton({ accountId }: AiButtonProps) {
       const result: AiPromptResult = await askAi(prompt);
 
       if (result.action === "confirm_transaction") {
+        const resolved = await applyPrimaryAccount(result.data);
+        console.log("resolverd" + resolved.account_id , resolved.account_name);
         if (autoSaveTransaction) {
-          await saveTransaction(result.data);
+          await saveTransaction(resolved);
         } else {
-          setDraft(result.data);
+          setDraft(resolved);
         }
       } else if (result.action === "show_result") {
         setResultMessage(formatQueryResult(result.tool, result.data));
