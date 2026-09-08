@@ -2,14 +2,17 @@
 import { Text } from "@/components/ui/text";
 import { radius, shadow, spacing, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
+import { useT } from "@/i18n";
 import {
   askAi,
   formatQueryResult,
   type AiPromptResult,
   type AiTransactionDraft,
 } from "@/lib/ai";
+import { invalidateTransactionCaches } from "@/lib/query-invalidation";
 import { supabase } from "@/lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
+import { useQueryClient } from "@tanstack/react-query";
 import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -22,12 +25,13 @@ import {
 } from "react-native";
 import AiPromptBottomSheet from "./ai/AiPromptBottomSheet";
 import AiTransactionConfirmModal from "./ai/AiTransactionConfirmModal";
+import { useToast } from "./ui/toast";
 // import AiTransactionConfirmModal from "../ai/AiTransactionConfirmModal";
 
 type AiButtonProps = {
   // Opsional: id akun sumber transaksi (mis. akun yang lagi aktif di layar).
   // Kalau tidak diisi, komponen otomatis pakai akun pertama milik user.
-  accountId?: number;
+  accountId?: number | null;
 };
 
 function AiButton({ accountId }: AiButtonProps) {
@@ -43,32 +47,9 @@ function AiButton({ accountId }: AiButtonProps) {
   const [saving, setSaving] = useState(false);
   const [resultMessage, setResultMessage] = useState<string | null>(null);
   const [resultVisible, setResultVisible] = useState(false);
-  const [fallbackAccountId, setFallbackAccountId] = useState<number | null>(
-    null,
-  );
-
-  useEffect(() => {
-    if (accountId) return;
-
-    const loadFirstAccount = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data } = await supabase
-        .from("account")
-        .select("id")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: true })
-        .limit(1)
-        .maybeSingle();
-
-      if (data) setFallbackAccountId(data.id);
-    };
-
-    loadFirstAccount();
-  }, [accountId]);
+  const queryClient = useQueryClient();
+  const t = useT();
+  const toast = useToast();
 
   const handleSend = async (prompt: string) => {
     setOpen(false);
@@ -173,12 +154,7 @@ function AiButton({ accountId }: AiButtonProps) {
   const handleConfirmTransaction = async () => {
     if (!draft) return;
 
-    const sourceAccountId = accountId ?? fallbackAccountId;
-    if (!sourceAccountId) {
-      setDraft(null);
-      setResultMessage("Akun sumber tidak ditemukan. Buat akun terlebih dulu.");
-      return;
-    }
+    const sourceAccountId = draft.account_id ?? accountId;
 
     setSaving(true);
     try {
@@ -202,8 +178,12 @@ function AiButton({ accountId }: AiButtonProps) {
 
       setDraft(null);
       // Sequence: close modal first, then show result after.
-      setTimeout(() => setResultMessage("Transaksi tersimpan."), 50);
-      setTimeout(() => setResultVisible(true), 300);
+      invalidateTransactionCaches(queryClient);
+      const isTransfer = draft.transaction_type === "TRANSFER";
+      toast.success(
+        t("add.saved"),
+        isTransfer ? t("add.transferSaved") : t("add.transactionSaved"),
+      );
     } catch (e) {
       setResultMessage("Gagal menyimpan transaksi. Coba lagi.");
       setResultVisible(true);

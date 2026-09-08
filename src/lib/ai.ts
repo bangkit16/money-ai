@@ -12,6 +12,8 @@ export type AiTransactionDraft = {
   description: string;
   category_slug?: string;
   category?: AiCategory | null;
+  account_id?: number | null;
+  account_name?: string;
   to_account_name?: string;
   to_account_id?: number | null;
 };

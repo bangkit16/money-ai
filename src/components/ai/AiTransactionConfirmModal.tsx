@@ -83,37 +83,75 @@ export default function AiTransactionConfirmModal({
           </View>
 
           {draft.transaction_type !== "TRANSFER" && (
-            <View style={styles.row}>
-              <Text style={[styles.label, { color: textMutedColor }]}>
-                Kategori
-              </Text>
-              <Text
-                style={[
-                  styles.value,
-                  { color: isCategoryMissing ? dangerColor : textColor },
-                ]}
-              >
-                {draft.category?.category ??
-                  "Tidak terdeteksi — batalkan & catat manual"}
-              </Text>
-            </View>
+            <>
+              {draft.account_id && (
+                <View style={styles.row}>
+                  <Text style={[styles.label, { color: textMutedColor }]}>
+                    Disimpan di Akun
+                  </Text>
+                  <Text
+                    style={[
+                      styles.value,
+                      { color: isCategoryMissing ? dangerColor : textColor },
+                    ]}
+                  >
+                    {draft.account_name ??
+                      "Tidak terdeteksi — batalkan & catat manual"}
+                  </Text>
+                </View>
+              )}
+              <View style={styles.row}>
+                <Text style={[styles.label, { color: textMutedColor }]}>
+                  Kategori
+                </Text>
+                <Text
+                  style={[
+                    styles.value,
+                    { color: isCategoryMissing ? dangerColor : textColor },
+                  ]}
+                >
+                  {draft.category?.category ??
+                    "Tidak terdeteksi — batalkan & catat manual"}
+                </Text>
+              </View>
+            </>
           )}
 
           {draft.transaction_type === "TRANSFER" && (
-            <View style={styles.row}>
-              <Text style={[styles.label, { color: textMutedColor }]}>
-                Ke Akun
-              </Text>
-              <Text
-                style={[
-                  styles.value,
-                  { color: isTransferMissingTarget ? dangerColor : textColor },
-                ]}
-              >
-                {draft.to_account_name ??
-                  "Tidak terdeteksi — batalkan & catat manual"}
-              </Text>
-            </View>
+            <>
+              <View style={styles.row}>
+                <Text style={[styles.label, { color: textMutedColor }]}>
+                  Dari Akun
+                </Text>
+                <Text
+                  style={[
+                    styles.value,
+                    {
+                      color: isTransferMissingTarget ? dangerColor : textColor,
+                    },
+                  ]}
+                >
+                  {draft.account_name ??
+                    "Tidak terdeteksi — batalkan & catat manual"}
+                </Text>
+              </View>
+              <View style={styles.row}>
+                <Text style={[styles.label, { color: textMutedColor }]}>
+                  Ke Akun
+                </Text>
+                <Text
+                  style={[
+                    styles.value,
+                    {
+                      color: isTransferMissingTarget ? dangerColor : textColor,
+                    },
+                  ]}
+                >
+                  {draft.to_account_name ??
+                    "Tidak terdeteksi — batalkan & catat manual"}
+                </Text>
+              </View>
+            </>
           )}
 
           <View style={styles.footerRow}>
