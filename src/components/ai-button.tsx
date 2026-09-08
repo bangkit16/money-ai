@@ -31,7 +31,7 @@ import { useToast } from "./ui/toast";
 type AiButtonProps = {
   // Opsional: id akun sumber transaksi (mis. akun yang lagi aktif di layar).
   // Kalau tidak diisi, komponen otomatis pakai akun pertama milik user.
-  accountId?: number | null;
+  accountId?: number;
 };
 
 function AiButton({ accountId }: AiButtonProps) {

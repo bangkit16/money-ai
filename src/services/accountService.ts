@@ -7,6 +7,7 @@ export type AccountRow = {
   created_at: string;
   user_id: string;
   total_amount: number;
+  is_primary: boolean;
 };
 
 type TxAmount = { transaction_type: string; amount: number };
@@ -27,6 +28,7 @@ export class AccountService {
       created_at,
       account_name,
       user_id,
+      is_primary,
       outgoing:transaction!account_id (
         transaction_type,
         amount
@@ -64,6 +66,7 @@ export class AccountService {
         account_name: acc.account_name,
         user_id: acc.user_id,
         total_amount: totalAmount,
+        is_primary: acc.is_primary ?? false,
       };
     });
 
@@ -94,6 +97,31 @@ export class AccountService {
 
   static async DeleteAccount(id: number) {
     const { error } = await supabase.from("account").delete().eq("id", id);
+    if (error) throw error;
+  }
+
+  static async SetPrimaryAccount(id: number, isPrimary: boolean) {
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+    if (userError) throw userError;
+    if (!user) throw new Error("User belum login");
+
+    // If setting as primary, unset all others first
+    if (isPrimary) {
+      await supabase
+        .from("account")
+        .update({ is_primary: false })
+        .eq("user_id", user.id)
+        .eq("is_primary", true);
+    }
+
+    const { error } = await supabase
+      .from("account")
+      .update({ is_primary: isPrimary })
+      .eq("id", id);
+
     if (error) throw error;
   }
 }

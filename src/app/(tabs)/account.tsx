@@ -7,6 +7,7 @@ import { TransferCard } from "@/components/features/account/transfer-card";
 import { AppBar } from "@/components/features/shared/app-bar";
 import { ConfirmDialog } from "@/components/features/shared/confirm-dialog";
 import { Text } from "@/components/ui/text";
+import { Toast, useToast } from "@/components/ui/toast";
 import { spacing, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
 import { useT } from "@/i18n";
@@ -17,6 +18,7 @@ import { ScrollView, StyleSheet, View } from "react-native";
 
 export default function AccountScreen() {
   const queryClient = useQueryClient();
+  const toast = useToast();
   const t = useT();
 
   const [formVisible, setFormVisible] = useState(false);
@@ -74,6 +76,15 @@ export default function AccountScreen() {
     },
   });
 
+  const { mutate: setPrimaryAccount } = useMutation({
+    mutationFn: ({ id, isPrimary }: { id: number; isPrimary: boolean }) =>
+      AccountService.SetPrimaryAccount(id, isPrimary),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["accounts"] });
+      toast.success(variables.isPrimary ? t("account.primarySet") : t("account.primaryUnset"));
+    },
+  });
+
   const openCreateForm = () => {
     setEditingAccount(null);
     setAccountNameInput("");
@@ -121,7 +132,9 @@ export default function AccountScreen() {
         <TransferCard />
 
         <View style={styles.sectionHeaderRow}>
-          <Text style={[styles.titleMd, { color: textColor }]}>{t("account.myAccounts")}</Text>
+          <Text style={[styles.titleMd, { color: textColor }]}>
+            {t("account.myAccounts")}
+          </Text>
           <Text style={[styles.mutedLabel, { color: textMutedColor }]}>
             {t("account.count", {
               count,
@@ -155,6 +168,9 @@ export default function AccountScreen() {
         onClose={() => setOptionsAccount(null)}
         onEdit={openEditForm}
         onDelete={(account) => setDeleteConfirmAccount(account)}
+        onSetPrimary={(account) =>
+          setPrimaryAccount({ id: account.id, isPrimary: !account.is_primary })
+        }
       />
 
       <ConfirmDialog

@@ -15,6 +15,7 @@ export type CategoryRow = {
 export type AccountOptionRow = {
   id: number;
   account_name: string;
+  is_primary: boolean;
 };
 
 export type InsertTransactionParams = {

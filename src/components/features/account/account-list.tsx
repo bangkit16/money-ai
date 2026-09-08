@@ -1,6 +1,7 @@
 import { Text } from "@/components/ui/text";
 import { radius, shadow, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
+import { useT } from "@/i18n";
 import type { AccountRow } from "@/services/accountService";
 import { useFormatCurrency } from "@/hooks/useFormatCurrency";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -25,6 +26,7 @@ export function AccountList({
   onSelectOptions,
 }: AccountListProps) {
   const { formatCurrencySigned } = useFormatCurrency();
+  const t = useT();
   const cardColor = useColor("card");
   const primaryColor = useColor("primary");
   const errorColor = useColor("error");
@@ -81,9 +83,18 @@ export function AccountList({
               />
             </View>
             <View>
-              <Text style={[styles.accountName, { color: onSurfaceColor }]}>
-                {account.account_name}
-              </Text>
+              <View style={styles.accountNameRow}>
+                <Text style={[styles.accountName, { color: onSurfaceColor }]}>
+                  {account.account_name}
+                </Text>
+                {account.is_primary && (
+                  <View style={[styles.primaryBadge, { backgroundColor: primaryColor + "1a" }]}>
+                    <Text style={[styles.primaryBadgeText, { color: primaryColor }]}>
+                      {t("account.primary")}
+                    </Text>
+                  </View>
+                )}
+              </View>
               <Text
                 style={[
                   styles.amount,
@@ -153,6 +164,21 @@ const styles = StyleSheet.create({
   accountName: {
     ...typography.bodyLg,
     fontWeight: "600",
+  },
+  accountNameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  primaryBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: radius.full,
+  },
+  primaryBadgeText: {
+    ...typography.bodySm,
+    fontWeight: "600",
+    fontSize: 11,
   },
   optionsButton: {
     width: 32,

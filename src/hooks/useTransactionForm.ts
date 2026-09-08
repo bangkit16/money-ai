@@ -48,7 +48,12 @@ export function useTransactionForm(
   // --- Form State ---
   const [amount, setAmount] = useState("");
   const [categoryId, setCategoryId] = useState<number | null>(null);
-  const [fromAccountId, setFromAccountId] = useState<number | null>(null);
+  const [fromAccountId, setFromAccountId] = useState<number | null>(() => {
+    if (isEdit) return null;
+    const cached = queryClient.getQueryData<{ id: number; is_primary?: boolean }[]>(QueryKeys.accounts);
+    const primary = cached?.find((a) => a.is_primary === true);
+    return primary?.id ?? null;
+  });
   const [toAccountId, setToAccountId] = useState<number | null>(null);
   const [transactionType, setTransactionType] = useState<TransactionTypeKey>(
     () => prefilledType ?? "EXPENSE",
@@ -112,6 +117,7 @@ export function useTransactionForm(
     queryKey: QueryKeys.accounts,
     queryFn: AddTransactionService.GetAccountOptions,
   });
+
 
   // --- Derived ---
   const isTransfer = transactionType === "TRANSFER";

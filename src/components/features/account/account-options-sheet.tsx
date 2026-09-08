@@ -5,13 +5,17 @@ import { useColor } from "@/hooks/useColor";
 import { useT } from "@/i18n";
 import type { AccountRow } from "@/services/accountService";
 import { MaterialIcons } from "@expo/vector-icons";
-import { Modal, Platform, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Animated, Modal, Platform, StyleSheet, TouchableOpacity, View } from "react-native";
+import { useEffect, useMemo, useState } from "react";
+
+const ANIMATION_DURATION = 250;
 
 type AccountOptionsSheetProps = {
   account: AccountRow | null;
   onClose: () => void;
   onEdit: (account: AccountRow) => void;
   onDelete: (account: AccountRow) => void;
+  onSetPrimary: (account: AccountRow) => void;
 };
 
 export function AccountOptionsSheet({
@@ -19,6 +23,7 @@ export function AccountOptionsSheet({
   onClose,
   onEdit,
   onDelete,
+  onSetPrimary,
 }: AccountOptionsSheetProps) {
   const cardColor = useColor("card");
   const handleColor = useColor("border");
@@ -26,7 +31,52 @@ export function AccountOptionsSheet({
   const textMutedColor = useColor("textMuted");
   const borderColor = useColor("border");
   const errorColor = useColor("error");
+  const primaryColor = useColor("primary");
   const t = useT();
+
+  const visible = !!account;
+  const [mounted, setMounted] = useState(visible);
+  const [prevVisible, setPrevVisible] = useState(visible);
+  const backdropOpacity = useMemo(() => new Animated.Value(0), []);
+  const sheetTranslateY = useMemo(() => new Animated.Value(300), []);
+
+  if (visible !== prevVisible) {
+    setPrevVisible(visible);
+    if (visible) {
+      setMounted(true);
+    }
+  }
+
+  useEffect(() => {
+    if (visible) {
+      Animated.parallel([
+        Animated.timing(backdropOpacity, {
+          toValue: 1,
+          duration: ANIMATION_DURATION,
+          useNativeDriver: true,
+        }),
+        Animated.spring(sheetTranslateY, {
+          toValue: 0,
+          speed: 30,
+          bounciness: 4,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else if (mounted) {
+      Animated.parallel([
+        Animated.timing(backdropOpacity, {
+          toValue: 0,
+          duration: ANIMATION_DURATION,
+          useNativeDriver: true,
+        }),
+        Animated.timing(sheetTranslateY, {
+          toValue: 400,
+          duration: ANIMATION_DURATION,
+          useNativeDriver: true,
+        }),
+      ]).start(() => setMounted(false));
+    }
+  }, [visible]);
 
   const handleEdit = () => {
     if (account) onEdit(account);
@@ -38,24 +88,54 @@ export function AccountOptionsSheet({
     onClose();
   };
 
+  const handleSetPrimary = () => {
+    if (account) onSetPrimary(account);
+    onClose();
+  };
+
   return (
     <Modal
-      visible={!!account}
+      visible={visible || mounted}
       transparent
-      animationType="slide"
+      animationType="none"
       onRequestClose={onClose}
     >
-      <TouchableOpacity
-        style={[styles.modalOverlay, styles.modalBackdrop]}
-        activeOpacity={1}
-        onPress={onClose}
-      >
-        <TouchableOpacity
-          activeOpacity={1}
-          style={[styles.optionsSheet, shadow.heroCard, { backgroundColor: cardColor }]}
+      <View style={styles.modalOverlay}>
+        <Animated.View style={[styles.modalBackdrop, { opacity: backdropOpacity }]}>
+          <TouchableOpacity
+            style={StyleSheet.absoluteFill}
+            activeOpacity={1}
+            onPress={onClose}
+          />
+        </Animated.View>
+        <Animated.View
+          style={[
+            styles.optionsSheet,
+            shadow.heroCard,
+            { backgroundColor: cardColor, transform: [{ translateY: sheetTranslateY }] },
+          ]}
         >
           <View style={[styles.modalHandle, { backgroundColor: handleColor }]} />
           <Text style={[styles.optionsTitle, { color: textColor }]}>{account?.account_name}</Text>
+
+          <TouchableOpacity
+            style={[styles.optionRow, { borderTopColor: borderColor }]}
+            onPress={handleSetPrimary}
+          >
+            <MaterialIcons
+              name={account?.is_primary ? "star" : "star-outline"}
+              size={20}
+              color={account?.is_primary ? primaryColor : textColor}
+            />
+            <Text
+              style={[
+                styles.optionRowText,
+                { color: account?.is_primary ? primaryColor : textColor },
+              ]}
+            >
+              {account?.is_primary ? t("account.unsetPrimary") : t("account.setPrimary")}
+            </Text>
+          </TouchableOpacity>
 
           <TouchableOpacity style={[styles.optionRow, { borderTopColor: borderColor }]} onPress={handleEdit}>
             <MaterialIcons name="edit" size={20} color={textColor} />
@@ -79,8 +159,8 @@ export function AccountOptionsSheet({
           <TouchableOpacity style={styles.optionCancelRow} onPress={onClose}>
             <Text style={[styles.optionCancelText, { color: textMutedColor }]}>{t("common.cancel")}</Text>
           </TouchableOpacity>
-        </TouchableOpacity>
-      </TouchableOpacity>
+        </Animated.View>
+      </View>
     </Modal>
   );
 }
