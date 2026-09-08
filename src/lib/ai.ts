@@ -8,7 +8,7 @@ export type AiCategory = {
 
 export type AiTransactionDraft = {
   amount: number;
-  transaction_type: "expense" | "income" | "transfer";
+  transaction_type: "EXPENSE" | "INCOME" | "TRANSFER";
   description: string;
   category_slug?: string;
   category?: AiCategory | null;

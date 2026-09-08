@@ -232,7 +232,9 @@ function AiButton({ accountId }: AiButtonProps) {
         >
           {loading ? (
             <View style={styles.loadingRow}>
-              <Animated.View style={{ transform: [{ rotate: spinInterpolate }] }}>
+              <Animated.View
+                style={{ transform: [{ rotate: spinInterpolate }] }}
+              >
                 <Ionicons name="sparkles" size={14} color={whiteColor} />
               </Animated.View>
               <Text style={[styles.loadingText, { color: whiteColor }]}>
@@ -300,9 +302,9 @@ function AiButton({ accountId }: AiButtonProps) {
             <TouchableOpacity
               style={[styles.resultButton, { backgroundColor: primaryColor }]}
               onPress={() => {
-                  setResultVisible(false);
-                  setResultMessage(null);
-                }}
+                setResultVisible(false);
+                setResultMessage(null);
+              }}
               activeOpacity={0.85}
             >
               <Text style={[styles.resultButtonText, { color: bgColor }]}>

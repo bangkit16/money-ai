@@ -30,16 +30,16 @@ export default function AiTransactionConfirmModal({
   if (!draft) return null;
 
   const typeLabel =
-    draft.transaction_type === "expense"
+    draft.transaction_type === "EXPENSE"
       ? "Pengeluaran"
-      : draft.transaction_type === "income"
+      : draft.transaction_type === "INCOME"
         ? "Pemasukan"
         : "Transfer";
 
   const isTransferMissingTarget =
-    draft.transaction_type === "transfer" && !draft.to_account_id;
+    draft.transaction_type === "TRANSFER" && !draft.to_account_id;
   const isCategoryMissing =
-    draft.transaction_type !== "transfer" && !draft.category;
+    draft.transaction_type !== "TRANSFER" && !draft.category;
   const canConfirm = !isTransferMissingTarget && !isCategoryMissing;
 
   return (
@@ -82,7 +82,7 @@ export default function AiTransactionConfirmModal({
             </Text>
           </View>
 
-          {draft.transaction_type !== "transfer" && (
+          {draft.transaction_type !== "TRANSFER" && (
             <View style={styles.row}>
               <Text style={[styles.label, { color: textMutedColor }]}>
                 Kategori
@@ -99,7 +99,7 @@ export default function AiTransactionConfirmModal({
             </View>
           )}
 
-          {draft.transaction_type === "transfer" && (
+          {draft.transaction_type === "TRANSFER" && (
             <View style={styles.row}>
               <Text style={[styles.label, { color: textMutedColor }]}>
                 Ke Akun

@@ -67,7 +67,6 @@ export class AccountService {
       };
     });
 
-    console.log("goodwell", mappedData);
     return mappedData as AccountRow[];
   }
 
