@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "money-ai",
-    "slug": "money-ai",
+    "name": "Dompety",
+    "slug": "dompety",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -42,11 +42,18 @@
       ],
       "expo-web-browser",
       "expo-font",
-      "@react-native-community/datetimepicker",
-          ],
+      "@react-native-community/datetimepicker"
+    ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "355c171c-ad5b-4dfa-aa50-2f0ad6527d6d"
+      }
+    },
+    "owner": "bangkit16s-organization"
   }
 }
