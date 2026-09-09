@@ -2,14 +2,16 @@
 import { GoogleSignInButton } from "@/components/features/login/google-sign-in-button";
 import { LoginHero } from "@/components/features/login/login-hero";
 import { Text } from "@/components/ui/text";
-import { spacing, typography } from "@/constants/theme";
+import { shadow, spacing, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
 import { useT } from "@/i18n";
 import * as WebBrowser from "expo-web-browser";
 import { makeRedirectUri } from "expo-auth-session";
+import { StatusBar } from "expo-status-bar";
 import { router } from "expo-router";
 import { useState } from "react";
 import { Platform, StyleSheet, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { supabase } from "@/lib/supabase";
 import { createSessionFromUrl } from "@/lib/auth";
 
@@ -33,7 +35,6 @@ export default function LoginScreen() {
   const sheetColor = useColor("card");
   const textColor = useColor("text");
   const textMutedColor = useColor("textMuted");
-  const borderColor = useColor("border");
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
@@ -69,13 +70,15 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={[styles.screen, { backgroundColor: bgColor }]}>
+    <SafeAreaView style={[styles.screen, { backgroundColor: bgColor }]} edges={["top"]}>
+      <StatusBar style="light" />
+
       {/* Bagian atas: brand hero */}
       <LoginHero />
 
       {/* Bagian bawah: card sign-in (overlap ke hero) */}
-      <View style={[styles.sheet, { backgroundColor: sheetColor }]}>
-        <View style={{ marginBottom: 32 }}>
+      <View style={[styles.sheet, shadow.heroCard, { backgroundColor: sheetColor }]}>
+        <View style={styles.sheetHeader}>
           <Text style={[styles.title, { color: textColor }]}>{t("login.welcome")}</Text>
           <Text style={[styles.subtitle, { color: textMutedColor }]}>
             {t("login.subtitle")}
@@ -84,14 +87,14 @@ export default function LoginScreen() {
 
         <GoogleSignInButton loading={loading} onPress={handleGoogleSignIn} />
 
-        <Text style={[styles.termsText, { color: borderColor }]}>
+        <Text style={[styles.termsText, { color: textMutedColor }]}>
           {t("login.terms", { brand: "Dompety's" })}
-          <Text style={[styles.termsLink, { color: textMutedColor }]}>{t("login.termsOfService")}</Text>
+          <Text style={styles.termsLink}>{t("login.termsOfService")}</Text>
           {t("login.termsAnd")}
-          <Text style={[styles.termsLink, { color: textMutedColor }]}>{t("login.privacyPolicy")}</Text>.
+          <Text style={styles.termsLink}>{t("login.privacyPolicy")}</Text>.
         </Text>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -99,12 +102,15 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
 
   sheet: {
-    borderTopLeftRadius: 40,
-    borderTopRightRadius: 40,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
     paddingHorizontal: spacing.marginMobile,
-    paddingTop: 32,
-    paddingBottom: Platform.OS === "ios" ? 40 : 28,
-    marginTop: -40,
+    paddingTop: 28,
+    paddingBottom: Platform.OS === "ios" ? 36 : 24,
+    marginTop: -24,
+  },
+  sheetHeader: {
+    marginBottom: 24,
   },
   title: { ...typography.headlineLgMobile },
   subtitle: {
@@ -113,10 +119,10 @@ const styles = StyleSheet.create({
   },
 
   termsText: {
-    ...typography.bodySm,
+    fontSize: 12,
+    lineHeight: 16,
     textAlign: "center",
     marginTop: 20,
-    lineHeight: 18,
   },
-  termsLink: { fontWeight: "600" },
+  termsLink: { fontSize: 12 },
 });

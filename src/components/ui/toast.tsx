@@ -21,13 +21,13 @@ import {
   GestureDetector,
 } from 'react-native-gesture-handler';
 import Animated, {
-  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
+import { runOnJS } from 'react-native-worklets';
 
 export type ToastVariant = 'default' | 'success' | 'error' | 'warning' | 'info';
 
@@ -70,7 +70,7 @@ export function Toast({
   index,
   action,
 }: ToastProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const isExpanded = Boolean(title || description || action);
   const [reduceMotion, setReduceMotion] = useState(false);
 
   useEffect(() => {
@@ -105,14 +105,11 @@ export function Toast({
   const mutedTextColor = textMutedColor;
 
   useEffect(() => {
-    const hasContentToShow = Boolean(title || description || action);
-
-    if (hasContentToShow) {
+    if (isExpanded) {
       // If there's content, start directly with expanded state
       width.value = EXPANDED_WIDTH;
       height.value = EXPANDED_HEIGHT;
       borderRadius.value = 20;
-      setIsExpanded(true);
 
       if (reduceMotion) {
         translateY.value = 0;
@@ -124,13 +121,10 @@ export function Toast({
         translateY.value = withSpring(0, SPRING_CONFIG);
         opacity.value = withTiming(1, { duration: 300 });
         scale.value = withSpring(1, SPRING_CONFIG);
-        // CORRECTED LINE: Use withDelay to wrap withTiming
         contentOpacity.value = withDelay(100, withTiming(1, { duration: 300 }));
       }
     } else {
       // If no content, show compact Dynamic Island with icon only
-      setIsExpanded(false);
-
       if (reduceMotion) {
         translateY.value = 0;
         opacity.value = 1;
@@ -143,7 +137,7 @@ export function Toast({
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reduceMotion]); // Re-run if the reduced-motion setting resolves after mount
+  }, [reduceMotion]);
 
   const getVariantColor = () => {
     switch (variant) {
@@ -177,13 +171,12 @@ export function Toast({
     }
   };
 
-  const dismiss = useCallback(() => {
+  const dismiss = () => {
     if (reduceMotion) {
       onDismiss(id);
       return;
     }
 
-    // This function will be called from the UI thread
     const onDismissAction = () => {
       'worklet';
       runOnJS(onDismiss)(id);
@@ -196,7 +189,7 @@ export function Toast({
       }
     });
     scale.value = withSpring(0.8, SPRING_CONFIG);
-  }, [id, onDismiss, reduceMotion]);
+  };
 
   const panGesture = Gesture.Pan()
     .onUpdate((event) => {
@@ -411,6 +404,10 @@ export function ToastProvider({ children, maxToasts = 3 }: ToastProviderProps) {
 
   const generateId = () => Math.random().toString(36).substr(2, 9);
 
+  const dismissToast = (id: string) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+  };
+
   const addToast = useCallback(
     (toastData: Omit<ToastData, 'id'>) => {
       const id = generateId();
@@ -434,10 +431,6 @@ export function ToastProvider({ children, maxToasts = 3 }: ToastProviderProps) {
     },
     [maxToasts]
   );
-
-  const dismissToast = useCallback((id: string) => {
-    setToasts((prev) => prev.filter((toast) => toast.id !== id));
-  }, []);
 
   const dismissAll = useCallback(() => {
     setToasts([]);
