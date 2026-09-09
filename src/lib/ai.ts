@@ -53,6 +53,13 @@ export function formatQueryResult(tool: string, data: any): string {
       return `Total transaksi kamu: ${formatRupiah(total)}.`;
     }
 
+    case "query_top_transaction": {
+      const rows = Array.isArray(data) ? data : [];
+      if (rows.length === 0) return "Tidak ada transaksi di periode ini.";
+      const top = rows[0];
+      return `Transaksi tertinggi: ${top.description} sebesar ${formatRupiah(top.amount)} (${top.category ?? "tanpa kategori"}).`;
+    }
+
     default:
       return "Hasil tidak dikenali.";
   }

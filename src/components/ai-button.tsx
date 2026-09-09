@@ -124,8 +124,10 @@ function AiButton({ accountId }: AiButtonProps) {
         }
       } else if (result.action === "show_result") {
         setResultMessage(formatQueryResult(result.tool, result.data));
+        setResultVisible(true);
       } else if (result.action === "text_answer") {
         setResultMessage(result.message);
+        setResultVisible(true);
       }
     } catch (e) {
       setResultMessage("Gagal memproses permintaan. Coba lagi.");
