@@ -38,6 +38,7 @@ export const translations: Record<LanguageCode, Dict> = {
     "common.edit": "Edit",
     "common.delete": "Hapus",
     "common.ok": "OK",
+    "common.success": "Berhasil",
     // tabs
     "tabs.dashboard": "Dasbor",
     "tabs.activity": "Aktivitas",
@@ -165,6 +166,16 @@ export const translations: Record<LanguageCode, Dict> = {
     "confirm.fromAccount": "Dari Rekening",
     "confirm.toAccount": "Ke Rekening",
     "confirm.notDetected": "Tidak terdeteksi — batalkan & catat manual",
+    // AI confirm modals
+    "ai.deleteTitle": "Hapus Transaksi",
+    "ai.deleteMessage": "Yakin ingin menghapus transaksi ini?",
+    "ai.updateTitle": "Ubah Transaksi",
+    "ai.updateMessage": "Yakin ingin mengubah transaksi ini?",
+    "ai.before": "Sebelum",
+    "ai.after": "Sesudah",
+    "ai.noChanges": "Tidak ada perubahan terdeteksi",
+    "ai.transactionDeleted": "Transaksi berhasil dihapus.",
+    "ai.transactionUpdated": "Transaksi berhasil diubah.",
   },
   en: {
     "settings.preferences": "Preferences",
@@ -195,6 +206,7 @@ export const translations: Record<LanguageCode, Dict> = {
     "common.edit": "Edit",
     "common.delete": "Delete",
     "common.ok": "OK",
+    "common.success": "Success",
     "tabs.dashboard": "Dashboard",
     "tabs.activity": "Activity",
     "tabs.analytics": "Analytics",
@@ -312,6 +324,16 @@ export const translations: Record<LanguageCode, Dict> = {
     "confirm.fromAccount": "From Account",
     "confirm.toAccount": "To Account",
     "confirm.notDetected": "Not detected — cancel & record manually",
+    // AI confirm modals
+    "ai.deleteTitle": "Delete Transaction",
+    "ai.deleteMessage": "Are you sure you want to delete this transaction?",
+    "ai.updateTitle": "Update Transaction",
+    "ai.updateMessage": "Are you sure you want to update this transaction?",
+    "ai.before": "Before",
+    "ai.after": "After",
+    "ai.noChanges": "No changes detected",
+    "ai.transactionDeleted": "Transaction deleted successfully.",
+    "ai.transactionUpdated": "Transaction updated successfully.",
   },
 };
 

@@ -7,7 +7,10 @@ import {
   askAi,
   formatQueryResult,
   type AiPromptResult,
-  type AiTransactionDraft,
+  type AiTransactionItem,
+  type AiDeleteTarget,
+  type AiUpdatePayload,
+  formatRupiah,
 } from "@/lib/ai";
 import { invalidateTransactionCaches } from "@/lib/query-invalidation";
 import { supabase } from "@/lib/supabase";
@@ -26,9 +29,10 @@ import {
 } from "react-native";
 import AiPromptBottomSheet from "./ai/AiPromptBottomSheet";
 import AiTransactionConfirmModal from "./ai/AiTransactionConfirmModal";
+import AiDeleteConfirmModal from "./ai/AiDeleteConfirmModal";
+import AiUpdateConfirmModal from "./ai/AiUpdateConfirmModal";
 import { useToast } from "./ui/toast";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
-// import AiTransactionConfirmModal from "../ai/AiTransactionConfirmModal";
 
 type AiButtonProps = {
   // Opsional: id akun sumber transaksi (mis. akun yang lagi aktif di layar).
@@ -41,11 +45,15 @@ function AiButton({ accountId }: AiButtonProps) {
   const cardColor = useColor("card");
   const textColor = useColor("text");
   const primaryColor = useColor("primary");
+  const borderColor = useColor("border");
   const bgColor = useColor("background");
 
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [draft, setDraft] = useState<AiTransactionDraft | null>(null);
+  const [draft, setDraft] = useState<AiTransactionItem | null>(null);
+  const [draftItems, setDraftItems] = useState<AiTransactionItem[]>([]);
+  const [deleteTarget, setDeleteTarget] = useState<AiDeleteTarget | null>(null);
+  const [updatePayload, setUpdatePayload] = useState<AiUpdatePayload | null>(null);
   const [saving, setSaving] = useState(false);
   const [resultMessage, setResultMessage] = useState<string | null>(null);
   const [resultVisible, setResultVisible] = useState(false);
@@ -63,7 +71,7 @@ function AiButton({ accountId }: AiButtonProps) {
   const [voicePrompt, setVoicePrompt] = useState("");
   const autoSendTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const applyPrimaryAccount = async (d: AiTransactionDraft) => {
+  const applyPrimaryAccount = async (d: AiTransactionItem) => {
     if (usePrimaryAccount && d.account_id) return d;
     if (!usePrimaryAccount) return d;
     const {
@@ -80,7 +88,7 @@ function AiButton({ accountId }: AiButtonProps) {
     return { ...d, account_id: primaryAcc.id, account_name: primaryAcc.account_name };
   };
 
-  const saveTransaction = async (d: AiTransactionDraft) => {
+  const saveTransaction = async (d: AiTransactionItem) => {
     setSaving(true);
     try {
       const {
@@ -89,6 +97,13 @@ function AiButton({ accountId }: AiButtonProps) {
       if (!user) throw new Error("Unauthorized");
 
       const resolved = await applyPrimaryAccount(d);
+
+      const isTransfer = d.transaction_type === "TRANSFER";
+      // Validasi transfer: account_id & to_account_id wajib diisi
+      if (isTransfer && (!resolved.account_id || !resolved.to_account_id)) {
+        throw new Error("Transfer memerlukan rekening sumber dan tujuan.");
+      }
+
       const sourceAccountId = resolved.account_id ?? accountId;
 
       const { error } = await supabase.from("transaction").insert({
@@ -105,13 +120,14 @@ function AiButton({ accountId }: AiButtonProps) {
       if (error) throw error;
 
       invalidateTransactionCaches(queryClient);
-      const isTransfer = d.transaction_type === "TRANSFER";
+
       toast.success(
         t("add.saved"),
         isTransfer ? t("add.transferSaved") : t("add.transactionSaved"),
       );
-    } catch (e) {
-      setResultMessage("Gagal menyimpan transaksi. Coba lagi.");
+    } catch (e: any) {
+      const msg = e?.message || "Gagal menyimpan transaksi. Coba lagi.";
+      setResultMessage(msg);
       setResultVisible(true);
     } finally {
       setSaving(false);
@@ -125,13 +141,21 @@ function AiButton({ accountId }: AiButtonProps) {
     try {
       const result: AiPromptResult = await askAi(prompt);
 
+      console.log("AI result:",  JSON.stringify(result));
+
       if (result.action === "confirm_transaction") {
-        const resolved = await applyPrimaryAccount(result.data);
-        console.log("resolverd" + resolved.account_id , resolved.account_name);
-        if (autoSaveTransaction) {
-          await saveTransaction(resolved);
+        const items = result.data.items;
+        if (items.length === 1) {
+          // Single transaction - apply primary account and either auto-save or show modal
+          const resolved = await applyPrimaryAccount(items[0]);
+          if (autoSaveTransaction) {
+            await saveTransaction(resolved);
+          } else {
+            setDraft(resolved);
+          }
         } else {
-          setDraft(resolved);
+          // Multiple transactions - show items for user confirmation
+          setDraftItems(items);
         }
       } else if (result.action === "show_result") {
         setResultMessage(formatQueryResult(result.tool, result.data));
@@ -139,6 +163,10 @@ function AiButton({ accountId }: AiButtonProps) {
       } else if (result.action === "text_answer") {
         setResultMessage(result.message);
         setResultVisible(true);
+      } else if (result.action === "confirm_delete") {
+        setDeleteTarget(result.data);
+      } else if (result.action === "confirm_update") {
+        setUpdatePayload(result.data);
       }
     } catch (e) {
       setResultMessage("Gagal memproses permintaan. Coba lagi.");
@@ -256,6 +284,76 @@ function AiButton({ accountId }: AiButtonProps) {
     setDraft(null);
   };
 
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    console.log("Deleting transaction with target:", deleteTarget);
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from("transaction")
+        .delete()
+        .eq("id", deleteTarget.id);
+
+      if (error) throw error;
+
+      invalidateTransactionCaches(queryClient);
+      toast.success(t("common.success"), t("ai.transactionDeleted"));
+      setDeleteTarget(null);
+    } catch (e) {
+      setResultMessage("Gagal menghapus transaksi. Coba lagi.");
+      setResultVisible(true);
+      setDeleteTarget(null);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleConfirmUpdate = async () => {
+    if (!updatePayload) return;
+    setSaving(true);
+    try {
+      // Hanya kirim field yang valid di tabel transaction
+      const { category: _category, ...dbChanges } = updatePayload.changes;
+
+      const { error } = await supabase
+        .from("transaction")
+        .update(dbChanges)
+        .eq("id", updatePayload.transaction_id);
+
+      if (error) throw error;
+
+      invalidateTransactionCaches(queryClient);
+      toast.success(t("common.success"), t("ai.transactionUpdated"));
+      setUpdatePayload(null);
+    } catch (e) {
+      setResultMessage("Gagal mengubah transaksi. Coba lagi.");
+      setResultVisible(true);
+      setUpdatePayload(null);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSaveAllItems = async () => {
+    setSaving(true);
+    try {
+      for (const item of draftItems) {
+        await saveTransaction(item);
+      }
+      setDraftItems([]);
+    } catch (e) {
+      // Error already handled in saveTransaction
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSaveSingleItem = async (item: AiTransactionItem) => {
+    const resolved = await applyPrimaryAccount(item);
+    await saveTransaction(resolved);
+    setDraftItems((prev) => prev.filter((_, i) => i !== 0));
+  };
+
   return (
     <>
       <TouchableOpacity
@@ -319,11 +417,29 @@ function AiButton({ accountId }: AiButtonProps) {
       />
 
       <AiTransactionConfirmModal
-        visible={!!draft}
+        visible={!!draft || draftItems.length > 0}
         draft={draft}
+        items={draftItems}
         saving={saving}
-        onCancel={() => setDraft(null)}
-        onConfirm={handleConfirmTransaction}
+        onCancel={() => { setDraft(null); setDraftItems([]); }}
+        onConfirm={draft ? handleConfirmTransaction : handleSaveAllItems}
+        onConfirmItem={handleSaveSingleItem}
+      />
+
+      <AiDeleteConfirmModal
+        visible={!!deleteTarget}
+        target={deleteTarget}
+        saving={saving}
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={handleConfirmDelete}
+      />
+
+      <AiUpdateConfirmModal
+        visible={!!updatePayload}
+        payload={updatePayload}
+        saving={saving}
+        onCancel={() => setUpdatePayload(null)}
+        onConfirm={handleConfirmUpdate}
       />
 
       <Modal

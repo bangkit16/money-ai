@@ -93,7 +93,7 @@ export function TransactionListItem({
                 </Text>
               </View>
               <MaterialIcons
-                name="trending-flat"
+                name="arrow-right-alt"
                 size={14}
                 color={onSurfaceVariantColor}
                 style={styles.transferArrow}
