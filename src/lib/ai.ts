@@ -3,6 +3,8 @@ import { supabase } from "@/lib/supabase";
 export type AiCategory = {
   id: number;
   category: string;
+  category_en?: string;
+  category_type?: string;
   slug: string;
 };
 

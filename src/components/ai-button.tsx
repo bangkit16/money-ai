@@ -15,7 +15,7 @@ import { useSettings } from "@/providers/settings-provider";
 import { Ionicons } from "@expo/vector-icons";
 import { useQueryClient } from "@tanstack/react-query";
 import { LinearGradient } from "expo-linear-gradient";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Animated,
   Easing,
@@ -27,6 +27,7 @@ import {
 import AiPromptBottomSheet from "./ai/AiPromptBottomSheet";
 import AiTransactionConfirmModal from "./ai/AiTransactionConfirmModal";
 import { useToast } from "./ui/toast";
+import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 // import AiTransactionConfirmModal from "../ai/AiTransactionConfirmModal";
 
 type AiButtonProps = {
@@ -52,6 +53,15 @@ function AiButton({ accountId }: AiButtonProps) {
   const t = useT();
   const toast = useToast();
   const { autoSaveTransaction, usePrimaryAccount } = useSettings();
+  const {
+    isListening,
+    transcript,
+    start: startListening,
+    stop: stopListening,
+    supported: speechSupported,
+  } = useSpeechRecognition();
+  const [voicePrompt, setVoicePrompt] = useState("");
+  const autoSendTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const applyPrimaryAccount = async (d: AiTransactionDraft) => {
     if (usePrimaryAccount && d.account_id) return d;
@@ -109,6 +119,7 @@ function AiButton({ accountId }: AiButtonProps) {
   };
 
   const handleSend = async (prompt: string) => {
+    setVoicePrompt("");
     setOpen(false);
     setLoading(true);
     try {
@@ -211,9 +222,32 @@ function AiButton({ accountId }: AiButtonProps) {
     ],
   });
 
+  // Auto-send 1 second after speech recognition stops with a final transcript
+  useEffect(() => {
+    if (isListening || !transcript.trim()) return;
+    autoSendTimerRef.current = setTimeout(() => {
+      const text = transcript.trim();
+      if (text) {
+        setVoicePrompt("");
+        handleSend(text);
+      }
+    }, 1000);
+    return () => {
+      if (autoSendTimerRef.current) clearTimeout(autoSendTimerRef.current);
+    };
+  }, [isListening]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleVoicePress = () => {
-    // TODO: hubungkan ke fitur voice-to-text kamu.
-    // Setelah dapat hasil teksnya, panggil handleSend(hasilTeks).
+    if (!speechSupported) {
+      toast.error("Voice input", "Speech recognition not supported on this platform");
+      return;
+    }
+    if (isListening) {
+      stopListening();
+    } else {
+      setVoicePrompt("");
+      startListening();
+    }
   };
 
   const handleConfirmTransaction = async () => {
@@ -279,6 +313,9 @@ function AiButton({ accountId }: AiButtonProps) {
         onClose={() => setOpen(false)}
         onSend={handleSend}
         onVoicePress={handleVoicePress}
+        value={isListening ? transcript : voicePrompt}
+        onValueChange={setVoicePrompt}
+        isListening={isListening}
       />
 
       <AiTransactionConfirmModal

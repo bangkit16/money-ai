@@ -3,6 +3,8 @@ import { Text } from "@/components/ui/text";
 import { useColor } from "@/hooks/useColor";
 import { radius, spacing, typography, shadow } from "@/constants/theme";
 import { formatRupiah, type AiTransactionDraft } from "@/lib/ai";
+import { useT } from "@/i18n";
+import { useSettings } from "@/providers/settings-provider";
 
 type Props = {
   visible: boolean;
@@ -26,15 +28,17 @@ export default function AiTransactionConfirmModal({
   const primaryColor = useColor("primary");
   const whiteColor = useColor("background");
   const dangerColor = "#e0483a";
+  const t = useT();
+  const { language } = useSettings();
 
   if (!draft) return null;
 
   const typeLabel =
     draft.transaction_type === "EXPENSE"
-      ? "Pengeluaran"
+      ? t("type.expense")
       : draft.transaction_type === "INCOME"
-        ? "Pemasukan"
-        : "Transfer";
+        ? t("type.income")
+        : t("type.transfer");
 
   const isTransferMissingTarget =
     draft.transaction_type === "TRANSFER" && !draft.to_account_id;
@@ -54,11 +58,11 @@ export default function AiTransactionConfirmModal({
           style={[styles.card, shadow.heroCard, { backgroundColor: cardColor }]}
         >
           <Text style={[styles.title, { color: textColor }]}>
-            Konfirmasi Transaksi
+            {t("confirm.title")}
           </Text>
 
           <View style={styles.row}>
-            <Text style={[styles.label, { color: textMutedColor }]}>Tipe</Text>
+            <Text style={[styles.label, { color: textMutedColor }]}>{t("confirm.type")}</Text>
             <Text style={[styles.value, { color: textColor }]}>
               {typeLabel}
             </Text>
@@ -66,7 +70,7 @@ export default function AiTransactionConfirmModal({
 
           <View style={styles.row}>
             <Text style={[styles.label, { color: textMutedColor }]}>
-              Nominal
+              {t("confirm.nominal")}
             </Text>
             <Text style={[styles.value, { color: textColor }]}>
               {formatRupiah(draft.amount)}
@@ -75,7 +79,7 @@ export default function AiTransactionConfirmModal({
 
           <View style={styles.row}>
             <Text style={[styles.label, { color: textMutedColor }]}>
-              Deskripsi
+              {t("confirm.description")}
             </Text>
             <Text style={[styles.value, { color: textColor }]}>
               {draft.description}
@@ -87,7 +91,7 @@ export default function AiTransactionConfirmModal({
               {draft.account_id && (
                 <View style={styles.row}>
                   <Text style={[styles.label, { color: textMutedColor }]}>
-                    Disimpan di Rekening
+                    {t("confirm.savedIn")}
                   </Text>
                   <Text
                     style={[
@@ -96,13 +100,13 @@ export default function AiTransactionConfirmModal({
                     ]}
                   >
                     {draft.account_name ??
-                      "Tidak terdeteksi — batalkan & catat manual"}
+                      t("confirm.notDetected")}
                   </Text>
                 </View>
               )}
               <View style={styles.row}>
                 <Text style={[styles.label, { color: textMutedColor }]}>
-                  Kategori
+                  {t("add.category")}
                 </Text>
                 <Text
                   style={[
@@ -110,8 +114,11 @@ export default function AiTransactionConfirmModal({
                     { color: isCategoryMissing ? dangerColor : textColor },
                   ]}
                 >
-                  {draft.category?.category ??
-                    "Tidak terdeteksi — batalkan & catat manual"}
+                  {draft.category
+                    ? language === "en"
+                      ? draft.category.category_en ?? draft.category.category
+                      : draft.category.category
+                    : t("confirm.notDetected")}
                 </Text>
               </View>
             </>
@@ -121,7 +128,7 @@ export default function AiTransactionConfirmModal({
             <>
               <View style={styles.row}>
                 <Text style={[styles.label, { color: textMutedColor }]}>
-                  Dari Akun
+                  {t("confirm.fromAccount")}
                 </Text>
                 <Text
                   style={[
@@ -132,12 +139,12 @@ export default function AiTransactionConfirmModal({
                   ]}
                 >
                   {draft.account_name ??
-                    "Tidak terdeteksi — batalkan & catat manual"}
+                    t("confirm.notDetected")}
                 </Text>
               </View>
               <View style={styles.row}>
                 <Text style={[styles.label, { color: textMutedColor }]}>
-                  Ke Akun
+                  {t("confirm.toAccount")}
                 </Text>
                 <Text
                   style={[
@@ -148,7 +155,7 @@ export default function AiTransactionConfirmModal({
                   ]}
                 >
                   {draft.to_account_name ??
-                    "Tidak terdeteksi — batalkan & catat manual"}
+                    t("confirm.notDetected")}
                 </Text>
               </View>
             </>
@@ -162,7 +169,7 @@ export default function AiTransactionConfirmModal({
               disabled={saving}
             >
               <Text style={[styles.buttonText, { color: textColor }]}>
-                Batal
+                {t("common.cancel")}
               </Text>
             </TouchableOpacity>
 
@@ -176,7 +183,7 @@ export default function AiTransactionConfirmModal({
               activeOpacity={0.85}
             >
               <Text style={[styles.buttonText, { color: whiteColor }]}>
-                {saving ? "Menyimpan..." : "Simpan"}
+                {saving ? t("add.loading") : t("common.save")}
               </Text>
             </TouchableOpacity>
           </View>

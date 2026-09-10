@@ -7,7 +7,7 @@ export const translations: Record<LanguageCode, Dict> = {
   id: {
     // settings
     "settings.preferences": "Preferensi",
-    "settings.account": "Akun",
+    "settings.account": "Rekening",
     "settings.theme": "Tema",
     "settings.themeDesc": "Terang, gelap, atau ikuti sistem",
     "settings.currency": "Mata Uang",
@@ -21,7 +21,7 @@ export const translations: Record<LanguageCode, Dict> = {
     "settings.autoSaveTransactionDesc": "Langsung simpan saat transaksi",
     "settings.logout": "Keluar",
     "settings.logoutConfirmTitle": "Keluar",
-    "settings.logoutConfirmMessage": "Yakin ingin keluar dari akun kamu?",
+    "settings.logoutConfirmMessage": "Yakin ingin keluar dari rekening kamu?",
     "settings.logoutConfirmButton": "Keluar",
     // theme sheet
     "theme.title": "Tema",
@@ -42,7 +42,7 @@ export const translations: Record<LanguageCode, Dict> = {
     "tabs.dashboard": "Dasbor",
     "tabs.activity": "Aktivitas",
     "tabs.analytics": "Analitik",
-    "tabs.account": "Akun",
+    "tabs.account": "Rekening",
     "tabs.settings": "Pengaturan",
     // dashboard
     "dashboard.loading": "Memuat dasbor...",
@@ -97,8 +97,8 @@ export const translations: Record<LanguageCode, Dict> = {
     "account.setPrimary": "Atur sebagai Utama",
     "account.unsetPrimary": "Batalkan Utama",
     "account.primary": "Utama",
-    "account.primarySet": "Akun utama berhasil diatur",
-    "account.primaryUnset": "Akun utama berhasil dibatalkan",
+    "account.primarySet": "Rekening utama berhasil diatur",
+    "account.primaryUnset": "Rekening utama berhasil dibatalkan",
     // add transaction
     "add.editTitle": "Edit Transaksi",
     "add.newTitle": "Transaksi Baru",
@@ -120,7 +120,7 @@ export const translations: Record<LanguageCode, Dict> = {
     "add.deleteError": "Gagal menghapus",
     "add.deleteConfirmTitle": "Hapus Transaksi",
     "add.deleteConfirmMsg": "Yakin ingin menghapus transaksi ini?",
-    "add.fromAccountRequired": "Akun asal dan tujuan wajib dipilih.",
+    "add.fromAccountRequired": "Rekening asal dan tujuan wajib dipilih.",
     "add.categoryRequired": "Kategori wajib dipilih.",
     "add.loading": "Memuat...",
     "add.loadError": "Gagal memuat transaksi",
@@ -156,6 +156,15 @@ export const translations: Record<LanguageCode, Dict> = {
     "analytics.insightsFor": "Insights untuk {month}",
     "analytics.monthlyTotal": "Total Bulanan",
     "analytics.noSpending": "Belum ada pengeluaran bulan ini.",
+    // confirm modal
+    "confirm.title": "Konfirmasi Transaksi",
+    "confirm.type": "Tipe",
+    "confirm.nominal": "Nominal",
+    "confirm.description": "Deskripsi",
+    "confirm.savedIn": "Disimpan di Rekening",
+    "confirm.fromAccount": "Dari Rekening",
+    "confirm.toAccount": "Ke Rekening",
+    "confirm.notDetected": "Tidak terdeteksi — batalkan & catat manual",
   },
   en: {
     "settings.preferences": "Preferences",
@@ -294,6 +303,15 @@ export const translations: Record<LanguageCode, Dict> = {
     "analytics.insightsFor": "Insights for {month}",
     "analytics.monthlyTotal": "Monthly Total",
     "analytics.noSpending": "No spending yet for this month.",
+    // confirm modal
+    "confirm.title": "Confirm Transaction",
+    "confirm.type": "Type",
+    "confirm.nominal": "Amount",
+    "confirm.description": "Description",
+    "confirm.savedIn": "Saved in Account",
+    "confirm.fromAccount": "From Account",
+    "confirm.toAccount": "To Account",
+    "confirm.notDetected": "Not detected — cancel & record manually",
   },
 };
 

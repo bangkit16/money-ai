@@ -22,6 +22,12 @@ type AiPromptBottomSheetProps = {
   onClose: () => void;
   onSend: (prompt: string) => void;
   onVoicePress?: () => void;
+  /** Control input value from parent (e.g. for speech-to-text). */
+  value?: string;
+  /** Called when input value changes (for controlled mode). */
+  onValueChange?: (text: string) => void;
+  /** Whether speech recognition is active (shows recording indicator). */
+  isListening?: boolean;
 };
 
 export default function AiPromptBottomSheet({
@@ -29,6 +35,9 @@ export default function AiPromptBottomSheet({
   onClose,
   onSend,
   onVoicePress,
+  value: externalValue,
+  onValueChange,
+  isListening,
 }: AiPromptBottomSheetProps) {
   const cardColor = useColor("card");
   const handleColor = useColor("border");
@@ -84,16 +93,18 @@ export default function AiPromptBottomSheet({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
 
-  const canSend = prompt.trim().length > 0;
+  const canSend = (externalValue ?? prompt).trim().length > 0;
 
   const handleSend = () => {
     if (!canSend) return;
-    onSend(prompt.trim());
+    onSend((externalValue ?? prompt).trim());
     setPrompt("");
+    onValueChange?.("");
   };
 
   const handleClose = () => {
     setPrompt("");
+    onValueChange?.("");
     onClose();
   };
 
@@ -140,8 +151,8 @@ export default function AiPromptBottomSheet({
           </View>
 
           <TextInput
-            value={prompt}
-            onChangeText={setPrompt}
+            value={externalValue ?? prompt}
+            onChangeText={onValueChange ?? setPrompt}
             placeholder="Tanyakan sesuatu tentang keuanganmu..."
             placeholderTextColor={textMutedColor}
             multiline
@@ -151,11 +162,21 @@ export default function AiPromptBottomSheet({
 
           <View style={styles.footerRow}>
             <TouchableOpacity
-              style={[styles.voiceButton, { borderColor, backgroundColor: cardColor }]}
+              style={[
+                styles.voiceButton,
+                {
+                  borderColor: isListening ? "#ef4444" : borderColor,
+                  backgroundColor: isListening ? "#fef2f2" : cardColor,
+                },
+              ]}
               activeOpacity={0.85}
               onPress={onVoicePress}
             >
-              <Ionicons name="mic-outline" size={20} color={primaryColor} />
+              <Ionicons
+                name={isListening ? "mic" : "mic-outline"}
+                size={20}
+                color={isListening ? "#ef4444" : primaryColor}
+              />
             </TouchableOpacity>
 
             <TouchableOpacity
