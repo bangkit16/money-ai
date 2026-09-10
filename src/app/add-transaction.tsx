@@ -13,9 +13,10 @@ import { spacing, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
 import { useTransactionForm } from "@/hooks/useTransactionForm";
 import { useT } from "@/i18n";
+import { ConfirmDialog } from "@/components/features/shared/confirm-dialog";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
-import { useMemo, useEffect } from "react";
+import { useMemo, useEffect, useState } from "react";
 import {
   Animated,
   Easing,
@@ -86,8 +87,10 @@ export default function TransactionScreen() {
     saveTransaction();
   };
 
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
   const handleDelete = () => {
-    // No editId → can't delete, but guard is redundant since this screen only renders in edit mode
+    setShowDeleteConfirm(true);
   };
 
   if (editId && isLoadingTx) {
@@ -147,9 +150,7 @@ export default function TransactionScreen() {
           </Text>
           {editId ? (
             <TouchableOpacity
-              onPress={() => {
-                // TODO: wire up delete handler
-              }}
+              onPress={handleDelete}
               disabled={isDeleting}
               hitSlop={10}
               style={styles.headerBtn}
@@ -267,6 +268,15 @@ export default function TransactionScreen() {
           />
         </View>
       </Animated.View>
+      <ConfirmDialog
+        visible={showDeleteConfirm}
+        title={t("add.deleteConfirmTitle")}
+        message={t("add.deleteConfirmMsg")}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={deleteTransaction}
+        confirmLabel={t("common.delete")}
+        isConfirming={isDeleting}
+      />
     </KeyboardAvoidingView>
   );
 }
