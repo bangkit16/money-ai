@@ -10,7 +10,14 @@ import { makeRedirectUri } from "expo-auth-session";
 import { StatusBar } from "expo-status-bar";
 import { router } from "expo-router";
 import { useState } from "react";
-import { Platform, StyleSheet, View } from "react-native";
+import {
+  ActivityIndicator,
+  Platform,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { supabase } from "@/lib/supabase";
 import { createSessionFromUrl } from "@/lib/auth";
@@ -29,12 +36,40 @@ const redirectTo = makeRedirectUri({
 
 export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [error, setError] = useState("");
   const t = useT();
 
   const bgColor = useColor("background");
   const sheetColor = useColor("card");
   const textColor = useColor("text");
   const textMutedColor = useColor("textMuted");
+  const primaryColor = useColor("primary");
+
+  const handleEmailLogin = async () => {
+    if (!email || !password) {
+      setError("Email dan password wajib diisi");
+      return;
+    }
+    setEmailLoading(true);
+    setError("");
+
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+
+    if (authError) {
+      setError(authError.message);
+      setEmailLoading(false);
+      return;
+    }
+
+    router.replace("/(tabs)");
+    setEmailLoading(false);
+  };
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
@@ -85,7 +120,60 @@ export default function LoginScreen() {
           </Text>
         </View>
 
+        {error ? (
+          <View style={styles.errorBox}>
+            <Text style={{ color: "#DC2626", fontSize: 13 }}>{error}</Text>
+          </View>
+        ) : null}
+
+        <TextInput
+          style={[styles.input, { color: textColor, borderColor: textMutedColor + "40" }]}
+          placeholder="Email"
+          placeholderTextColor={textMutedColor}
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
+          autoComplete="email"
+        />
+
+        <TextInput
+          style={[styles.input, { color: textColor, borderColor: textMutedColor + "40" }]}
+          placeholder="Password"
+          placeholderTextColor={textMutedColor}
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          autoComplete="password"
+        />
+
+        <TouchableOpacity
+          style={[styles.emailButton, { backgroundColor: primaryColor }]}
+          onPress={handleEmailLogin}
+          disabled={emailLoading}
+          activeOpacity={0.8}
+        >
+          {emailLoading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.emailButtonText}>Masuk</Text>
+          )}
+        </TouchableOpacity>
+
+        <View style={styles.divider}>
+          <View style={[styles.dividerLine, { backgroundColor: textMutedColor + "30" }]} />
+          <Text style={[styles.dividerText, { color: textMutedColor }]}>atau</Text>
+          <View style={[styles.dividerLine, { backgroundColor: textMutedColor + "30" }]} />
+        </View>
+
         <GoogleSignInButton loading={loading} onPress={handleGoogleSignIn} />
+
+        <TouchableOpacity onPress={() => router.replace("/register")} style={styles.linkBtn}>
+          <Text style={[styles.linkText, { color: textMutedColor }]}>
+            Belum punya akun?{" "}
+            <Text style={{ color: primaryColor, fontFamily: "Poppins-Bold" }}>Daftar</Text>
+          </Text>
+        </TouchableOpacity>
 
         <Text style={[styles.termsText, { color: textMutedColor }]}>
           {t("login.terms", { brand: "Dompety's" })}
@@ -117,7 +205,47 @@ const styles = StyleSheet.create({
     ...typography.bodyLg,
     marginTop: 6,
   },
-
+  errorBox: {
+    backgroundColor: "#FEE2E2",
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 16,
+  },
+  input: {
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 15,
+    fontFamily: "Poppins-Regular",
+    marginBottom: 12,
+  },
+  emailButton: {
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: "center",
+    marginTop: 4,
+  },
+  emailButtonText: {
+    color: "#fff",
+    fontFamily: "Poppins-Bold",
+    fontSize: 15,
+  },
+  divider: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 16,
+  },
+  dividerLine: { flex: 1, height: 1 },
+  dividerText: {
+    marginHorizontal: 12,
+    fontSize: 13,
+  },
+  linkBtn: {
+    alignItems: "center",
+    marginTop: 16,
+  },
+  linkText: { fontSize: 13 },
   termsText: {
     fontSize: 12,
     lineHeight: 16,

@@ -23,7 +23,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (loading) return;
 
-    const onLoginScreen = pathname === "/login";
+    const onLoginScreen = pathname === "/login" || pathname === "/register";
 
     // Belum login → tendang ke /login, kecuali memang sudah di sana
     if (!isAuthenticated && !onLoginScreen) {
