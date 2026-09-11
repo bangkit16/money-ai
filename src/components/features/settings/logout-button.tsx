@@ -29,5 +29,5 @@ const styles = StyleSheet.create({
     borderRadius: radius.xl,
     paddingVertical: 16,
   },
-  text: { ...typography.titleMd, fontSize: 15 },
+  text: { ...typography.titleMd, fontSize: 13 },
 });

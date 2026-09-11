@@ -524,16 +524,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  resultButtonText: { fontSize: 14, fontWeight: "600" },
+  resultButtonText: { fontSize: 12, fontWeight: "600" },
   loadingRow: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 10,
     gap: 6,
   },
-  loadingText: { fontSize: 12, fontWeight: "600" },
+  loadingText: { fontSize: 10, fontWeight: "600" },
   dotsRow: { flexDirection: "row", marginLeft: 1 },
-  dot: { fontSize: 16, lineHeight: 16, marginHorizontal: 0.5 },
+  dot: { fontSize: 14, lineHeight: 14, marginHorizontal: 0.5 },
 });
 
 export default AiButton;

@@ -75,7 +75,7 @@ export default function RegisterScreen() {
 
         {error ? (
           <View style={styles.errorBox}>
-            <Text style={{ color: "#DC2626", fontSize: 13 }}>{error}</Text>
+            <Text style={{ color: "#DC2626", fontSize: 11 }}>{error}</Text>
           </View>
         ) : null}
 
@@ -127,47 +127,47 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   sheet: {
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     paddingHorizontal: spacing.marginMobile,
-    paddingTop: 28,
-    paddingBottom: Platform.OS === "ios" ? 36 : 24,
-    marginTop: -24,
+    paddingTop: 20,
+    paddingBottom: Platform.OS === "ios" ? 32 : 20,
+    marginTop: -20,
   },
-  sheetHeader: { marginBottom: 24 },
+  sheetHeader: { marginBottom: 20 },
   title: { ...typography.headlineLgMobile },
-  subtitle: { ...typography.bodyLg, marginTop: 6 },
+  subtitle: { ...typography.bodyLg, marginTop: 4 },
   errorBox: {
     backgroundColor: "#FEE2E2",
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 16,
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 12,
   },
   input: {
     borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 15,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 13,
     fontFamily: "Poppins-Regular",
-    marginBottom: 12,
+    marginBottom: 10,
   },
   button: {
-    borderRadius: 12,
-    paddingVertical: 14,
+    borderRadius: 10,
+    paddingVertical: 12,
     alignItems: "center",
     marginTop: 4,
   },
   buttonText: {
     color: "#fff",
     fontFamily: "Poppins-Bold",
-    fontSize: 15,
+    fontSize: 13,
   },
   linkBtn: {
     alignItems: "center",
-    marginTop: 20,
+    marginTop: 16,
   },
   linkText: {
-    fontSize: 13,
+    fontSize: 11,
   },
 });

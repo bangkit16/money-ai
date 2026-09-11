@@ -72,7 +72,7 @@ export function HeroBalanceCard({
 }
 
 const styles = StyleSheet.create({
-  heroCard: { borderRadius: radius.xl, padding: 24 },
+  heroCard: { borderRadius: radius.xl, padding: 16 },
   heroTopRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.full,
   },
   trendBadgeText: { ...typography.labelCaps },
-  heroSubRow: { flexDirection: "row", gap: 48, marginTop: 24 },
+  heroSubRow: { flexDirection: "row", gap: 32, marginTop: 16 },
   heroSubLabel: { ...typography.labelCaps, color: "rgba(255,255,255,0.6)" },
   heroSubAmountRow: {
     flexDirection: "row",

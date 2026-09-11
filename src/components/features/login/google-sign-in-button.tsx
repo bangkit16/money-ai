@@ -56,6 +56,6 @@ const styles = StyleSheet.create({
   },
   text: {
     ...typography.titleMd,
-    fontSize: 15,
+    fontSize: 13,
   },
 });

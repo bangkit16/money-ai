@@ -205,6 +205,6 @@ const styles = StyleSheet.create({
   },
   optionCancelText: {
     ...typography.titleMd,
-    fontSize: 15,
+    fontSize: 13,
   },
 });

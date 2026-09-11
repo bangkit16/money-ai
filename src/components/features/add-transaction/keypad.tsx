@@ -53,13 +53,13 @@ const styles = StyleSheet.create({
   keypadRow: { flexDirection: "row", gap: 8 },
   keypadKey: {
     flex: 1,
-    height: 52,
+    height: 44,
     borderRadius: radius.lg,
     alignItems: "center",
     justifyContent: "center",
   },
   keypadKeyText: {
     ...typography.titleMd,
-    fontSize: 20,
+    fontSize: 16,
   },
 });

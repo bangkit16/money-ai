@@ -77,6 +77,6 @@ const styles = StyleSheet.create({
   },
   typeButtonText: {
     ...typography.labelCaps,
-    fontSize: 11,
+    fontSize: 9,
   },
 });

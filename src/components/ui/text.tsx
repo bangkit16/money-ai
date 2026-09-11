@@ -49,21 +49,21 @@ export const Text = React.memo(
           case "heading":
             return {
               ...baseStyle,
-              fontSize: 28,
+              fontSize: 22,
               fontWeight: "700",
               fontFamily: "Poppins-Bold",
             };
           case "title":
             return {
               ...baseStyle,
-              fontSize: 24,
+              fontSize: 18,
               fontWeight: "700",
               fontFamily: "Poppins-Bold",
             };
           case "subtitle":
             return {
               ...baseStyle,
-              fontSize: 19,
+              fontSize: 15,
               fontWeight: "600",
               fontFamily: "Poppins-Bold",
             };

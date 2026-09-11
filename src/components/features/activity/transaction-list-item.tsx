@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
   },
   name: { ...typography.bodyLg, fontWeight: "600" },
   meta: { ...typography.bodySm },
-  amount: { ...typography.titleMd, fontSize: 16 },
+  amount: { ...typography.titleMd, fontSize: 14 },
   transferRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
   transferAccount: { flexShrink: 1 },
   transferLabel: {
     ...typography.labelCaps,
-    fontSize: 9,
+    fontSize: 8,
     marginRight: 4,
   },
   transferName: {

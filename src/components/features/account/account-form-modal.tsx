@@ -206,15 +206,15 @@ const styles = StyleSheet.create({
   },
   cancelButtonText: {
     ...typography.titleMd,
-    fontSize: 15,
+    fontSize: 13,
   },
   saveButton: {
     flex: 1,
-    paddingVertical: 16,
+    paddingVertical: 14,
     borderRadius: radius.xl,
     alignItems: "center",
     justifyContent: "center",
   },
   saveButtonDisabled: { opacity: 0.4 },
-  saveButtonText: { ...typography.titleMd, fontSize: 15 },
+  saveButtonText: { ...typography.titleMd, fontSize: 13 },
 });

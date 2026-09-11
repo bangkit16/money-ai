@@ -122,7 +122,7 @@ export default function LoginScreen() {
 
         {error ? (
           <View style={styles.errorBox}>
-            <Text style={{ color: "#DC2626", fontSize: 13 }}>{error}</Text>
+            <Text style={{ color: "#DC2626", fontSize: 11 }}>{error}</Text>
           </View>
         ) : null}
 
@@ -190,67 +190,67 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
 
   sheet: {
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     paddingHorizontal: spacing.marginMobile,
-    paddingTop: 28,
-    paddingBottom: Platform.OS === "ios" ? 36 : 24,
-    marginTop: -24,
+    paddingTop: 20,
+    paddingBottom: Platform.OS === "ios" ? 32 : 20,
+    marginTop: -20,
   },
   sheetHeader: {
-    marginBottom: 24,
+    marginBottom: 20,
   },
   title: { ...typography.headlineLgMobile },
   subtitle: {
     ...typography.bodyLg,
-    marginTop: 6,
+    marginTop: 4,
   },
   errorBox: {
     backgroundColor: "#FEE2E2",
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 16,
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 12,
   },
   input: {
     borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 15,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 13,
     fontFamily: "Poppins-Regular",
-    marginBottom: 12,
+    marginBottom: 10,
   },
   emailButton: {
-    borderRadius: 12,
-    paddingVertical: 14,
+    borderRadius: 10,
+    paddingVertical: 12,
     alignItems: "center",
     marginTop: 4,
   },
   emailButtonText: {
     color: "#fff",
     fontFamily: "Poppins-Bold",
-    fontSize: 15,
+    fontSize: 13,
   },
   divider: {
     flexDirection: "row",
     alignItems: "center",
-    marginVertical: 16,
+    marginVertical: 12,
   },
   dividerLine: { flex: 1, height: 1 },
   dividerText: {
-    marginHorizontal: 12,
-    fontSize: 13,
+    marginHorizontal: 10,
+    fontSize: 11,
   },
   linkBtn: {
     alignItems: "center",
+    marginTop: 12,
+  },
+  linkText: { fontSize: 11 },
+  termsText: {
+    fontSize: 10,
+    lineHeight: 14,
+    textAlign: "center",
     marginTop: 16,
   },
-  linkText: { fontSize: 13 },
-  termsText: {
-    fontSize: 12,
-    lineHeight: 16,
-    textAlign: "center",
-    marginTop: 20,
-  },
-  termsLink: { fontSize: 12 },
+  termsLink: { fontSize: 10 },
 });

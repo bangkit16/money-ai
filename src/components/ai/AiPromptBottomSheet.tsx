@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  title: { ...typography.titleMd, fontSize: 16 },
+  title: { ...typography.titleMd, fontSize: 14 },
 
   input: {
     ...typography.bodyLg,

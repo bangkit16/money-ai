@@ -150,13 +150,13 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   header: {
     paddingHorizontal: spacing.marginMobile,
-    paddingTop: Platform.OS === "ios" ? 54 : 24,
-    paddingBottom: 12,
+    paddingTop: Platform.OS === "ios" ? 48 : 20,
+    paddingBottom: 10,
   },
   wordmark: { ...typography.headlineLgMobile },
 
-  body: { padding: spacing.marginMobile, gap: spacing.gutter, paddingBottom: 48 },
-  section: { gap: 8 },
+  body: { padding: spacing.marginMobile, gap: spacing.gutter, paddingBottom: 40 },
+  section: { gap: 6 },
   sectionTitle: {
     ...typography.labelCaps,
     color: "#75777d",

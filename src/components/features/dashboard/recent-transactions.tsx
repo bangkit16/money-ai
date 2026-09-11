@@ -192,11 +192,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  txName: { ...typography.titleMd, fontSize: 16 },
+  txName: { ...typography.titleMd, fontSize: 14 },
   txMeta: { ...typography.bodySm },
   txRight: { alignItems: "flex-end" },
-  txAmount: { ...typography.titleMd, fontSize: 16 },
-  txSource: { ...typography.labelCaps, fontSize: 10 },
+  txAmount: { ...typography.titleMd, fontSize: 14 },
+  txSource: { ...typography.labelCaps, fontSize: 9 },
 
   emptyText: {
     ...typography.bodyLg,

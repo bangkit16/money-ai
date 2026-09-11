@@ -37,12 +37,12 @@ const styles = StyleSheet.create({
   },
   currencySymbol: {
     ...typography.headlineLg,
-    fontSize: 28,
+    fontSize: 22,
     marginRight: 4,
   },
   value: {
     ...typography.displayLg,
-    fontSize: 40,
+    fontSize: 32,
     maxWidth: "100%",
   },
 });

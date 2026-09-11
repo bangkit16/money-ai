@@ -60,7 +60,7 @@ export function MonthlySummaryCard({
           <Text style={[styles.monthLabel, { color: outlineColor }]}>{monthLabel}</Text>
         ) : null}
       </View>
-      <View style={[styles.summaryCol, { borderLeftColor: outlineVariantColor, borderLeftWidth: 1, paddingLeft: 24, marginLeft: 8 }]}>
+      <View style={[styles.summaryCol, { borderLeftColor: outlineVariantColor, borderLeftWidth: 1, paddingLeft: 16, marginLeft: 8 }]}>
         <View style={styles.summaryLabelRow}>
           <MaterialIcons name="arrow-upward" size={18} color={errorColor} />
           <Text style={[styles.summaryLabel, { color: onSurfaceVariantColor }]}>{t("dashboard.expense")}</Text>
@@ -86,7 +86,7 @@ export function MonthlySummaryCard({
 }
 
 const styles = StyleSheet.create({
-  card: { borderRadius: radius.xl, padding: 24 },
+  card: { borderRadius: radius.xl, padding: 16 },
   summaryCard: { flexDirection: "row" },
   summaryCol: { flex: 1, gap: 16 },
   summaryLabelRow: { flexDirection: "row", alignItems: "center", gap: 8 },

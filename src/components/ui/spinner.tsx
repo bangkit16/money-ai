@@ -48,16 +48,16 @@ interface SpinnerConfig {
 
 // Configuration
 const sizeConfig: Record<SpinnerSize, SpinnerConfig> = {
-  sm: { size: 16, iconSize: 16, fontSize: 12, gap: 6, thickness: 2 },
+  sm: { size: 14, iconSize: 14, fontSize: 10, gap: 4, thickness: 2 },
   default: {
-    size: 24,
-    iconSize: 24,
+    size: 20,
+    iconSize: 20,
     fontSize: FONT_SIZE,
-    gap: 8,
+    gap: 6,
     thickness: 2,
   },
-  lg: { size: 32, iconSize: 32, fontSize: 16, gap: 10, thickness: 3 },
-  icon: { size: 24, iconSize: 24, fontSize: FONT_SIZE, gap: 8, thickness: 2 },
+  lg: { size: 28, iconSize: 28, fontSize: 14, gap: 8, thickness: 3 },
+  icon: { size: 20, iconSize: 20, fontSize: FONT_SIZE, gap: 6, thickness: 2 },
 };
 
 const speedConfig = {

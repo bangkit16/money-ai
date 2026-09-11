@@ -46,8 +46,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: spacing.marginMobile,
-    paddingTop: Platform.OS === "ios" ? 54 : 24,
-    paddingBottom: 12,
+    paddingTop: Platform.OS === "ios" ? 48 : 20,
+    paddingBottom: 10,
   },
   brand: {
     flexDirection: "row",
@@ -55,8 +55,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   brandIcon: {
-    width: 36,
-    height: 36,
+    width: 32,
+    height: 32,
   },
   wordmark: { ...typography.headlineLgMobile },
 });

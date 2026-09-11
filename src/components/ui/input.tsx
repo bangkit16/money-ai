@@ -280,7 +280,7 @@ export const Input = forwardRef<TextInput, InputProps>(
               {
                 marginLeft: 14,
                 marginTop: 4,
-                fontSize: 14,
+                fontSize: 12,
                 color: danger,
               },
               errorStyle,
@@ -365,7 +365,7 @@ export const GroupedInput = ({
             <Text
               key={i}
               style={{
-                fontSize: 14,
+                fontSize: 12,
                 color: danger,
                 marginTop: i === 0 ? 0 : 1,
                 marginLeft: 8,

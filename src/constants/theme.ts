@@ -40,29 +40,29 @@ export const colors = {
 
 export const typography = {
   displayLg: {
-    fontSize: 35,
+    fontSize: 28,
     fontWeight: "700" as const,
-    lineHeight: 56,
+    lineHeight: 36,
     letterSpacing: -0.5,
   },
   headlineLg: {
-    fontSize: 32,
-    fontWeight: "600" as const,
-    lineHeight: 40,
-    letterSpacing: -0.3,
-  },
-  headlineLgMobile: {
     fontSize: 24,
     fontWeight: "600" as const,
     lineHeight: 32,
+    letterSpacing: -0.3,
   },
-  titleMd: { fontSize: 20, fontWeight: "600" as const, lineHeight: 28 },
-  bodyLg: { fontSize: 16, fontWeight: "400" as const, lineHeight: 24 },
-  bodySm: { fontSize: 14, fontWeight: "400" as const, lineHeight: 20 },
+  headlineLgMobile: {
+    fontSize: 20,
+    fontWeight: "600" as const,
+    lineHeight: 28,
+  },
+  titleMd: { fontSize: 16, fontWeight: "600" as const, lineHeight: 24 },
+  bodyLg: { fontSize: 14, fontWeight: "400" as const, lineHeight: 20 },
+  bodySm: { fontSize: 12, fontWeight: "400" as const, lineHeight: 16 },
   labelCaps: {
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: "700" as const,
-    lineHeight: 16,
+    lineHeight: 14,
     letterSpacing: 0.6,
     textTransform: "uppercase" as const,
   },
@@ -78,8 +78,8 @@ export const radius = {
 
 export const spacing = {
   unit: 8,
-  gutter: 24,
-  marginMobile: 20,
+  gutter: 16,
+  marginMobile: 16,
 };
 
 export const shadow = {

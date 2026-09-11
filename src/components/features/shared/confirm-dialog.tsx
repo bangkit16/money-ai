@@ -121,20 +121,20 @@ const styles = StyleSheet.create({
   },
   cancelButtonText: {
     ...typography.titleMd,
-    fontSize: 15,
+    fontSize: 13,
   },
   deleteButton: {
     flex: 1,
-    paddingVertical: 16,
+    paddingVertical: 14,
     borderRadius: radius.xl,
     alignItems: "center",
     justifyContent: "center",
   },
   saveButton: {
-    paddingVertical: 16,
+    paddingVertical: 14,
     borderRadius: radius.xl,
     alignItems: "center",
     justifyContent: "center",
   },
-  saveButtonText: { ...typography.titleMd, fontSize: 15 },
+  saveButtonText: { ...typography.titleMd, fontSize: 13 },
 });

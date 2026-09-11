@@ -124,8 +124,8 @@ export function AccountList({
 }
 
 const styles = StyleSheet.create({
-  card: { borderRadius: radius.xl, padding: 24 },
-  amount: { ...typography.titleMd, fontSize: 16 },
+  card: { borderRadius: radius.xl, padding: 16 },
+  amount: { ...typography.titleMd, fontSize: 14 },
 
   loadingContainer: {
     flexDirection: "row",

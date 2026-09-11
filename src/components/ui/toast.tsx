@@ -318,7 +318,7 @@ export function Toast({
                     variant='subtitle'
                     style={{
                       color: onSurfaceColor,
-                      fontSize: 15,
+                      fontSize: 13,
                       fontWeight: '600',
                       marginBottom: description ? 2 : 0,
                     }}
@@ -333,7 +333,7 @@ export function Toast({
                     variant='caption'
                     style={{
                       color: mutedTextColor,
-                      fontSize: 13,
+                      fontSize: 11,
                       fontWeight: '400',
                     }}
                     numberOfLines={2}
@@ -359,7 +359,7 @@ export function Toast({
                     variant='caption'
                     style={{
                       color: '#FFFFFF',
-                      fontSize: 12,
+                      fontSize: 10,
                       fontWeight: '600',
                     }}
                   >

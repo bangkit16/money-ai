@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
 
   pageTitle: {
     ...typography.headlineLg,
-    fontSize: 28,
+    fontSize: 22,
     marginBottom: 4,
   },
   pageSubtitle: { ...typography.bodyLg },

@@ -109,13 +109,13 @@ const styles = StyleSheet.create({
   },
   currencySymbol: {
     ...typography.headlineLg,
-    fontSize: 28,
+    fontSize: 22,
     marginRight: 8,
   },
   input: {
     flex: 1,
     ...typography.displayLg,
-    fontSize: 36,
+    fontSize: 28,
     minWidth: 0,
   },
 });

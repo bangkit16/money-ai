@@ -99,16 +99,16 @@ const styles = StyleSheet.create({
   },
   chipText: {
     ...typography.labelCaps,
-    fontSize: 11,
+    fontSize: 9,
   },
 
   loadingContainer: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 12,
+    paddingVertical: 10,
     width: "100%",
-    gap: 8,
+    gap: 6,
   },
-  loadingText: { fontSize: 14 },
+  loadingText: { fontSize: 12 },
 });
