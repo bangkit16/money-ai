@@ -29,7 +29,7 @@ export function Icon({
       size={size}
       strokeWidth={strokeWidth}
       strokeLinecap='round'
-      accessible={accessible}
+      accessible={accessible || undefined}
       {...rest}
     />
   );

@@ -20,17 +20,22 @@ import { useMemo, useEffect, useState } from "react";
 import {
   Animated,
   Easing,
-  KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useKeyboardHeight } from "@/hooks/useKeyboardHeight";
 
 export default function TransactionScreen() {
   const params = useLocalSearchParams<{ id?: string; type?: string }>();
   const editId = typeof params.id === "string" ? params.id : undefined;
+  const insets = useSafeAreaInsets();
+  // Edge-to-edge: adjustResize tidak menyusutkan window saat keyboard muncul,
+  // jadi angkat layout manual dengan tinggi keyboard.
+  const { keyboardHeight } = useKeyboardHeight();
   const t = useT();
 
   const entrance = useMemo(() => new Animated.Value(0), []);
@@ -49,6 +54,7 @@ export default function TransactionScreen() {
   const textMutedColor = useColor("textMuted");
   const primaryColor = useColor("primary");
   const errorColor = useColor("error");
+  // const insets = useSafeAreaInsets();
 
   const prefilledType = (params.type ?? "EXPENSE") as TransactionTypeKey;
   const {
@@ -112,9 +118,8 @@ export default function TransactionScreen() {
   if (editId && !hydrated) return null;
 
   return (
-    <KeyboardAvoidingView
-      style={[styles.screen, { backgroundColor: bgColor }]}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    <View
+      style={[styles.screen, { backgroundColor: bgColor, paddingBottom: keyboardHeight }]}
     >
       <Animated.View
         style={[
@@ -133,7 +138,7 @@ export default function TransactionScreen() {
           },
         ]}
       >
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
           <TouchableOpacity
             onPress={() => router.back()}
             hitSlop={10}
@@ -277,7 +282,7 @@ export default function TransactionScreen() {
         confirmLabel={t("common.delete")}
         isConfirming={isDeleting}
       />
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 
@@ -291,7 +296,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: spacing.marginMobile,
-    paddingTop: Platform.OS === "ios" ? 48 : 20,
     paddingBottom: 10,
   },
   headerBtn: {

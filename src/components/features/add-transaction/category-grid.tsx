@@ -46,6 +46,15 @@ export function CategoryGrid({
     <View style={styles.grid}>
       {categories?.map((cat) => {
         const active = selectedId === cat.id;
+        const label =
+          language === "en" && cat.category_en ? cat.category_en : cat.category;
+        // Satu kata: jangan wrap — kecilkan font biar muat (~9 char muat di 9pt).
+        // Multi kata: boleh wrap.
+        const words = label.split(/\s+/).filter(Boolean);
+        const isSingleWord = words.length <= 1;
+        const singleWordFontSize = isSingleWord
+          ? Math.max(6, Math.min(9, Math.round(81 / Math.max(label.length, 1))))
+          : 9;
         return (
           <TouchableOpacity
             key={cat.id}
@@ -64,13 +73,15 @@ export function CategoryGrid({
               color={active ? whiteColor : secondaryColor}
             />
             <Text
+              numberOfLines={isSingleWord ? 1 : undefined}
               style={[
                 styles.chipText,
-                { color: textColor },
+                { color: textColor, fontSize: singleWordFontSize },
+                !isSingleWord && styles.chipTextWrap,
                 active && { color: whiteColor },
               ]}
             >
-              {language === "en" && cat.category_en ? cat.category_en : cat.category}
+              {label}
             </Text>
           </TouchableOpacity>
         );
@@ -90,6 +101,7 @@ const styles = StyleSheet.create({
   chip: {
     flexDirection: "column",
     alignItems: "center",
+    justifyContent: "center",
     gap: 6,
     paddingHorizontal: 4,
     paddingVertical: 8,
@@ -100,6 +112,11 @@ const styles = StyleSheet.create({
   chipText: {
     ...typography.labelCaps,
     fontSize: 9,
+    textAlign: "center",
+    maxWidth: "100%",
+  },
+  chipTextWrap: {
+    flexWrap: "wrap",
   },
 
   loadingContainer: {

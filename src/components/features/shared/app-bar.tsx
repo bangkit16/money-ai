@@ -3,7 +3,8 @@ import { Text } from "@/components/ui/text";
 import { spacing, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
 import { MaterialIcons } from "@expo/vector-icons";
-import { Image, Platform, StyleSheet, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
 
 const ICON = require("@/../assets/images/adaptive-icon.png");
 
@@ -20,11 +21,15 @@ export function AppBar({
 }: AppBarProps) {
   const bgColor = useColor("background");
   const primaryColor = useColor("primary");
+  const insets = useSafeAreaInsets();
   return (
     <View
       style={[
         styles.header,
-        { backgroundColor: transparent ? "transparent" : bgColor },
+        {
+          backgroundColor: transparent ? "transparent" : bgColor,
+          paddingTop: insets.top + 10,
+        },
       ]}
     >
       <View style={styles.brand}>
@@ -46,7 +51,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: spacing.marginMobile,
-    paddingTop: Platform.OS === "ios" ? 48 : 20,
     paddingBottom: 10,
   },
   brand: {
