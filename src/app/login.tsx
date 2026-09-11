@@ -82,13 +82,17 @@ export default function LoginScreen() {
         },
       });
       if (error) throw error;
+      console.log("Generated Redirect URL:", redirectTo);
+
 
       const authUrl = data?.url;
+      console.log("[google-sign-in] authUrl:", authUrl);
       if (!authUrl) throw new Error("Supabase tidak mengembalikan auth URL");
 
       // Buka halaman login Google di browser bawaan (in-app), tunggu sampai
       // ke-redirect balik ke `redirectTo` (deep link app kita).
       const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectTo);
+      console.log("[google-sign-in] result:", result);
 
       if (result.type === "success" && result.url) {
         const session = await createSessionFromUrl(result.url);
