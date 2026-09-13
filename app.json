@@ -42,7 +42,14 @@
       ],
       "expo-web-browser",
       "expo-font",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Izinkan Dompety mengakses mikrofon untuk fitur pencatatan suara.",
+          "speechRecognitionPermission": "Izinkan Dompety menggunakan pengenalan suara."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

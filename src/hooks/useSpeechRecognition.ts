@@ -1,5 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Platform } from "react-native";
+import { requireNativeModule } from "expo";
+
+// Native module is only present in a development build — NOT in Expo Go.
+// Lazy require so importing this hook never crashes when the module is missing
+// (the app should still run; voice just won't work until rebuilt).
+let ExpoSpeechRecognitionModule: any = null;
+try {
+  ExpoSpeechRecognitionModule = requireNativeModule("ExpoSpeechRecognition");
+} catch {
+  // not available (e.g. Expo Go, or module not linked)
+}
 
 type SpeechRecognitionHook = {
   isListening: boolean;
@@ -9,8 +20,13 @@ type SpeechRecognitionHook = {
   supported: boolean;
 };
 
+type UseSpeechRecognitionOptions = {
+  /** Called with each (interim or final) transcript as it arrives. */
+  onTranscript?: (text: string) => void;
+};
+
 // ── Web ──────────────────────────────────────────────────────────────────────
-function useWebSpeech(): SpeechRecognitionHook {
+function useWebSpeech({ onTranscript }: UseSpeechRecognitionOptions): SpeechRecognitionHook {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const recognitionRef = useRef<SpeechRecognition | null>(null);
@@ -39,11 +55,17 @@ function useWebSpeech(): SpeechRecognitionHook {
         else interimT += r[0].transcript;
       }
       if (finalT) {
-        setTranscript((p) => (p ? p + " " + finalT : finalT));
+        setTranscript((p) => {
+          const next = p ? p + " " + finalT : finalT;
+          onTranscript?.(next);
+          return next;
+        });
       } else if (interimT) {
         setTranscript((p) => {
           const base = p.includes("…") ? p.split("…")[0] : p;
-          return base ? base + " " + interimT + "…" : interimT + "…";
+          const next = base ? base + " " + interimT + "…" : interimT + "…";
+          onTranscript?.(next);
+          return next;
         });
       }
       if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
@@ -64,7 +86,7 @@ function useWebSpeech(): SpeechRecognitionHook {
       recognition.abort();
       if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
     };
-  }, [supported]);
+  }, [supported, onTranscript]);
 
   const start = useCallback(() => {
     if (!recognitionRef.current) return;
@@ -86,102 +108,91 @@ function useWebSpeech(): SpeechRecognitionHook {
   return { isListening, transcript, start, stop, supported };
 }
 
-// ── Native (Android / iOS) via @react-native-voice/voice ─────────────────────
-function useNativeSpeech(): SpeechRecognitionHook {
+// ── Native (Android / iOS) via expo-speech-recognition ───────────────────────
+function useNativeSpeech({ onTranscript }: UseSpeechRecognitionOptions): SpeechRecognitionHook {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Lazy require so web bundle doesn't choke on native-only module
-  const VoiceRef = useRef<typeof import("@react-native-voice/voice").default | null>(null);
-
-  const getVoice = useCallback(async () => {
-    if (VoiceRef.current) return VoiceRef.current;
-    try {
-      const mod = await import("@react-native-voice/voice");
-      VoiceRef.current = mod.default;
-      return mod.default;
-    } catch {
-      return null;
-    }
-  }, []);
-
-  const supported = Platform.OS === "android" || Platform.OS === "ios";
+  const supported =
+    (Platform.OS === "android" || Platform.OS === "ios") &&
+    !!ExpoSpeechRecognitionModule;
 
   useEffect(() => {
-    if (!supported) return;
-    let cancelled = false;
+    if (!supported || !ExpoSpeechRecognitionModule) return;
 
-    (async () => {
-      const Voice = await getVoice();
-      if (!Voice || cancelled) return;
-
-      Voice.onSpeechStart = () => {};
-      Voice.onSpeechEnd = () => {
-        setIsListening(false);
-        if (silenceTimerRef.current) {
-          clearTimeout(silenceTimerRef.current);
-          silenceTimerRef.current = null;
+    // expo-speech-recognition proxies expo-core events through this addListener
+    const removeResult = ExpoSpeechRecognitionModule.addListener(
+      "result",
+      (event: any) => {
+        const text = event.results[0]?.transcript ?? "";
+        if (text) {
+          setTranscript(text);
+          onTranscript?.(text);
         }
-      };
-      Voice.onSpeechError = () => {
-        setIsListening(false);
-        if (silenceTimerRef.current) {
-          clearTimeout(silenceTimerRef.current);
-          silenceTimerRef.current = null;
-        }
-      };
-      Voice.onSpeechResults = (e: { value?: string[] }) => {
-        const text = e.value?.[0] ?? "";
-        if (text) setTranscript(text);
-        // Auto-stop after 1s silence
-        if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-        silenceTimerRef.current = setTimeout(() => {
-          Voice.stop().catch(() => {});
-        }, 1000);
-      };
-      Voice.onSpeechError = () => setIsListening(false);
-    })();
+      },
+    );
+    const removeStart = ExpoSpeechRecognitionModule.addListener("start", () => {
+      setIsListening(true);
+    });
+    const removeEnd = ExpoSpeechRecognitionModule.addListener("end", () => {
+      setIsListening(false);
+      if (silenceTimerRef.current) {
+        clearTimeout(silenceTimerRef.current);
+        silenceTimerRef.current = null;
+      }
+    });
+    const removeError = ExpoSpeechRecognitionModule.addListener("error", () => {
+      setIsListening(false);
+      if (silenceTimerRef.current) {
+        clearTimeout(silenceTimerRef.current);
+        silenceTimerRef.current = null;
+      }
+    });
 
     return () => {
-      cancelled = true;
-      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+      removeResult.remove();
+      removeStart.remove();
+      removeEnd.remove();
+      removeError.remove();
     };
-  }, [supported, getVoice]);
+  }, [supported, onTranscript]);
 
   const start = useCallback(async () => {
-    const Voice = await getVoice();
-    if (!Voice) return;
+    if (!ExpoSpeechRecognitionModule) return;
+    const permission =
+      await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+    if (!permission.granted) return;
     setTranscript("");
     setIsListening(true);
-    try {
-      await Voice.start("id-ID");
-    } catch {
-      setIsListening(false);
-    }
-  }, [getVoice]);
+    ExpoSpeechRecognitionModule.start({
+      lang: "id-ID",
+      interimResults: true,
+      continuous: true,
+    });
+  }, []);
 
-  const stop = useCallback(async () => {
+  const stop = useCallback(() => {
     if (silenceTimerRef.current) {
       clearTimeout(silenceTimerRef.current);
       silenceTimerRef.current = null;
     }
-    const Voice = await getVoice();
-    if (!Voice) return;
     try {
-      await Voice.stop();
+      ExpoSpeechRecognitionModule?.stop();
     } catch {
       /* noop */
     }
     setIsListening(false);
-  }, [getVoice]);
+  }, []);
 
   return { isListening, transcript, start, stop, supported };
 }
 
 // ── Selector ─────────────────────────────────────────────────────────────────
-export function useSpeechRecognition(): SpeechRecognitionHook {
-  const web = useWebSpeech();
-  const native = useNativeSpeech();
+export function useSpeechRecognition(
+  options: UseSpeechRecognitionOptions = {},
+): SpeechRecognitionHook {
+  const web = useWebSpeech(options);
+  const native = useNativeSpeech(options);
   return Platform.OS === "web" ? web : native;
 }

@@ -16,28 +16,20 @@ import { LinearGradient } from "expo-linear-gradient";
 import { radius, spacing, typography, shadow } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
 import { Text } from "@/components/ui/text";
+import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 
 type AiPromptBottomSheetProps = {
   visible: boolean;
   onClose: () => void;
   onSend: (prompt: string) => void;
-  onVoicePress?: () => void;
-  /** Control input value from parent (e.g. for speech-to-text). */
-  value?: string;
-  /** Called when input value changes (for controlled mode). */
-  onValueChange?: (text: string) => void;
-  /** Whether speech recognition is active (shows recording indicator). */
-  isListening?: boolean;
 };
+
+const RECORDING_RED = "#e0483a";
 
 export default function AiPromptBottomSheet({
   visible,
   onClose,
   onSend,
-  onVoicePress,
-  value: externalValue,
-  onValueChange,
-  isListening,
 }: AiPromptBottomSheetProps) {
   const cardColor = useColor("card");
   const handleColor = useColor("border");
@@ -53,6 +45,12 @@ export default function AiPromptBottomSheet({
   const [prevVisible, setPrevVisible] = useState(visible);
   const backdropOpacity = useMemo(() => new Animated.Value(0), []);
   const sheetTranslateY = useMemo(() => new Animated.Value(300), []);
+
+  const {
+    isListening,
+    start: startListening,
+    stop: stopListening,
+  } = useSpeechRecognition({ onTranscript: setPrompt });
 
   if (visible !== prevVisible) {
     setPrevVisible(visible);
@@ -93,18 +91,26 @@ export default function AiPromptBottomSheet({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
 
-  const canSend = (externalValue ?? prompt).trim().length > 0;
+  const canSend = prompt.trim().length > 0 && !isListening;
 
   const handleSend = () => {
     if (!canSend) return;
-    onSend((externalValue ?? prompt).trim());
+    onSend(prompt.trim());
     setPrompt("");
-    onValueChange?.("");
+  };
+
+  const handleMicPress = () => {
+    if (isListening) {
+      stopListening();
+      return;
+    }
+    setPrompt("");
+    startListening();
   };
 
   const handleClose = () => {
+    if (isListening) stopListening();
     setPrompt("");
-    onValueChange?.("");
     onClose();
   };
 
@@ -151,9 +157,9 @@ export default function AiPromptBottomSheet({
           </View>
 
           <TextInput
-            value={externalValue ?? prompt}
-            onChangeText={onValueChange ?? setPrompt}
-            placeholder="Tanyakan sesuatu tentang keuanganmu..."
+            value={prompt}
+            onChangeText={setPrompt}
+            placeholder={isListening ? "Mendengarkan..." : "Tanyakan sesuatu tentang keuanganmu..."}
             placeholderTextColor={textMutedColor}
             multiline
             autoFocus
@@ -165,17 +171,17 @@ export default function AiPromptBottomSheet({
               style={[
                 styles.voiceButton,
                 {
-                  borderColor: isListening ? "#ef4444" : borderColor,
+                  borderColor: isListening ? RECORDING_RED : borderColor,
                   backgroundColor: isListening ? "#fef2f2" : cardColor,
                 },
               ]}
               activeOpacity={0.85}
-              onPress={onVoicePress}
+              onPress={handleMicPress}
             >
               <Ionicons
-                name={isListening ? "mic" : "mic-outline"}
+                name={isListening ? "stop" : "mic-outline"}
                 size={20}
-                color={isListening ? "#ef4444" : primaryColor}
+                color={isListening ? RECORDING_RED : primaryColor}
               />
             </TouchableOpacity>
 
