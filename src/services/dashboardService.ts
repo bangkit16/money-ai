@@ -1,4 +1,3 @@
-import { QueryKeys } from "@/lib/query-keys";
 import { supabase } from "@/lib/supabase";
 import type { TransactionType } from "@/services/addTransactionService";
 
@@ -21,11 +20,6 @@ export type RecentTxRow = {
 };
 
 export class DashboardService {
-  static readonly keys = {
-    transactions: QueryKeys.dashboardTransactions,
-    recentTransactions: QueryKeys.dashboardRecentTransactions,
-  };
-
   static async GetTransactions() {
     const { data, error } = await supabase
       .from("transaction")

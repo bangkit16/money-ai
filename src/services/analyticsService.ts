@@ -1,4 +1,3 @@
-import { QueryKeys } from "@/lib/query-keys";
 import { supabase } from "@/lib/supabase";
 import type { LanguageCode } from "@/providers/settings-provider";
 import { tFor } from "@/i18n";
@@ -55,10 +54,6 @@ function startEndOfMonth(d: Date) {
 }
 
 export class AnalyticsService {
-  static readonly keys = {
-    current: QueryKeys.analyticsCurrentMonth,
-  };
-
   /**
    * Ambil agregat spending untuk bulan berjalan, dikelompok per kategori.
    * Hanya transaksi EXPENSE (exclude TRANSFER & INCOME).

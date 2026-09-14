@@ -7,7 +7,6 @@ import {
   type TransactionType,
 } from "@/services/addTransactionService";
 import { invalidateAfterDelete, invalidateTransactionCaches } from "@/lib/query-invalidation";
-import { QueryKeys } from "@/lib/query-keys";
 import type { TransactionTypeKey } from "@/components/features/transaction/type-toggle";
 import { useT } from "@/i18n";
 import { useToast } from "@/components/ui/toast";
@@ -50,7 +49,7 @@ export function useTransactionForm(
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [fromAccountId, setFromAccountId] = useState<number | null>(() => {
     if (isEdit) return null;
-    const cached = queryClient.getQueryData<{ id: number; is_primary?: boolean }[]>(QueryKeys.accounts);
+    const cached = queryClient.getQueryData<{ id: number; is_primary?: boolean }[]>(["account"]);
     const primary = cached?.find((a) => a.is_primary === true);
     return primary?.id ?? null;
   });
@@ -64,7 +63,7 @@ export function useTransactionForm(
 
   // --- Load existing transaction for edit ---
   const { data: existing, isLoading: isLoadingTx, error: txError } = useQuery({
-    queryKey: QueryKeys.transaction(editId!),
+    queryKey: ["transaction", String(editId!)],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("transaction")
@@ -108,13 +107,13 @@ export function useTransactionForm(
   // --- Categories ---
   const categoryKey: TransactionType = transactionType;
   const { data: categories, isLoading: isLoadingCategory } = useQuery({
-    queryKey: QueryKeys.categories(categoryKey),
+    queryKey: ["category_transaction", categoryKey],
     queryFn: () => AddTransactionService.GetCategories(categoryKey),
   });
 
   // --- Accounts ---
   const { data: accounts, isLoading: isLoadingAccounts } = useQuery({
-    queryKey: QueryKeys.accounts,
+    queryKey: ["account"],
     queryFn: AddTransactionService.GetAccountOptions,
   });
 
@@ -176,7 +175,7 @@ export function useTransactionForm(
     },
     onSuccess: () => {
       invalidateTransactionCaches(queryClient);
-      if (editId) queryClient.invalidateQueries({ queryKey: QueryKeys.transaction(editId) });
+      if (editId) queryClient.invalidateQueries({ queryKey: ["transaction", String(editId)] });
       toast.success(
         t("add.saved"),
         isTransfer ? t("add.transferSaved") : t("add.transactionSaved"),

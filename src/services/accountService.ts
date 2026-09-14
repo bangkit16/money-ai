@@ -13,12 +13,6 @@ export type AccountRow = {
 type TxAmount = { transaction_type: string; amount: number };
 
 export class AccountService {
-  static readonly keys = {
-    all: ["account"] as const,
-  };
-
-  // TODO: migrate to QueryKeys.accounts when ready (breaking change for external consumers)
-
   static async GetAccountsWithTotals() {
     const { data, error } = await supabase
       .from("account")

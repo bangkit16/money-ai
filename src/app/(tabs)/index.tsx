@@ -32,7 +32,7 @@ export default function DashboardScreen() {
     isLoading: isLoadingAll,
     error: errorAll,
   } = useQuery({
-    queryKey: DashboardService.keys.transactions,
+    queryKey: ["dashboard-transactions"],
     queryFn: DashboardService.GetTransactions,
   });
 
@@ -41,7 +41,7 @@ export default function DashboardScreen() {
     isLoading: isLoadingRecent,
     error: errorRecent,
   } = useQuery({
-    queryKey: DashboardService.keys.recentTransactions,
+    queryKey: ["dashboard-recent-transactions"],
     queryFn: DashboardService.GetRecentTransactions,
   });
 

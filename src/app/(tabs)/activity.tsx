@@ -39,7 +39,7 @@ export default function ActivityScreen() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ActivityService.keys.transactions,
+    queryKey: ["transactions"],
     queryFn: ActivityService.GetTransactions,
   });
 

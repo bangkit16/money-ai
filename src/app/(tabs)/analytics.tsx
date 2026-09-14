@@ -21,7 +21,7 @@ export default function AnalyticsScreen() {
   const { language } = useSettings();
 
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: AnalyticsService.keys.current,
+    queryKey: ["analytics-current-month"],
     queryFn: () => AnalyticsService.GetCurrentMonth(language),
   });
 

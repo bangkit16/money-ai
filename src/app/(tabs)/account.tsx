@@ -39,14 +39,14 @@ export default function AccountScreen() {
     isLoading,
     error,
   } = useQuery<AccountRow[]>({
-    queryKey: ["accounts"],
+    queryKey: ["account"],
     queryFn: AccountService.GetAccountsWithTotals,
   });
 
   const { mutate: createAccount, isPending: isCreating } = useMutation({
     mutationFn: AccountService.CreateAccount,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: AccountService.keys.all });
+      queryClient.invalidateQueries({ queryKey: ["account"] });
       closeForm();
     },
     onError: (err: Error) =>
@@ -57,7 +57,7 @@ export default function AccountScreen() {
     mutationFn: ({ id, accountName }: { id: number; accountName: string }) =>
       AccountService.UpdateAccount(id, accountName),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: AccountService.keys.all });
+      queryClient.invalidateQueries({ queryKey: ["account"] });
       closeForm();
     },
     onError: (err: Error) =>
@@ -67,7 +67,7 @@ export default function AccountScreen() {
   const { mutate: deleteAccount } = useMutation({
     mutationFn: AccountService.DeleteAccount,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: AccountService.keys.all });
+      queryClient.invalidateQueries({ queryKey: ["account"] });
       setDeleteConfirmAccount(null);
     },
     onError: (err: Error) => {
@@ -80,7 +80,7 @@ export default function AccountScreen() {
     mutationFn: ({ id, isPrimary }: { id: number; isPrimary: boolean }) =>
       AccountService.SetPrimaryAccount(id, isPrimary),
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["accounts"] });
+      queryClient.invalidateQueries({ queryKey: ["account"] });
       toast.success(variables.isPrimary ? t("account.primarySet") : t("account.primaryUnset"));
     },
   });

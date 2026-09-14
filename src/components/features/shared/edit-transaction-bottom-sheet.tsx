@@ -19,7 +19,6 @@ import {
   invalidateAfterDelete,
   invalidateTransactionCaches,
 } from "@/lib/query-invalidation";
-import { QueryKeys } from "@/lib/query-keys";
 import {
   AddTransactionService,
   type TransactionType,
@@ -95,13 +94,13 @@ export function EditTransactionBottomSheet({
 
   // --- Categories ---
   const { data: categories, isLoading: isLoadingCategory } = useQuery({
-    queryKey: QueryKeys.categories(transactionType),
+    queryKey: ["category_transaction", transactionType],
     queryFn: () => AddTransactionService.GetCategories(transactionType),
   });
 
   // --- Accounts ---
   const { data: accounts, isLoading: isLoadingAccounts } = useQuery({
-    queryKey: QueryKeys.accounts,
+    queryKey: ["account"],
     queryFn: AddTransactionService.GetAccountOptions,
   });
 
@@ -125,7 +124,7 @@ export function EditTransactionBottomSheet({
     onSuccess: () => {
       invalidateTransactionCaches(queryClient);
       queryClient.invalidateQueries({
-        queryKey: QueryKeys.transaction(transaction.id),
+        queryKey: ["transaction", String(transaction.id)],
       });
       bottomSheet.close();
       onClose();
