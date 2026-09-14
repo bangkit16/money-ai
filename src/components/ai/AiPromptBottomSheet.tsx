@@ -50,7 +50,15 @@ export default function AiPromptBottomSheet({
     isListening,
     start: startListening,
     stop: stopListening,
-  } = useSpeechRecognition({ onTranscript: setPrompt });
+  } = useSpeechRecognition({
+    onTranscript: setPrompt,
+    onNaturalEnd: (text) => {
+      if (text.trim()) {
+        onSend(text.trim());
+        setPrompt("");
+      }
+    },
+  });
 
   if (visible !== prevVisible) {
     setPrevVisible(visible);

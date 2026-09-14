@@ -20,17 +20,29 @@ type SpeechRecognitionHook = {
   supported: boolean;
 };
 
+/** Debounce: after this much silence following speech, recognition auto-stops
+ *  and `onNaturalEnd` fires with the accumulated text. */
+const AUTO_SEND_DELAY_MS = 1200;
+
 type UseSpeechRecognitionOptions = {
   /** Called with each (interim or final) transcript as it arrives. */
   onTranscript?: (text: string) => void;
+  /** Debounced: fired when recognition ends by itself (silence detected after
+   *  speech) with the final text. Not fired on a manual stop(). */
+  onNaturalEnd?: (text: string) => void;
 };
 
 // ── Web ──────────────────────────────────────────────────────────────────────
-function useWebSpeech({ onTranscript }: UseSpeechRecognitionOptions): SpeechRecognitionHook {
+function useWebSpeech({
+  onTranscript,
+  onNaturalEnd,
+}: UseSpeechRecognitionOptions): SpeechRecognitionHook {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const manualStopRef = useRef(false);
+  const transcriptRef = useRef("");
 
   const supported =
     typeof window !== "undefined" &&
@@ -54,22 +66,29 @@ function useWebSpeech({ onTranscript }: UseSpeechRecognitionOptions): SpeechReco
         if (r.isFinal) finalT += r[0].transcript;
         else interimT += r[0].transcript;
       }
+      let next: string;
       if (finalT) {
-        setTranscript((p) => {
-          const next = p ? p + " " + finalT : finalT;
-          onTranscript?.(next);
-          return next;
-        });
+        next = transcriptRef.current
+          ? transcriptRef.current + " " + finalT
+          : finalT;
       } else if (interimT) {
-        setTranscript((p) => {
-          const base = p.includes("…") ? p.split("…")[0] : p;
-          const next = base ? base + " " + interimT + "…" : interimT + "…";
-          onTranscript?.(next);
-          return next;
-        });
+        const base = transcriptRef.current.includes("…")
+          ? transcriptRef.current.split("…")[0]
+          : transcriptRef.current;
+        next = base ? base + " " + interimT + "…" : interimT + "…";
+      } else {
+        return;
       }
+      transcriptRef.current = next;
+      setTranscript(next);
+      onTranscript?.(next);
+
+      // Debounce: reset silence timer on every result; stop after silence.
       if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-      silenceTimerRef.current = setTimeout(() => recognition.stop(), 1000);
+      silenceTimerRef.current = setTimeout(() => {
+        manualStopRef.current = false; // ended by silence → natural end
+        recognition.stop();
+      }, AUTO_SEND_DELAY_MS);
     };
 
     recognition.onerror = () => setIsListening(false);
@@ -79,6 +98,9 @@ function useWebSpeech({ onTranscript }: UseSpeechRecognitionOptions): SpeechReco
         clearTimeout(silenceTimerRef.current);
         silenceTimerRef.current = null;
       }
+      if (!manualStopRef.current && transcriptRef.current.trim()) {
+        onNaturalEnd?.(transcriptRef.current.trim());
+      }
     };
 
     recognitionRef.current = recognition;
@@ -86,11 +108,13 @@ function useWebSpeech({ onTranscript }: UseSpeechRecognitionOptions): SpeechReco
       recognition.abort();
       if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
     };
-  }, [supported, onTranscript]);
+  }, [supported, onTranscript, onNaturalEnd]);
 
   const start = useCallback(() => {
     if (!recognitionRef.current) return;
     setTranscript("");
+    transcriptRef.current = "";
+    manualStopRef.current = false;
     setIsListening(true);
     try {
       recognitionRef.current.start();
@@ -101,6 +125,7 @@ function useWebSpeech({ onTranscript }: UseSpeechRecognitionOptions): SpeechReco
 
   const stop = useCallback(() => {
     if (!recognitionRef.current) return;
+    manualStopRef.current = true;
     recognitionRef.current.stop();
     setIsListening(false);
   }, []);
@@ -109,10 +134,15 @@ function useWebSpeech({ onTranscript }: UseSpeechRecognitionOptions): SpeechReco
 }
 
 // ── Native (Android / iOS) via expo-speech-recognition ───────────────────────
-function useNativeSpeech({ onTranscript }: UseSpeechRecognitionOptions): SpeechRecognitionHook {
+function useNativeSpeech({
+  onTranscript,
+  onNaturalEnd,
+}: UseSpeechRecognitionOptions): SpeechRecognitionHook {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const manualStopRef = useRef(false);
+  const transcriptRef = useRef("");
 
   const supported =
     (Platform.OS === "android" || Platform.OS === "ios") &&
@@ -127,8 +157,20 @@ function useNativeSpeech({ onTranscript }: UseSpeechRecognitionOptions): SpeechR
       (event: any) => {
         const text = event.results[0]?.transcript ?? "";
         if (text) {
+          transcriptRef.current = text;
           setTranscript(text);
           onTranscript?.(text);
+
+          // Debounce: reset silence timer on every result; stop after silence.
+          if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+          silenceTimerRef.current = setTimeout(() => {
+            manualStopRef.current = false; // ended by silence → natural end
+            try {
+              ExpoSpeechRecognitionModule?.stop();
+            } catch {
+              /* noop */
+            }
+          }, AUTO_SEND_DELAY_MS);
         }
       },
     );
@@ -140,6 +182,9 @@ function useNativeSpeech({ onTranscript }: UseSpeechRecognitionOptions): SpeechR
       if (silenceTimerRef.current) {
         clearTimeout(silenceTimerRef.current);
         silenceTimerRef.current = null;
+      }
+      if (!manualStopRef.current && transcriptRef.current.trim()) {
+        onNaturalEnd?.(transcriptRef.current.trim());
       }
     });
     const removeError = ExpoSpeechRecognitionModule.addListener("error", () => {
@@ -156,7 +201,7 @@ function useNativeSpeech({ onTranscript }: UseSpeechRecognitionOptions): SpeechR
       removeEnd.remove();
       removeError.remove();
     };
-  }, [supported, onTranscript]);
+  }, [supported, onTranscript, onNaturalEnd]);
 
   const start = useCallback(async () => {
     if (!ExpoSpeechRecognitionModule) return;
@@ -164,6 +209,8 @@ function useNativeSpeech({ onTranscript }: UseSpeechRecognitionOptions): SpeechR
       await ExpoSpeechRecognitionModule.requestPermissionsAsync();
     if (!permission.granted) return;
     setTranscript("");
+    transcriptRef.current = "";
+    manualStopRef.current = false;
     setIsListening(true);
     ExpoSpeechRecognitionModule.start({
       lang: "id-ID",
@@ -173,6 +220,7 @@ function useNativeSpeech({ onTranscript }: UseSpeechRecognitionOptions): SpeechR
   }, []);
 
   const stop = useCallback(() => {
+    manualStopRef.current = true;
     if (silenceTimerRef.current) {
       clearTimeout(silenceTimerRef.current);
       silenceTimerRef.current = null;
