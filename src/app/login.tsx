@@ -21,11 +21,9 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { useToast } from "@/components/ui/toast";
+import { createSessionFromUrl } from "@/lib/auth";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
-
-GoogleSignin.configure({
-  webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID!,
-});
 
 // Wajib dipanggil di level module supaya WebBrowser tahu kapan harus
 // menutup sesi auth-nya sendiri saat browser di-redirect balik ke app.
@@ -45,6 +43,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [emailLoading, setEmailLoading] = useState(false);
   const [error, setError] = useState("");
+  const toast = useToast();
   const t = useT();
 
   const bgColor = useColor("background");
@@ -52,6 +51,11 @@ export default function LoginScreen() {
   const textColor = useColor("text");
   const textMutedColor = useColor("textMuted");
   const primaryColor = useColor("primary");
+
+  // console.log(process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID!);
+  GoogleSignin.configure({
+    webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID!,
+  });
 
   const handleEmailLogin = async () => {
     if (!email || !password) {
@@ -80,14 +84,36 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       if (Platform.OS === "web") {
-        // Web: redirect penuh, Supabase ambil session otomatis lewat
-        // detectSessionInUrl pas halaman balik dari Google.
-        const { error } = await supabase.auth.signInWithOAuth({
+        const { data, error } = await supabase.auth.signInWithOAuth({
           provider: "google",
-          options: { redirectTo: window.location.origin },
+          options: {
+            redirectTo,
+            skipBrowserRedirect: true, // kita yang buka browser-nya manual di bawah
+          },
         });
         if (error) throw error;
-        return; // browser sudah navigate keluar, baris di bawah tidak akan jalan
+        console.log("Generated Redirect URL:", redirectTo);
+        console.log("Supabase OAuth Data:", data);
+
+        const authUrl = data?.url;
+        console.log("[google-sign-in] authUrl:", authUrl);
+        if (!authUrl) throw new Error("Supabase tidak mengembalikan auth URL");
+
+        // Buka halaman login Google di browser bawaan (in-app), tunggu sampai
+        // ke-redirect balik ke `redirectTo` (deep link app kita).
+        const result = await WebBrowser.openAuthSessionAsync(
+          authUrl,
+          redirectTo,
+        );
+        console.log("[google-sign-in] result:", result);
+
+        if (result.type === "success" && result.url) {
+          const session = await createSessionFromUrl(result.url);
+          if (session) {
+            router.replace("/(tabs)");
+          }
+        }
+        return;
       }
 
       // Native (Android/iOS): account picker native, tanpa browser/deep link.
@@ -96,13 +122,21 @@ export default function LoginScreen() {
       const idToken = response.data?.idToken;
       if (!idToken) throw new Error("Tidak ada idToken dari Google");
 
-      const { error } = await supabase.auth.signInWithIdToken({
+      const { data, error } = await supabase.auth.signInWithIdToken({
         provider: "google",
         token: idToken,
       });
-      if (error) throw error;
+      if (error) {
+        toast.error("Gagal masuk dengan Google: " + error.message);
+        throw error;
+      }
 
-      router.replace("/(tabs)");
+      toast.success("Berhasil masuk dengan Google");
+      if (data?.session) {
+        toast.success("Berhasil Session dibuat");
+        // await supabase.auth.setSession(data.session);
+        router.replace("/(tabs)");
+      }
     } catch (error) {
       console.error("Google sign-in error:", error);
     } finally {
