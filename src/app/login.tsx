@@ -5,10 +5,11 @@ import { Text } from "@/components/ui/text";
 import { shadow, spacing, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
 import { useT } from "@/i18n";
-import * as WebBrowser from "expo-web-browser";
+import { supabase } from "@/lib/supabase";
 import { makeRedirectUri } from "expo-auth-session";
-import { StatusBar } from "expo-status-bar";
 import { router } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import * as WebBrowser from "expo-web-browser";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -19,8 +20,12 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { supabase } from "@/lib/supabase";
-import { createSessionFromUrl } from "@/lib/auth";
+
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
+
+GoogleSignin.configure({
+  webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID!,
+});
 
 // Wajib dipanggil di level module supaya WebBrowser tahu kapan harus
 // menutup sesi auth-nya sendiri saat browser di-redirect balik ke app.
@@ -74,33 +79,30 @@ export default function LoginScreen() {
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      if (Platform.OS === "web") {
+        // Web: redirect penuh, Supabase ambil session otomatis lewat
+        // detectSessionInUrl pas halaman balik dari Google.
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: { redirectTo: window.location.origin },
+        });
+        if (error) throw error;
+        return; // browser sudah navigate keluar, baris di bawah tidak akan jalan
+      }
+
+      // Native (Android/iOS): account picker native, tanpa browser/deep link.
+      await GoogleSignin.hasPlayServices();
+      const response = await GoogleSignin.signIn();
+      const idToken = response.data?.idToken;
+      if (!idToken) throw new Error("Tidak ada idToken dari Google");
+
+      const { error } = await supabase.auth.signInWithIdToken({
         provider: "google",
-        options: {
-          redirectTo,
-          skipBrowserRedirect: true, // kita yang buka browser-nya manual di bawah
-        },
+        token: idToken,
       });
       if (error) throw error;
-      console.log("Generated Redirect URL:", redirectTo);
 
-
-      const authUrl = data?.url;
-      console.log("[google-sign-in] authUrl:", authUrl);
-      if (!authUrl) throw new Error("Supabase tidak mengembalikan auth URL");
-
-      // Buka halaman login Google di browser bawaan (in-app), tunggu sampai
-      // ke-redirect balik ke `redirectTo` (deep link app kita).
-      const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectTo);
-      console.log("[google-sign-in] result:", result);
-
-      if (result.type === "success" && result.url) {
-        const session = await createSessionFromUrl(result.url);
-        if (session) {
-          router.replace("/(tabs)");
-        }
-      }
-      // result.type === 'cancel' / 'dismiss' -> user membatalkan, tidak perlu apa-apa
+      router.replace("/(tabs)");
     } catch (error) {
       console.error("Google sign-in error:", error);
     } finally {
@@ -109,16 +111,23 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.screen, { backgroundColor: bgColor }]} edges={["top"]}>
+    <SafeAreaView
+      style={[styles.screen, { backgroundColor: bgColor }]}
+      edges={["top"]}
+    >
       <StatusBar style="light" />
 
       {/* Bagian atas: brand hero */}
       <LoginHero />
 
       {/* Bagian bawah: card sign-in (overlap ke hero) */}
-      <View style={[styles.sheet, shadow.heroCard, { backgroundColor: sheetColor }]}>
+      <View
+        style={[styles.sheet, shadow.heroCard, { backgroundColor: sheetColor }]}
+      >
         <View style={styles.sheetHeader}>
-          <Text style={[styles.title, { color: textColor }]}>{t("login.welcome")}</Text>
+          <Text style={[styles.title, { color: textColor }]}>
+            {t("login.welcome")}
+          </Text>
           <Text style={[styles.subtitle, { color: textMutedColor }]}>
             {t("login.subtitle")}
           </Text>
@@ -131,7 +140,10 @@ export default function LoginScreen() {
         ) : null}
 
         <TextInput
-          style={[styles.input, { color: textColor, borderColor: textMutedColor + "40" }]}
+          style={[
+            styles.input,
+            { color: textColor, borderColor: textMutedColor + "40" },
+          ]}
           placeholder="Email"
           placeholderTextColor={textMutedColor}
           value={email}
@@ -142,7 +154,10 @@ export default function LoginScreen() {
         />
 
         <TextInput
-          style={[styles.input, { color: textColor, borderColor: textMutedColor + "40" }]}
+          style={[
+            styles.input,
+            { color: textColor, borderColor: textMutedColor + "40" },
+          ]}
           placeholder="Password"
           placeholderTextColor={textMutedColor}
           value={password}
@@ -165,17 +180,34 @@ export default function LoginScreen() {
         </TouchableOpacity>
 
         <View style={styles.divider}>
-          <View style={[styles.dividerLine, { backgroundColor: textMutedColor + "30" }]} />
-          <Text style={[styles.dividerText, { color: textMutedColor }]}>atau</Text>
-          <View style={[styles.dividerLine, { backgroundColor: textMutedColor + "30" }]} />
+          <View
+            style={[
+              styles.dividerLine,
+              { backgroundColor: textMutedColor + "30" },
+            ]}
+          />
+          <Text style={[styles.dividerText, { color: textMutedColor }]}>
+            atau
+          </Text>
+          <View
+            style={[
+              styles.dividerLine,
+              { backgroundColor: textMutedColor + "30" },
+            ]}
+          />
         </View>
 
         <GoogleSignInButton loading={loading} onPress={handleGoogleSignIn} />
 
-        <TouchableOpacity onPress={() => router.replace("/register")} style={styles.linkBtn}>
+        <TouchableOpacity
+          onPress={() => router.replace("/register")}
+          style={styles.linkBtn}
+        >
           <Text style={[styles.linkText, { color: textMutedColor }]}>
             Belum punya akun?{" "}
-            <Text style={{ color: primaryColor, fontFamily: "Poppins-Bold" }}>Daftar</Text>
+            <Text style={{ color: primaryColor, fontFamily: "Poppins-Bold" }}>
+              Daftar
+            </Text>
           </Text>
         </TouchableOpacity>
 

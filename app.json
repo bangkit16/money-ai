@@ -18,7 +18,7 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.moneyai"
+      "package": "com.bangkit16s.dompety"
     },
     "web": {
       "output": "static",
@@ -44,7 +44,8 @@
           "speechRecognitionPermission": "Izinkan Dompety menggunakan pengenalan suara."
         }
       ],
-      "expo-image"
+      "expo-image",
+      "@react-native-google-signin/google-signin"
     ],
     "experiments": {
       "typedRoutes": true,
