@@ -80,6 +80,8 @@ export default function LoginScreen() {
     setEmailLoading(false);
   };
 
+  const [consoleLog, setConsoleLog] = useState<string>("");
+
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
@@ -119,8 +121,10 @@ export default function LoginScreen() {
       // Native (Android/iOS): account picker native, tanpa browser/deep link.
       await GoogleSignin.hasPlayServices();
       const response = await GoogleSignin.signIn();
+      setConsoleLog(" Google sign-in response: " + JSON.stringify(response));
       const idToken = response.data?.idToken;
       if (!idToken) throw new Error("Tidak ada idToken dari Google");
+      setConsoleLog(" Google sign-in idToken: " + idToken);
 
       const { data, error } = await supabase.auth.signInWithIdToken({
         provider: "google",
@@ -128,8 +132,12 @@ export default function LoginScreen() {
       });
       if (error) {
         toast.error("Gagal masuk dengan Google: " + error.message);
+        setConsoleLog(" Google sign-in error: " + error.message);
         throw error;
       }
+
+      setConsoleLog(" Google sign-in data: " + JSON.stringify(data));
+      
 
       toast.success("Berhasil masuk dengan Google");
       if (data?.session) {
@@ -242,6 +250,9 @@ export default function LoginScreen() {
             <Text style={{ color: primaryColor, fontFamily: "Poppins-Bold" }}>
               Daftar
             </Text>
+          </Text>
+          <Text style={[styles.linkText, { color: textMutedColor }]}>
+            {consoleLog}
           </Text>
         </TouchableOpacity>
 
