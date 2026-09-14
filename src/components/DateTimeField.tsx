@@ -14,7 +14,7 @@ export default function DateTimeField({ value, onChange }: Props) {
       mode="datetime"
       value={value}
       onChange={(v) => v && onChange(v)}
-      style={{ color: textColor }}
+      // style={{ color: textColor }}
     />
   );
 }
