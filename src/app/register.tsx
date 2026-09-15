@@ -8,6 +8,7 @@ import { router } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
+  KeyboardAvoidingView,
   Platform,
   StyleSheet,
   TextInput,
@@ -61,11 +62,15 @@ export default function RegisterScreen() {
       style={[styles.screen, { backgroundColor: bgColor }]}
       edges={["top"]}
     >
-      <StatusBar style="light" />
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+        <StatusBar style="light" />
 
-      <LoginHero />
+        <LoginHero />
 
-      <View style={[styles.sheet, shadow.heroCard, { backgroundColor: sheetColor }]}>
+        <View style={[styles.sheet, shadow.heroCard, { backgroundColor: sheetColor }]}>
         <View style={styles.sheetHeader}>
           <Text style={[styles.title, { color: textColor }]}>Buat Akun</Text>
           <Text style={[styles.subtitle, { color: textMutedColor }]}>
@@ -120,6 +125,7 @@ export default function RegisterScreen() {
           </Text>
         </TouchableOpacity>
       </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

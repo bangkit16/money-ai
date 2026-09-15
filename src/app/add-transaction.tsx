@@ -172,13 +172,13 @@ export default function TransactionScreen() {
         </View>
 
         <View style={styles.body}>
+          <AmountDisplay amount={amount} />
           <ScrollView
             style={styles.topScroll}
             contentContainerStyle={styles.topScrollContent}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
-            <AmountDisplay amount={amount} />
 
             <View style={styles.fieldBlock}>
               <Text style={[styles.label, { color: textMutedColor }]}>{t("add.type")}</Text>
@@ -253,6 +253,7 @@ export default function TransactionScreen() {
             </View>
           </ScrollView>
 
+        </View>
           <TransactionDateFields
             transaction={transactionName}
             onChangeTransaction={setTransactionName}
@@ -263,7 +264,6 @@ export default function TransactionScreen() {
           <View style={styles.keypadWrap}>
             <Keypad onKeyPress={handleKeyPress} />
           </View>
-        </View>
 
         <View style={[styles.footer, { backgroundColor: bgColor }]}>
           <SaveButton

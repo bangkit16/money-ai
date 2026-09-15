@@ -3,7 +3,6 @@ import { Text } from "@/components/ui/text";
 import { radius, shadow, typography } from "@/constants/theme";
 import { useAuth } from "@/hooks/useAuth";
 import { useColor } from "@/hooks/useColor";
-import type { ImageSource } from "expo-image";
 import { StyleSheet, View } from "react-native";
 
 // Kartu profil user yang sedang login (dari Supabase session).
@@ -32,7 +31,7 @@ export function ProfileCard() {
     <View style={[styles.card, { backgroundColor: cardBg, borderColor: border }, shadow.card]}>
       {/* <Avatar size={48}>
         {avatarUrl ? (
-          <AvatarImage source={{ uri: avatarUrl } as ImageSource} style={styles.avatar} />
+          <AvatarImage source={{ uri: avatarUrl }} style={styles.avatar} />
         ) : null}
         <AvatarFallback>{initials}</AvatarFallback>
       </Avatar> */}
