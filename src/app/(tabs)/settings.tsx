@@ -1,4 +1,5 @@
 import { LogoutButton } from "@/components/features/settings/logout-button";
+import { ProfileCard } from "@/components/features/settings/profile-card";
 import { CurrencyPickerSheet } from "@/components/features/settings/currency-picker-sheet";
 import { LanguagePickerSheet } from "@/components/features/settings/language-picker-sheet";
 import { SettingRow } from "@/components/features/settings/setting-row";
@@ -34,7 +35,6 @@ export default function SettingsScreen() {
   const t = useT();
   const bg = useColor("background");
   const primary = useColor("primary");
-  const errorColor = useColor("error");
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -61,6 +61,7 @@ export default function SettingsScreen() {
         contentContainerStyle={styles.body}
         showsVerticalScrollIndicator={false}
       >
+        <ProfileCard />
         <Section title={t("settings.preferences")}>
           <SettingRow
             icon="dark-mode"
