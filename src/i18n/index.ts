@@ -148,6 +148,8 @@ export const translations: Record<LanguageCode, Dict> = {
     "add.amount": "Jumlah",
     "add.transactionLabel": "Transaksi",
     "add.dateTimeLabel": "Tanggal & Waktu",
+    "add.dateLabel": "Tanggal",
+    "add.timeLabel": "Waktu",
     "add.transactionPlaceholder": "Untuk apa transaksi ini?",
     "add.saveButton": "Simpan Transaksi",
     // analytics — categories section
@@ -307,6 +309,8 @@ export const translations: Record<LanguageCode, Dict> = {
     "add.amount": "Amount",
     "add.transactionLabel": "Transaction",
     "add.dateTimeLabel": "Date & Time",
+    "add.dateLabel": "Date",
+    "add.timeLabel": "Time",
     "add.transactionPlaceholder": "What was this for?",
     "add.saveButton": "Save Transaction",
     "analytics.loadingInsights": "Loading insights...",

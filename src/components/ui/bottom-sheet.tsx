@@ -126,6 +126,7 @@ type BottomSheetProps = {
   title?: string;
   style?: ViewStyle;
   disablePanGesture?: boolean;
+  disableHandleTap?: boolean;
 };
 
 export function BottomSheet({
@@ -137,6 +138,7 @@ export function BottomSheet({
   title,
   style,
   disablePanGesture = false,
+  disableHandleTap = false,
 }: BottomSheetProps) {
   const cardColor = useColor('card');
   const mutedColor = useColor('muted');
@@ -227,6 +229,7 @@ export function BottomSheet({
   };
 
   const handlePress = () => {
+    if (disableHandleTap) return;
     const nextIndex = (currentSnapIndex.value + 1) % snapPointsHeights.length;
     currentSnapIndex.value = nextIndex;
     const destination = snapPointsHeights[nextIndex] - keyboardHeightSV.value;

@@ -1,5 +1,5 @@
 // migrated to useColor
-import DateTimeField from "@/components/DateTimeField";
+import { DateField, TimeField } from "@/components/DateTimeField";
 import { Text } from "@/components/ui/text";
 import { spacing, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
@@ -13,7 +13,8 @@ type TransactionDateFieldsProps = {
   onChangeDateTime: (date: Date) => void;
 };
 
-// Transaction & Date/Time — fixed satu baris, selalu terlihat di atas numpad
+// Transaction + Tanggal/Waktu — fixed satu baris, selalu terlihat di atas numpad.
+// Tanggal & waktu dipisah agar pemilihan jam eksplisit, bukan tersembunyi di alur "Next".
 export function TransactionDateFields({
   transaction,
   onChangeTransaction,
@@ -25,6 +26,24 @@ export function TransactionDateFields({
   const cardColor = useColor("card");
   const textColor = useColor("text");
   const t = useT();
+
+  const toDateOnly = (date: Date) =>
+    new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+  const setTimePart = (date: Date) => {
+    // Gabungkan bagian jam dari picker waktu dengan tanggal yang sudah dipilih
+    const combined = new Date(toDateOnly(dateTime));
+    combined.setHours(date.getHours(), date.getMinutes(), 0, 0);
+    onChangeDateTime(combined);
+  };
+
+  const setDatePart = (date: Date) => {
+    // Pertahankan jam yang sudah dipilih saat mengganti tanggal
+    const combined = new Date(toDateOnly(date));
+    combined.setHours(dateTime.getHours(), dateTime.getMinutes(), 0, 0);
+    onChangeDateTime(combined);
+  };
+
   return (
     <View style={styles.block}>
       <View style={styles.row}>
@@ -45,9 +64,15 @@ export function TransactionDateFields({
         </View>
         <View style={[styles.fieldBlock, { flex: 2 }]}>
           <Text style={[styles.label, { color: textMutedColor }]}>
-            {t("add.dateTimeLabel")}
+            {t("add.dateLabel")}
           </Text>
-          <DateTimeField value={dateTime} onChange={onChangeDateTime} />
+          <DateField value={dateTime} onChange={setDatePart} />
+        </View>
+        <View style={[styles.fieldBlock, { flex: 2 }]}>
+          <Text style={[styles.label, { color: textMutedColor }]}>
+            {t("add.timeLabel")}
+          </Text>
+          <TimeField value={dateTime} onChange={setTimePart} />
         </View>
       </View>
     </View>

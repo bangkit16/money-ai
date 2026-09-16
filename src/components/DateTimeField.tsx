@@ -1,20 +1,15 @@
-// migrated to useColor
+// Field tanggal & waktu terpisah agar pemilihan jam eksplisit (bukan tersembunyi di alur "Next").
 import { DatePicker } from "@/components/ui/date-picker";
-import { useColor } from "@/hooks/useColor";
 
 type Props = {
   value: Date;
   onChange: (date: Date) => void;
 };
 
-export default function DateTimeField({ value, onChange }: Props) {
-  const textColor = useColor("text");
-  return (
-    <DatePicker
-      mode="datetime"
-      value={value}
-      onChange={(v) => v && onChange(v)}
-      // style={{ color: textColor }}
-    />
-  );
+export function DateField({ value, onChange }: Props) {
+  return <DatePicker mode="datetime" value={value} onChange={(v) => v && onChange(v)} />;
+}
+
+export function TimeField({ value, onChange }: Props) {
+  return <DatePicker mode="time" value={value} onChange={(v) => v && onChange(v)} />;
 }

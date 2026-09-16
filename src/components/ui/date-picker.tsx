@@ -25,7 +25,6 @@ export interface DateRange {
   endDate: Date | null;
 }
 
-// Conditional typing based on mode
 interface BaseDatePickerProps {
   label?: string;
   error?: string;
@@ -56,89 +55,49 @@ interface DatePickerPropsDate extends BaseDatePickerProps {
 export type DatePickerProps = DatePickerPropsRange | DatePickerPropsDate;
 
 const MONTHS = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-// Generate year range (current year ± 50 years)
 const currentYear = new Date().getFullYear();
 const YEARS = Array.from({ length: 101 }, (_, i) => currentYear - 50 + i);
 
-// Type guard to check if value is DateRange
-const isDateRange = (
-  value: Date | DateRange | undefined
-): value is DateRange => {
-  return (
-    value !== undefined &&
-    typeof value === 'object' &&
-    value !== null &&
-    'startDate' in value &&
-    'endDate' in value
-  );
+const isDateRange = (value: Date | DateRange | undefined): value is DateRange => {
+  return value !== undefined && typeof value === 'object' && value !== null && 'startDate' in value && 'endDate' in value;
 };
 
 export function DatePicker(props: DatePickerProps) {
   const {
-    label,
-    error,
-    placeholder = 'Select date',
-    disabled = false,
-    style,
-    minimumDate,
-    maximumDate,
-    timeFormat = '24',
-    variant = 'filled',
-    labelStyle,
-    errorStyle,
-    haptic = true,
+    label, error, placeholder = 'Select date', disabled = false, style,
+    minimumDate, maximumDate, timeFormat = '24', variant = 'filled',
+    labelStyle, errorStyle, haptic = true,
   } = props;
 
   const mode = props.mode || 'date';
   const value = props.value;
   const onChange = props.onChange;
-
   const feedback = useHaptics(haptic);
-
   const { isVisible, open, close } = useBottomSheet();
 
-  // Get the current date for navigation, prioritizing single date or range start date
   const getCurrentDate = useCallback(() => {
     if (mode === 'range') {
-      const rangeValue = isDateRange(value)
-        ? value
-        : { startDate: null, endDate: null };
+      const rangeValue = isDateRange(value) ? value : { startDate: null, endDate: null };
       return rangeValue.startDate || new Date();
     }
     return (value as Date) || new Date();
   }, [value, mode]);
 
   const [currentDate, setCurrentDate] = useState(() => getCurrentDate());
-  const [viewMode, setViewMode] = useState<'date' | 'time' | 'month' | 'year'>(
-    'date'
-  );
+  const [viewMode, setViewMode] = useState<'date' | 'time' | 'month' | 'year'>('date');
   const [showMonthPicker, setShowMonthPicker] = useState(false);
   const [showYearPicker, setShowYearPicker] = useState(false);
 
-  // Range selection state for temporary storage during selection
   const [tempRange, setTempRange] = useState<DateRange>(() =>
-    mode === 'range' && isDateRange(value)
-      ? value
-      : { startDate: null, endDate: null }
+    mode === 'range' && isDateRange(value) ? value : { startDate: null, endDate: null }
   );
 
-  // Theme colors
   const cardColor = useColor('card');
   const borderColor = useColor('border');
   const primaryColor = useColor('primary');
@@ -151,229 +110,90 @@ export function DatePicker(props: DatePickerProps) {
 
   const formatDisplayValue = useCallback(() => {
     if (mode === 'range') {
-      const rangeValue = isDateRange(value)
-        ? value
-        : { startDate: null, endDate: null };
-
-      if (!rangeValue.startDate && !rangeValue.endDate) {
-        return placeholder;
-      }
-
-      const startStr = rangeValue.startDate
-        ? rangeValue.startDate.toLocaleDateString()
-        : '';
-      const endStr = rangeValue.endDate
-        ? rangeValue.endDate.toLocaleDateString()
-        : '';
-
-      if (startStr && endStr) {
-        return `${startStr} - ${endStr}`;
-      } else if (startStr) {
-        return `${startStr} - Select end date`;
-      } else if (endStr) {
-        return `Select start date - ${endStr}`;
-      }
+      const rangeValue = isDateRange(value) ? value : { startDate: null, endDate: null };
+      if (!rangeValue.startDate && !rangeValue.endDate) return placeholder;
+      const startStr = rangeValue.startDate ? rangeValue.startDate.toLocaleDateString() : '';
+      const endStr = rangeValue.endDate ? rangeValue.endDate.toLocaleDateString() : '';
+      if (startStr && endStr) return `${startStr} - ${endStr}`;
+      if (startStr) return `${startStr} - Pilih akhir`;
+      if (endStr) return `Pilih awal - ${endStr}`;
       return placeholder;
     }
-
     const dateValue = value as Date;
     if (!dateValue) return placeholder;
-
     switch (mode) {
       case 'time':
-        if (timeFormat === '12') {
-          return dateValue.toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true,
-          });
-        }
-        return dateValue.toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-        });
-      case 'datetime':
-        const timeStr =
-          timeFormat === '12'
-            ? dateValue.toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: true,
-              })
-            : dateValue.toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: false,
-              });
+        return dateValue.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: timeFormat === '12' });
+      case 'datetime': {
+        const timeStr = dateValue.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: timeFormat === '12' });
         return `${dateValue.toLocaleDateString()} ${timeStr}`;
+      }
       default:
         return dateValue.toLocaleDateString();
     }
   }, [value, mode, placeholder, timeFormat]);
 
-  // Helper function to check if a date is disabled
-  const isDateDisabled = useCallback(
-    (date: Date) => {
-      if (minimumDate && date < minimumDate) return true;
-      if (maximumDate && date > maximumDate) return true;
-      return false;
-    },
-    [minimumDate, maximumDate]
-  );
+  const isDateDisabled = useCallback((date: Date) => {
+    if (minimumDate && date < minimumDate) return true;
+    if (maximumDate && date > maximumDate) return true;
+    return false;
+  }, [minimumDate, maximumDate]);
 
-  // Helper function to check if a date is in range
-  const isDateInRange = useCallback(
-    (date: Date) => {
-      if (mode !== 'range' || !tempRange.startDate || !tempRange.endDate) {
-        return false;
-      }
+  const isDateInRange = useCallback((date: Date) => {
+    if (mode !== 'range' || !tempRange.startDate || !tempRange.endDate) return false;
+    const s = new Date(tempRange.startDate); s.setHours(0,0,0,0);
+    const e = new Date(tempRange.endDate); e.setHours(0,0,0,0);
+    const c = new Date(date); c.setHours(0,0,0,0);
+    return c >= s && c <= e;
+  }, [mode, tempRange]);
 
-      // Create new date objects to avoid mutation
-      const startDate = new Date(tempRange.startDate);
-      const endDate = new Date(tempRange.endDate);
-      const checkDate = new Date(date);
+  const isRangeEndpoint = useCallback((date: Date) => {
+    if (mode !== 'range') return { isStart: false, isEnd: false };
+    const n = new Date(date); n.setHours(0,0,0,0);
+    const isStart = tempRange.startDate && new Date(tempRange.startDate).setHours(0,0,0,0) === n.getTime();
+    const isEnd = tempRange.endDate && new Date(tempRange.endDate).setHours(0,0,0,0) === n.getTime();
+    return { isStart: !!isStart, isEnd: !!isEnd };
+  }, [mode, tempRange]);
 
-      // Normalize dates for comparison (remove time)
-      startDate.setHours(0, 0, 0, 0);
-      endDate.setHours(0, 0, 0, 0);
-      checkDate.setHours(0, 0, 0, 0);
-
-      return checkDate >= startDate && checkDate <= endDate;
-    },
-    [mode, tempRange]
-  );
-
-  // Helper function to check if a date is a range endpoint
-  const isRangeEndpoint = useCallback(
-    (date: Date) => {
-      if (mode !== 'range') {
-        return { isStart: false, isEnd: false };
-      }
-
-      const normalizedDate = new Date(date);
-      normalizedDate.setHours(0, 0, 0, 0);
-
-      const isStart =
-        tempRange.startDate &&
-        new Date(tempRange.startDate).setHours(0, 0, 0, 0) ===
-          normalizedDate.getTime();
-      const isEnd =
-        tempRange.endDate &&
-        new Date(tempRange.endDate).setHours(0, 0, 0, 0) ===
-          normalizedDate.getTime();
-
-      return { isStart: !!isStart, isEnd: !!isEnd };
-    },
-    [mode, tempRange]
-  );
-
-  // Memoized calendar calculations
   const calendarData = useMemo(() => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
-
-    // Get first day of month and number of days
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-    // Create calendar grid with proper positioning
     const weeks: (number | null)[][] = [];
     let currentWeek: (number | null)[] = [];
-
-    // Fill empty cells for days before month starts
-    for (let i = 0; i < firstDay; i++) {
-      currentWeek.push(null);
-    }
-
-    // Add days of the month
+    for (let i = 0; i < firstDay; i++) currentWeek.push(null);
     for (let day = 1; day <= daysInMonth; day++) {
       currentWeek.push(day);
-
-      // If week is complete (7 days) or it's the last day, start a new week
-      if (currentWeek.length === 7) {
-        weeks.push([...currentWeek]);
-        currentWeek = [];
-      }
+      if (currentWeek.length === 7) { weeks.push([...currentWeek]); currentWeek = []; }
     }
-
-    // Add the last incomplete week if it exists
-    if (currentWeek.length > 0) {
-      // Fill remaining cells with null
-      while (currentWeek.length < 7) {
-        currentWeek.push(null);
-      }
-      weeks.push(currentWeek);
-    }
-
+    if (currentWeek.length > 0) { while (currentWeek.length < 7) currentWeek.push(null); weeks.push(currentWeek); }
     return { weeks, year, month, daysInMonth };
   }, [currentDate]);
 
   const handleRangeSelect = (day: number) => {
-    const selectedDate = new Date(
-      currentDate.getFullYear(),
-      currentDate.getMonth(),
-      day
-    );
-
-    // Check if date is disabled
+    const selectedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
     if (isDateDisabled(selectedDate)) return;
-
     feedback('selection');
-
-    // If no start date or both dates are selected, start fresh
     if (!tempRange.startDate || (tempRange.startDate && tempRange.endDate)) {
-      setTempRange({
-        startDate: selectedDate,
-        endDate: null,
-      });
+      setTempRange({ startDate: selectedDate, endDate: null });
     } else {
-      // We have a start date but no end date
-      const startDate = tempRange.startDate;
-
-      if (selectedDate < startDate) {
-        // If selected date is before start date, make it the new start date
-        setTempRange({
-          startDate: selectedDate,
-          endDate: null,
-        });
-      } else {
-        // Selected date is after start date, make it the end date
-        setTempRange({
-          startDate: startDate,
-          endDate: selectedDate,
-        });
-      }
+      if (selectedDate < tempRange.startDate) setTempRange({ startDate: selectedDate, endDate: null });
+      else setTempRange({ startDate: tempRange.startDate, endDate: selectedDate });
     }
   };
 
   const handleDateSelect = (day: number) => {
-    if (mode === 'range') {
-      handleRangeSelect(day);
-      return;
-    }
-
-    const newDate = new Date(
-      currentDate.getFullYear(),
-      currentDate.getMonth(),
-      day
+    if (mode === 'range') { handleRangeSelect(day); return; }
+    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day,
+      mode === 'datetime' ? currentDate.getHours() : 0,
+      mode === 'datetime' ? currentDate.getMinutes() : 0
     );
-
-    // Check if date is disabled
     if (isDateDisabled(newDate)) return;
-
-    // Range mode returns above, so this only fires for the leaf case and never
-    // doubles up with handleRangeSelect.
     feedback('selection');
-
     setCurrentDate(newDate);
-
-    if (mode === 'date') {
-      (onChange as (value: Date | undefined) => void)?.(newDate);
-      close();
-    } else if (mode === 'datetime') {
-      setViewMode('time');
-    }
+    if (mode === 'date') { (onChange as (v: Date | undefined) => void)?.(newDate); close(); }
+    else if (mode === 'datetime') setViewMode('time');
   };
 
   const handleTimeChange = (hours: number, minutes: number) => {
@@ -386,140 +206,76 @@ export function DatePicker(props: DatePickerProps) {
   const navigateMonth = (direction: 'prev' | 'next') => {
     feedback('tick');
     const newDate = new Date(currentDate);
-    if (direction === 'prev') {
-      newDate.setMonth(newDate.getMonth() - 1);
-    } else {
-      newDate.setMonth(newDate.getMonth() + 1);
-    }
+    if (direction === 'prev') newDate.setMonth(newDate.getMonth() - 1);
+    else newDate.setMonth(newDate.getMonth() + 1);
     setCurrentDate(newDate);
   };
 
   const handleMonthSelect = (monthIndex: number) => {
     feedback('selection');
-    const newDate = new Date(currentDate);
-    newDate.setMonth(monthIndex);
-    setCurrentDate(newDate);
-    setShowMonthPicker(false);
+    const newDate = new Date(currentDate); newDate.setMonth(monthIndex);
+    setCurrentDate(newDate); setShowMonthPicker(false);
   };
 
   const handleYearSelect = (year: number) => {
     feedback('selection');
-    const newDate = new Date(currentDate);
-    newDate.setFullYear(year);
-    setCurrentDate(newDate);
-    setShowYearPicker(false);
+    const newDate = new Date(currentDate); newDate.setFullYear(year);
+    setCurrentDate(newDate); setShowYearPicker(false);
   };
 
   const handleConfirm = () => {
     feedback('success');
-    if (mode === 'range') {
-      (onChange as (value: DateRange | undefined) => void)?.(tempRange);
-    } else {
-      (onChange as (value: Date | undefined) => void)?.(currentDate);
-    }
+    if (mode === 'range') (onChange as (v: DateRange | undefined) => void)?.(tempRange);
+    else (onChange as (v: Date | undefined) => void)?.(currentDate);
     close();
   };
 
   const resetToToday = () => {
-    const today = new Date();
-    setCurrentDate(today);
-
-    if (mode === 'range') {
-      setTempRange({ startDate: today, endDate: null });
-    } else if (mode === 'date') {
-      (onChange as (value: Date | undefined) => void)?.(today);
-      close();
-    }
+    const today = new Date(); setCurrentDate(today);
+    if (mode === 'range') setTempRange({ startDate: today, endDate: null });
+    else if (mode === 'date') { (onChange as (v: Date | undefined) => void)?.(today); close(); }
   };
 
   const clearSelection = () => {
-    if (mode === 'range') {
-      setTempRange({ startDate: null, endDate: null });
-      (onChange as (value: DateRange | undefined) => void)?.(undefined);
-    } else {
-      (onChange as (value: Date | undefined) => void)?.(undefined);
-    }
+    if (mode === 'range') { setTempRange({ startDate: null, endDate: null }); (onChange as (v: DateRange | undefined) => void)?.(undefined); }
+    else (onChange as (v: Date | undefined) => void)?.(undefined);
   };
 
+  const handleOpenPicker = () => {
+    feedback('impact-light');
+    setCurrentDate(new Date()); setViewMode('date');
+    setShowMonthPicker(false); setShowYearPicker(false);
+    open();
+  };
+
+  const triggerStyle: ViewStyle = {
+    width: '100%', flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: variant === 'group' ? 0 : 16,
+    borderWidth: variant === 'group' ? 0 : 1,
+    borderColor: variant === 'outline' ? borderColor : cardColor,
+    borderRadius: CORNERS,
+    backgroundColor: variant === 'filled' ? cardColor : 'transparent',
+    minHeight: variant === 'group' ? 'auto' : HEIGHT,
+  };
+
+  // ─── Calendar ───
   const renderMonthYearHeader = () => (
-    <View
-      style={{
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 24,
-        paddingHorizontal: 8,
-      }}
-    >
-      <TouchableOpacity
-        onPress={() => navigateMonth('prev')}
-        style={{
-          padding: 10,
-          borderRadius: CORNERS,
-          backgroundColor: mutedColor,
-        }}
-      >
-        <ChevronLeft size={20} color={textColor} />
+    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, paddingHorizontal: 4 }}>
+      <TouchableOpacity onPress={() => navigateMonth('prev')} style={{ padding: 8, borderRadius: CORNERS, backgroundColor: mutedColor }}>
+        <ChevronLeft size={18} color={textColor} />
       </TouchableOpacity>
-
-      <View
-        style={{
-          flex: 1,
-          flexDirection: 'row',
-          justifyContent: 'center',
-          alignItems: 'center',
-          gap: 12,
-          marginHorizontal: 12,
-        }}
-      >
-        <TouchableOpacity
-          onPress={() => setShowMonthPicker(true)}
-          style={{
-            flex: 1,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-            paddingHorizontal: 12,
-            paddingVertical: 10,
-            borderRadius: CORNERS,
-            backgroundColor: mutedColor,
-          }}
-        >
-          <Text variant='subtitle' style={{ marginRight: 4 }}>
-            {MONTHS[calendarData.month]}
-          </Text>
-          <ChevronDown size={16} color={textColor} />
+      <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8, marginHorizontal: 8 }}>
+        <TouchableOpacity onPress={() => setShowMonthPicker(true)} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 10, paddingVertical: 8, borderRadius: CORNERS, backgroundColor: mutedColor }}>
+          <Text variant='subtitle' style={{ fontSize: 13, marginRight: 2 }}>{MONTHS[calendarData.month]}</Text>
+          <ChevronDown size={14} color={textColor} />
         </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() => setShowYearPicker(true)}
-          style={{
-            flex: 1,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-            paddingHorizontal: 16,
-            paddingVertical: 10,
-            borderRadius: CORNERS,
-            backgroundColor: mutedColor,
-          }}
-        >
-          <Text variant='subtitle' style={{ marginRight: 4 }}>
-            {calendarData.year}
-          </Text>
-          <ChevronDown size={16} color={textColor} />
+        <TouchableOpacity onPress={() => setShowYearPicker(true)} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 10, paddingVertical: 8, borderRadius: CORNERS, backgroundColor: mutedColor }}>
+          <Text variant='subtitle' style={{ fontSize: 13, marginRight: 2 }}>{calendarData.year}</Text>
+          <ChevronDown size={14} color={textColor} />
         </TouchableOpacity>
       </View>
-
-      <TouchableOpacity
-        onPress={() => navigateMonth('next')}
-        style={{
-          padding: 10,
-          borderRadius: CORNERS,
-          backgroundColor: mutedColor,
-        }}
-      >
-        <ChevronRight size={20} color={textColor} />
+      <TouchableOpacity onPress={() => navigateMonth('next')} style={{ padding: 8, borderRadius: CORNERS, backgroundColor: mutedColor }}>
+        <ChevronRight size={18} color={textColor} />
       </TouchableOpacity>
     </View>
   );
@@ -527,266 +283,65 @@ export function DatePicker(props: DatePickerProps) {
   const renderCalendar = () => (
     <View>
       {renderMonthYearHeader()}
-      {/* Day headers */}
-      <View
-        style={{
-          flexDirection: 'row',
-          marginBottom: 12,
-          paddingHorizontal: 4,
-        }}
-      >
-        {DAYS.map((day) => (
-          <View
-            key={day}
-            style={{
-              flex: 1,
-              alignItems: 'center',
-            }}
-          >
-            <Text variant='caption' style={{ fontSize: 12, fontWeight: '600' }}>
-              {day}
-            </Text>
-          </View>
-        ))}
+      <View style={{ flexDirection: 'row', marginBottom: 8, paddingHorizontal: 2 }}>
+        {DAYS.map((d) => (<View key={d} style={{ flex: 1, alignItems: 'center' }}><Text variant='caption' style={{ fontSize: 11, fontWeight: '600' }}>{d}</Text></View>))}
       </View>
-
-      {/* Calendar grid */}
-      <View style={{ paddingHorizontal: 4 }}>
-        {calendarData.weeks.map((week, weekIndex) => (
-          <View
-            key={weekIndex}
-            style={{
-              flexDirection: 'row',
-              marginBottom: 4,
-            }}
-          >
-            {week.map((day, dayIndex) => {
-              const dayDate = day
-                ? new Date(calendarData.year, calendarData.month, day)
-                : null;
-
-              const isSelected =
-                day &&
-                value &&
-                !isDateRange(value) &&
-                value.getDate() === day &&
-                value.getMonth() === calendarData.month &&
-                value.getFullYear() === calendarData.year;
-
-              const isToday =
-                day &&
-                new Date().getDate() === day &&
-                new Date().getMonth() === calendarData.month &&
-                new Date().getFullYear() === calendarData.year;
-
+      <View style={{ paddingHorizontal: 2 }}>
+        {calendarData.weeks.map((week, wi) => (
+          <View key={wi} style={{ flexDirection: 'row', marginBottom: 2 }}>
+            {week.map((day, di) => {
+              const dayDate = day ? new Date(calendarData.year, calendarData.month, day) : null;
+              const isSelected = day && value && !isDateRange(value) && value.getDate() === day && value.getMonth() === calendarData.month && value.getFullYear() === calendarData.year;
+              const isToday = day && new Date().getDate() === day && new Date().getMonth() === calendarData.month && new Date().getFullYear() === calendarData.year;
               const disabled = dayDate ? isDateDisabled(dayDate) : false;
-
-              // Range-specific styling
               const inRange = dayDate ? isDateInRange(dayDate) : false;
-              const rangeEndpoints = dayDate
-                ? isRangeEndpoint(dayDate)
-                : { isStart: false, isEnd: false };
-
+              const ep = dayDate ? isRangeEndpoint(dayDate) : { isStart: false, isEnd: false };
               return (
-                <View
-                  key={dayIndex}
-                  style={[
-                    {
-                      flex: 1,
-                      alignItems: 'center',
-                      backgroundColor:
-                        mode === 'range' && inRange
-                          ? primaryColor
-                          : 'transparent',
-                      paddingHorizontal: mode === 'range' && inRange ? 0 : 0,
-                    },
-                    rangeEndpoints.isStart && {
-                      borderTopLeftRadius: CORNERS,
-                      borderBottomLeftRadius: CORNERS,
-                    },
-                    rangeEndpoints.isEnd && {
-                      borderTopRightRadius: CORNERS,
-                      borderBottomRightRadius: CORNERS,
-                    },
-                  ]}
-                >
+                <View key={di} style={[{ flex: 1, alignItems: 'center', backgroundColor: mode === 'range' && inRange ? primaryColor : 'transparent' }, ep.isStart && { borderTopLeftRadius: CORNERS, borderBottomLeftRadius: CORNERS }, ep.isEnd && { borderTopRightRadius: CORNERS, borderBottomRightRadius: CORNERS }]}>
                   {day ? (
-                    <TouchableOpacity
-                      onPress={() => !disabled && handleDateSelect(day)}
-                      disabled={disabled}
-                      style={[
-                        {
-                          width: 40,
-                          height: 40,
-                          borderRadius:
-                            rangeEndpoints.isStart || rangeEndpoints.isEnd
-                              ? 0
-                              : CORNERS,
-                          backgroundColor:
-                            rangeEndpoints.isStart || rangeEndpoints.isEnd
-                              ? primaryColor
-                              : inRange
-                                ? primaryColor
-                                : isSelected
-                                  ? primaryColor
-                                  : 'transparent',
-                          borderWidth:
-                            isToday && !isSelected && !inRange ? 1 : 0,
-                          borderColor: primaryColor,
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          opacity: disabled ? 0.3 : 1,
-                        },
-                        rangeEndpoints.isStart && {
-                          borderTopLeftRadius: CORNERS,
-                          borderBottomLeftRadius: CORNERS,
-                        },
-                        rangeEndpoints.isEnd && {
-                          borderTopRightRadius: CORNERS,
-                          borderBottomRightRadius: CORNERS,
-                        },
-                      ]}
-                    >
-                      <Text
-                        style={{
-                          color:
-                            rangeEndpoints.isStart || rangeEndpoints.isEnd
-                              ? primaryForegroundColor
-                              : inRange
-                                ? primaryForegroundColor
-                                : isSelected
-                                  ? primaryForegroundColor
-                                  : disabled
-                                    ? mutedForegroundColor
-                                    : textColor,
-                          fontWeight:
-                            rangeEndpoints.isStart ||
-                            rangeEndpoints.isEnd ||
-                            isSelected ||
-                            isToday
-                              ? '600'
-                              : '400',
-                          fontSize: FONT_SIZE,
-                        }}
-                      >
-                        {day}
-                      </Text>
+                    <TouchableOpacity onPress={() => !disabled && handleDateSelect(day)} disabled={disabled} style={[{ width: 36, height: 36, borderRadius: ep.isStart || ep.isEnd ? 0 : CORNERS, backgroundColor: ep.isStart || ep.isEnd ? primaryColor : inRange ? primaryColor : isSelected ? primaryColor : 'transparent', borderWidth: isToday && !isSelected && !inRange ? 1 : 0, borderColor: primaryColor, justifyContent: 'center', alignItems: 'center', opacity: disabled ? 0.3 : 1 }, ep.isStart && { borderTopLeftRadius: CORNERS, borderBottomLeftRadius: CORNERS }, ep.isEnd && { borderTopRightRadius: CORNERS, borderBottomRightRadius: CORNERS }]}>
+                      <Text style={{ color: ep.isStart || ep.isEnd ? primaryForegroundColor : inRange ? primaryForegroundColor : isSelected ? primaryForegroundColor : disabled ? mutedForegroundColor : textColor, fontWeight: ep.isStart || ep.isEnd || isSelected || isToday ? '600' : '400', fontSize: FONT_SIZE - 1 }}>{day}</Text>
                     </TouchableOpacity>
-                  ) : (
-                    <View style={{ width: 40, height: 40 }} />
-                  )}
+                  ) : <View style={{ width: 36, height: 36 }} />}
                 </View>
               );
             })}
           </View>
         ))}
       </View>
-
-      {/* Range selection info */}
       {mode === 'range' && (
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginTop: 16,
-            padding: 20,
-            paddingHorizontal: 36,
-            backgroundColor: mutedColor,
-            borderRadius: BORDER_RADIUS,
-          }}
-        >
-          <Text variant='subtitle' style={{ flex: 1 }}>
-            {tempRange.startDate
-              ? `${tempRange.startDate.toLocaleDateString()}`
-              : 'Start date'}
-          </Text>
-
-          <View
-            style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
-          >
-            <ArrowRight color={textColor} strokeWidth={3} />
-          </View>
-
-          <Text variant='subtitle' style={{ flex: 1, textAlign: 'right' }}>
-            {tempRange.endDate
-              ? `${tempRange.endDate.toLocaleDateString()}`
-              : 'End date'}
-          </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 12, padding: 16, backgroundColor: mutedColor, borderRadius: BORDER_RADIUS }}>
+          <Text variant='subtitle' style={{ flex: 1, fontSize: 13 }}>{tempRange.startDate ? tempRange.startDate.toLocaleDateString() : 'Mulai'}</Text>
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}><ArrowRight color={textColor} strokeWidth={3} /></View>
+          <Text variant='subtitle' style={{ flex: 1, textAlign: 'right', fontSize: 13 }}>{tempRange.endDate ? tempRange.endDate.toLocaleDateString() : 'Selesai'}</Text>
         </View>
       )}
     </View>
   );
 
+  // ─── Time Wheel ───
   const renderTimePicker = () => {
     const selectedHours = currentDate.getHours();
     const selectedMinutes = currentDate.getMinutes();
-
     const isPM = selectedHours >= 12;
 
     return (
       <View style={{ height: 300 }}>
-        <View
-          style={{
-            flexDirection: 'row',
-            flex: 1,
-            gap: 16,
-          }}
-        >
+        <View style={{ flexDirection: 'row', flex: 1, gap: 16 }}>
           {/* Hours */}
           <View style={{ flex: 1 }}>
-            <Text
-              variant='caption'
-              style={{ textAlign: 'center', marginBottom: 12 }}
-            >
-              Hours
-            </Text>
-            <ScrollView
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{
-                paddingVertical: 20,
-              }}
-            >
+            <Text variant='caption' style={{ textAlign: 'center', marginBottom: 12 }}>Jam</Text>
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingVertical: 20 }}>
               {Array.from({ length: timeFormat === '12' ? 12 : 24 }, (_, i) =>
                 timeFormat === '12' ? (i === 0 ? 12 : i) : i
               ).map((hour) => {
-                const actualHour =
-                  timeFormat === '12'
-                    ? hour === 12
-                      ? isPM
-                        ? 12
-                        : 0
-                      : isPM
-                        ? hour + 12
-                        : hour
-                    : hour;
-
+                const actualHour = timeFormat === '12'
+                  ? hour === 12 ? (isPM ? 12 : 0) : (isPM ? hour + 12 : hour)
+                  : hour;
                 const isSelected = actualHour === selectedHours;
-
                 return (
-                  <TouchableOpacity
-                    key={hour}
-                    onPress={() =>
-                      handleTimeChange(actualHour, selectedMinutes)
-                    }
-                    style={{
-                      paddingVertical: 12,
-                      paddingHorizontal: 16,
-                      borderRadius: CORNERS,
-                      backgroundColor: isSelected
-                        ? primaryColor
-                        : 'transparent',
-                      marginVertical: 2,
-                      alignItems: 'center',
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: isSelected ? primaryForegroundColor : textColor,
-                        fontWeight: isSelected ? '600' : '400',
-                        fontSize: FONT_SIZE,
-                      }}
-                    >
+                  <TouchableOpacity key={hour} onPress={() => handleTimeChange(actualHour, selectedMinutes)} style={{ paddingVertical: 12, paddingHorizontal: 16, borderRadius: CORNERS, backgroundColor: isSelected ? primaryColor : 'transparent', marginVertical: 2, alignItems: 'center' }}>
+                    <Text style={{ color: isSelected ? primaryForegroundColor : textColor, fontWeight: isSelected ? '600' : '400', fontSize: FONT_SIZE }}>
                       {hour.toString().padStart(2, '0')}
                     </Text>
                   </TouchableOpacity>
@@ -797,42 +352,11 @@ export function DatePicker(props: DatePickerProps) {
 
           {/* Minutes */}
           <View style={{ flex: 1 }}>
-            <Text
-              variant='caption'
-              style={{ textAlign: 'center', marginBottom: 12 }}
-            >
-              Minutes
-            </Text>
-            <ScrollView
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{
-                paddingVertical: 20,
-              }}
-            >
-              {Array.from({ length: 12 }, (_, i) => i * 5).map((minute) => (
-                <TouchableOpacity
-                  key={minute}
-                  onPress={() => handleTimeChange(selectedHours, minute)}
-                  style={{
-                    paddingVertical: 12,
-                    paddingHorizontal: 16,
-                    borderRadius: CORNERS,
-                    backgroundColor:
-                      minute === selectedMinutes ? primaryColor : 'transparent',
-                    marginVertical: 2,
-                    alignItems: 'center',
-                  }}
-                >
-                  <Text
-                    style={{
-                      color:
-                        minute === selectedMinutes
-                          ? primaryForegroundColor
-                          : textColor,
-                      fontWeight: minute === selectedMinutes ? '600' : '400',
-                      fontSize: FONT_SIZE,
-                    }}
-                  >
+            <Text variant='caption' style={{ textAlign: 'center', marginBottom: 12 }}>Menit</Text>
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingVertical: 20 }}>
+              {Array.from({ length: 60 }, (_, i) => i).map((minute) => (
+                <TouchableOpacity key={minute} onPress={() => handleTimeChange(selectedHours, minute)} style={{ paddingVertical: 12, paddingHorizontal: 16, borderRadius: CORNERS, backgroundColor: minute === selectedMinutes ? primaryColor : 'transparent', marginVertical: 2, alignItems: 'center' }}>
+                  <Text style={{ color: minute === selectedMinutes ? primaryForegroundColor : textColor, fontWeight: minute === selectedMinutes ? '600' : '400', fontSize: FONT_SIZE }}>
                     {minute.toString().padStart(2, '0')}
                   </Text>
                 </TouchableOpacity>
@@ -840,59 +364,17 @@ export function DatePicker(props: DatePickerProps) {
             </ScrollView>
           </View>
 
-          {/* AM/PM picker for 12-hour format */}
+          {/* AM/PM for 12h */}
           {timeFormat === '12' && (
             <View style={{ flex: 0.5 }}>
-              <Text
-                variant='caption'
-                style={{ textAlign: 'center', marginBottom: 12 }}
-              >
-                Period
-              </Text>
-              <View
-                style={{
-                  paddingVertical: 20,
-                  gap: 8,
-                }}
-              >
+              <Text variant='caption' style={{ textAlign: 'center', marginBottom: 12 }}>Period</Text>
+              <View style={{ paddingVertical: 20, gap: 8 }}>
                 {['AM', 'PM'].map((period) => {
                   const isAM = period === 'AM';
                   const isSelected = isAM ? !isPM : isPM;
-
                   return (
-                    <TouchableOpacity
-                      key={period}
-                      onPress={() => {
-                        const newHours = isAM
-                          ? selectedHours >= 12
-                            ? selectedHours - 12
-                            : selectedHours
-                          : selectedHours < 12
-                            ? selectedHours + 12
-                            : selectedHours;
-                        handleTimeChange(newHours, selectedMinutes);
-                      }}
-                      style={{
-                        paddingVertical: 12,
-                        paddingHorizontal: 16,
-                        borderRadius: CORNERS,
-                        backgroundColor: isSelected
-                          ? primaryColor
-                          : 'transparent',
-                        alignItems: 'center',
-                      }}
-                    >
-                      <Text
-                        style={{
-                          color: isSelected
-                            ? primaryForegroundColor
-                            : textColor,
-                          fontWeight: isSelected ? '600' : '400',
-                          fontSize: FONT_SIZE,
-                        }}
-                      >
-                        {period}
-                      </Text>
+                    <TouchableOpacity key={period} onPress={() => { const newHours = isAM ? (selectedHours >= 12 ? selectedHours - 12 : selectedHours) : (selectedHours < 12 ? selectedHours + 12 : selectedHours); handleTimeChange(newHours, selectedMinutes); }} style={{ paddingVertical: 12, paddingHorizontal: 16, borderRadius: CORNERS, backgroundColor: isSelected ? primaryColor : 'transparent', alignItems: 'center' }}>
+                      <Text style={{ color: isSelected ? primaryForegroundColor : textColor, fontWeight: isSelected ? '600' : '400', fontSize: FONT_SIZE }}>{period}</Text>
                     </TouchableOpacity>
                   );
                 })}
@@ -904,40 +386,13 @@ export function DatePicker(props: DatePickerProps) {
     );
   };
 
+  // ─── Month / Year sub-pickers ───
   const renderMonthPicker = () => (
-    <View style={{ height: 300 }}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingVertical: 20,
-        }}
-      >
-        {MONTHS.map((month, index) => (
-          <TouchableOpacity
-            key={month}
-            onPress={() => handleMonthSelect(index)}
-            style={{
-              paddingVertical: 16,
-              paddingHorizontal: 20,
-              borderRadius: CORNERS,
-              backgroundColor:
-                index === calendarData.month ? primaryColor : 'transparent',
-              marginVertical: 2,
-              alignItems: 'center',
-            }}
-          >
-            <Text
-              style={{
-                color:
-                  index === calendarData.month
-                    ? primaryForegroundColor
-                    : textColor,
-                fontWeight: index === calendarData.month ? '600' : '400',
-                fontSize: FONT_SIZE,
-              }}
-            >
-              {month}
-            </Text>
+    <View style={{ height: 260 }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingVertical: 12 }}>
+        {MONTHS.map((m, i) => (
+          <TouchableOpacity key={m} onPress={() => handleMonthSelect(i)} style={{ paddingVertical: 12, paddingHorizontal: 16, borderRadius: CORNERS, backgroundColor: i === calendarData.month ? primaryColor : 'transparent', marginVertical: 1, alignItems: 'center' }}>
+            <Text style={{ color: i === calendarData.month ? primaryForegroundColor : textColor, fontWeight: i === calendarData.month ? '600' : '400', fontSize: FONT_SIZE }}>{m}</Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -945,91 +400,32 @@ export function DatePicker(props: DatePickerProps) {
   );
 
   const renderYearPicker = () => (
-    <View style={{ height: 300 }}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingVertical: 20,
-        }}
-      >
-        {YEARS.map((year) => (
-          <TouchableOpacity
-            key={year}
-            onPress={() => handleYearSelect(year)}
-            style={{
-              paddingVertical: 16,
-              paddingHorizontal: 20,
-              borderRadius: CORNERS,
-              backgroundColor:
-                year === calendarData.year ? primaryColor : 'transparent',
-              marginVertical: 2,
-              alignItems: 'center',
-            }}
-          >
-            <Text
-              style={{
-                color:
-                  year === calendarData.year
-                    ? primaryForegroundColor
-                    : textColor,
-                fontWeight: year === calendarData.year ? '600' : '400',
-                fontSize: FONT_SIZE,
-              }}
-            >
-              {year}
-            </Text>
+    <View style={{ height: 260 }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingVertical: 12 }}>
+        {YEARS.map((y) => (
+          <TouchableOpacity key={y} onPress={() => handleYearSelect(y)} style={{ paddingVertical: 12, paddingHorizontal: 16, borderRadius: CORNERS, backgroundColor: y === calendarData.year ? primaryColor : 'transparent', marginVertical: 1, alignItems: 'center' }}>
+            <Text style={{ color: y === calendarData.year ? primaryForegroundColor : textColor, fontWeight: y === calendarData.year ? '600' : '400', fontSize: FONT_SIZE }}>{y}</Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
     </View>
   );
 
-  const getBottomSheetContent = () => {
+  const getPickerContent = () => {
     if (showMonthPicker) return renderMonthPicker();
     if (showYearPicker) return renderYearPicker();
-
-    if (mode === 'datetime') {
-      return viewMode === 'date' ? renderCalendar() : renderTimePicker();
-    }
-
+    if (mode === 'datetime') return viewMode === 'date' ? renderCalendar() : renderTimePicker();
     if (mode === 'time') return renderTimePicker();
     return renderCalendar();
   };
 
-  const getBottomSheetTitle = () => {
-    if (showMonthPicker) return 'Select Month';
-    if (showYearPicker) return 'Select Year';
-
-    if (mode === 'datetime') {
-      return viewMode === 'date' ? 'Select Date' : 'Select Time';
-    }
-
-    if (mode === 'time') return 'Select Time';
-
-    if (mode === 'range') return 'Select Range';
-
-    return 'Select Date';
-  };
-
-  const handleOpenPicker = () => {
-    feedback('impact-light');
-    setCurrentDate(new Date());
-    setViewMode('date');
-    setShowMonthPicker(false);
-    setShowYearPicker(false);
-    open();
-  };
-
-  const triggerStyle: ViewStyle = {
-    width: '100%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: variant === 'group' ? 0 : 16,
-    borderWidth: variant === 'group' ? 0 : 1,
-    borderColor: variant === 'outline' ? borderColor : cardColor,
-    borderRadius: CORNERS,
-    backgroundColor: variant === 'filled' ? cardColor : 'transparent',
-    minHeight: variant === 'group' ? 'auto' : HEIGHT,
+  const getPickerTitle = () => {
+    if (showMonthPicker) return 'Pilih Bulan';
+    if (showYearPicker) return 'Pilih Tahun';
+    if (mode === 'datetime') return viewMode === 'date' ? 'Pilih Tanggal' : 'Pilih Waktu';
+    if (mode === 'time') return 'Pilih Waktu';
+    if (mode === 'range') return 'Pilih Rentang';
+    return 'Pilih Tanggal';
   };
 
   return (
@@ -1039,140 +435,47 @@ export function DatePicker(props: DatePickerProps) {
         onPress={handleOpenPicker}
         disabled={disabled}
       >
-        <View
-          style={{
-            flex: 1,
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 8,
-          }}
-        >
-          <View
-            style={{
-              width: label ? 120 : 'auto',
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 8,
-            }}
-          >
-            {mode === 'time' ? (
-              <Icon name={Clock} size={20} strokeWidth={1} />
-            ) : mode === 'datetime' ? (
-              <Icon name={CalendarClock} size={20} strokeWidth={1} />
-            ) : mode === 'range' ? (
-              <Icon name={CalendarRange} size={20} strokeWidth={1} />
-            ) : (
-              <Icon name={Calendar} size={20} strokeWidth={1} />
-            )}
-
-            {/* Label takes 1/3 of available width when present */}
+        <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <View style={{ width: label ? 120 : 'auto', flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            {mode === 'time' ? <Icon name={Clock} size={20} strokeWidth={1} />
+              : mode === 'datetime' ? <Icon name={CalendarClock} size={20} strokeWidth={1} />
+              : mode === 'range' ? <Icon name={CalendarRange} size={20} strokeWidth={1} />
+              : <Icon name={Calendar} size={20} strokeWidth={1} />}
             {label && (
               <View style={{ flex: 1 }}>
-                <Text
-                  variant='caption'
-                  numberOfLines={1}
-                  ellipsizeMode='tail'
-                  style={[
-                    {
-                      color: error ? errorColor : textMutedColor,
-                    },
-                    labelStyle,
-                  ]}
-                >
-                  {label}
-                </Text>
+                <Text variant='caption' numberOfLines={1} ellipsizeMode='tail' style={[{ color: error ? errorColor : textMutedColor }, labelStyle]}>{label}</Text>
               </View>
             )}
           </View>
-
-          {/* Text takes 2/3 of available width when label is present, or full width when no label */}
           <View style={{ flex: 1 }}>
-            <Text
-              numberOfLines={1}
-              ellipsizeMode='tail'
-              style={{
-                color: value ? textColor : textMutedColor,
-                fontSize: FONT_SIZE,
-              }}
-            >
-              {formatDisplayValue()}
-            </Text>
+            <Text numberOfLines={1} ellipsizeMode='tail' style={{ color: value ? textColor : textMutedColor, fontSize: FONT_SIZE }}>{formatDisplayValue()}</Text>
           </View>
         </View>
       </TouchableOpacity>
 
-      {error && (
-        <Text
-          variant='caption'
-          style={[
-            { color: errorColor, marginTop: 4, marginLeft: 14 },
-            errorStyle,
-          ]}
-        >
-          {error}
-        </Text>
-      )}
+      {error && <Text variant='caption' style={[{ color: errorColor, marginTop: 4, marginLeft: 14 }, errorStyle]}>{error}</Text>}
 
       <BottomSheet
         isVisible={isVisible}
-        onClose={() => {
-          close();
-          setShowMonthPicker(false);
-          setShowYearPicker(false);
-        }}
-        title={getBottomSheetTitle()}
+        onClose={() => { close(); setShowMonthPicker(false); setShowYearPicker(false); }}
+        title={getPickerTitle()}
         snapPoints={[0.7]}
-        disablePanGesture={showMonthPicker || showYearPicker}
+        disablePanGesture
+        disableHandleTap
       >
         <View style={{ flex: 1 }}>
-          {getBottomSheetContent()}
-
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              paddingTop: 20,
-              gap: 12,
-            }}
-          >
-            <View
-              style={{
-                flexDirection: 'row',
-                gap: 8,
-              }}
-            >
-              <Button variant='outline' onPress={resetToToday}>
-                Today
-              </Button>
-
-              <Button
-                variant='outline'
-                onPress={() => {
-                  close();
-                  setShowMonthPicker(false);
-                  setShowYearPicker(false);
-                  clearSelection();
-                }}
-              >
-                {mode === 'range' ? 'Clear' : 'Cancel'}
+          {getPickerContent()}
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 16, gap: 8 }}>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <Button variant='outline' onPress={resetToToday}>Hari Ini</Button>
+              <Button variant='outline' onPress={() => { close(); setShowMonthPicker(false); setShowYearPicker(false); clearSelection(); }}>
+                {mode === 'range' ? 'Hapus' : 'Batal'}
               </Button>
             </View>
-
             {mode === 'datetime' && viewMode === 'date' ? (
-              <Button onPress={() => setViewMode('time')} style={{ flex: 1 }}>
-                Next
-              </Button>
+              <Button onPress={() => setViewMode('time')} style={{ flex: 1 }}>Selanjutnya</Button>
             ) : (
-              <Button
-                onPress={handleConfirm}
-                // handleConfirm fires a success notification, so the button's
-                // own light impact would land on top of it.
-                haptic={false}
-                style={{ flex: 1 }}
-              >
-                Done
-              </Button>
+              <Button onPress={handleConfirm} haptic={false} style={{ flex: 1 }}>Selesai</Button>
             )}
           </View>
         </View>
