@@ -58,6 +58,7 @@ const styles = StyleSheet.create({
   block: {
     paddingHorizontal: spacing.marginMobile,
     paddingTop: 8,
+    paddingBottom: 16,
     gap: 16,
   },
   row: { flexDirection: "row", gap: 12 },

@@ -57,8 +57,8 @@ const EXPANDED_WIDTH = screenWidth - 32;
 
 // Reanimated spring configuration
 const SPRING_CONFIG = {
-  stiffness: 120,
-  damping: 8,
+  stiffness: 80,
+  damping: 4,
 };
 
 export function Toast({
@@ -274,7 +274,7 @@ export function Toast({
   };
 
   return (
-    <GestureDetector gesture={panGesture}>
+    // <GestureDetector gesture={panGesture}>
       <Animated.View
         style={[toastStyle, animatedContainerStyle]}
         accessible
@@ -378,7 +378,7 @@ export function Toast({
           )}
         </Animated.View>
       </Animated.View>
-    </GestureDetector>
+    // </GestureDetector>
   );
 }
 

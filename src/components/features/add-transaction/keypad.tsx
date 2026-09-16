@@ -27,7 +27,11 @@ export function Keypad({ onKeyPress }: KeypadProps) {
           {row.map((key) => (
             <TouchableOpacity
               key={key}
-              style={[styles.keypadKey, { backgroundColor: cardColor }, shadow.card]}
+              style={[
+                styles.keypadKey,
+                { backgroundColor: cardColor },
+                shadow.card,
+              ]}
               activeOpacity={0.6}
               onPress={() => onKeyPress(key)}
             >
@@ -38,7 +42,9 @@ export function Keypad({ onKeyPress }: KeypadProps) {
                   color={textMutedColor}
                 />
               ) : (
-                <Text style={[styles.keypadKeyText, { color: textColor }]}>{key}</Text>
+                <Text style={[styles.keypadKeyText, { color: textColor }]}>
+                  {key}
+                </Text>
               )}
             </TouchableOpacity>
           ))}
@@ -49,7 +55,9 @@ export function Keypad({ onKeyPress }: KeypadProps) {
 }
 
 const styles = StyleSheet.create({
-  keypad: { paddingTop: 16, gap: 8 },
+  keypad: {
+    gap: 8,
+  },
   keypadRow: { flexDirection: "row", gap: 8 },
   keypadKey: {
     flex: 1,

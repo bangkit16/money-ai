@@ -4,6 +4,7 @@ import { CategoryGrid } from "@/components/features/add-transaction/category-gri
 import { Keypad } from "@/components/features/add-transaction/keypad";
 import { SaveButton } from "@/components/features/add-transaction/save-button";
 import { TransactionDateFields } from "@/components/features/add-transaction/transaction-date-fields";
+import { ConfirmDialog } from "@/components/features/shared/confirm-dialog";
 import {
   TypeToggle,
   type TransactionTypeKey,
@@ -11,12 +12,13 @@ import {
 import { Text } from "@/components/ui/text";
 import { spacing, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
+import useKeyboardAwareOffset from "@/hooks/useKeyboardAwareOffset";
+import { useKeyboardHeight } from "@/hooks/useKeyboardHeight";
 import { useTransactionForm } from "@/hooks/useTransactionForm";
 import { useT } from "@/i18n";
-import { ConfirmDialog } from "@/components/features/shared/confirm-dialog";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
-import { useMemo, useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Animated,
   Easing,
@@ -27,7 +29,6 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useKeyboardHeight } from "@/hooks/useKeyboardHeight";
 
 export default function TransactionScreen() {
   const params = useLocalSearchParams<{ id?: string; type?: string }>();
@@ -36,6 +37,12 @@ export default function TransactionScreen() {
   // Edge-to-edge: adjustResize tidak menyusutkan window saat keyboard muncul,
   // jadi angkat layout manual dengan tinggi keyboard.
   const { keyboardHeight } = useKeyboardHeight();
+  const { fieldRef, offset, measureAndAdjust } =
+    useKeyboardAwareOffset(keyboardHeight);
+
+  useEffect(() => {
+    measureAndAdjust();
+  }, [keyboardHeight, measureAndAdjust]);
   const t = useT();
 
   const entrance = useMemo(() => new Animated.Value(0), []);
@@ -102,7 +109,9 @@ export default function TransactionScreen() {
   if (editId && isLoadingTx) {
     return (
       <View style={[styles.loadingContainer, { backgroundColor: bgColor }]}>
-        <Text style={[styles.loadingText, { color: textMutedColor }]}>{t("add.loading")}</Text>
+        <Text style={[styles.loadingText, { color: textMutedColor }]}>
+          {t("add.loading")}
+        </Text>
       </View>
     );
   }
@@ -110,7 +119,9 @@ export default function TransactionScreen() {
     return (
       <View style={[styles.loadingContainer, { backgroundColor: bgColor }]}>
         <Text style={[styles.loadingText, { color: textMutedColor }]}>
-          {txError ? t("add.txError", { message: (txError as Error).message }) : t("add.loadError")}
+          {txError
+            ? t("add.txError", { message: (txError as Error).message })
+            : t("add.loadError")}
         </Text>
       </View>
     );
@@ -118,9 +129,7 @@ export default function TransactionScreen() {
   if (editId && !hydrated) return null;
 
   return (
-    <View
-      style={[styles.screen, { backgroundColor: bgColor, paddingBottom: keyboardHeight }]}
-    >
+    <View style={[styles.screen, { backgroundColor: bgColor }]}>
       <Animated.View
         style={[
           styles.screen,
@@ -172,16 +181,16 @@ export default function TransactionScreen() {
         </View>
 
         <View style={styles.body}>
-          <AmountDisplay amount={amount} />
           <ScrollView
             style={styles.topScroll}
             contentContainerStyle={styles.topScrollContent}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
-
             <View style={styles.fieldBlock}>
-              <Text style={[styles.label, { color: textMutedColor }]}>{t("add.type")}</Text>
+              <Text style={[styles.label, { color: textMutedColor }]}>
+                {t("add.type")}
+              </Text>
               <TypeToggle
                 value={transactionType}
                 onChange={setTransactionType}
@@ -191,7 +200,9 @@ export default function TransactionScreen() {
             {isTransfer ? (
               <View style={styles.transferAccountsRow}>
                 <View style={styles.transferAccountCol}>
-                  <Text style={[styles.label, { color: textMutedColor }]}>{t("add.from")}</Text>
+                  <Text style={[styles.label, { color: textMutedColor }]}>
+                    {t("add.from")}
+                  </Text>
                   <AccountChips
                     accounts={accounts}
                     selectedId={fromAccountId}
@@ -213,7 +224,9 @@ export default function TransactionScreen() {
                   />
                 </View>
                 <View style={styles.transferAccountCol}>
-                  <Text style={[styles.label, { color: textMutedColor }]}>{t("add.to")}</Text>
+                  <Text style={[styles.label, { color: textMutedColor }]}>
+                    {t("add.to")}
+                  </Text>
                   <AccountChips
                     accounts={accounts}
                     selectedId={toAccountId}
@@ -230,7 +243,9 @@ export default function TransactionScreen() {
               </View>
             ) : (
               <View style={styles.fieldBlock}>
-                <Text style={[styles.label, { color: textMutedColor }]}>{t("add.account")}</Text>
+                <Text style={[styles.label, { color: textMutedColor }]}>
+                  {t("add.account")}
+                </Text>
                 <AccountChips
                   accounts={accounts}
                   selectedId={fromAccountId}
@@ -243,7 +258,9 @@ export default function TransactionScreen() {
             )}
 
             <View style={styles.fieldBlock}>
-              <Text style={[styles.label, { color: textMutedColor }]}>{t("add.category")}</Text>
+              <Text style={[styles.label, { color: textMutedColor }]}>
+                {t("add.category")}
+              </Text>
               <CategoryGrid
                 categories={categories}
                 selectedId={categoryId}
@@ -252,18 +269,27 @@ export default function TransactionScreen() {
               />
             </View>
           </ScrollView>
-
         </View>
+        <View
+          ref={fieldRef}
+          style={{
+            backgroundColor: bgColor,
+            transform: [{ translateY: -offset }],
+            paddingTop: 8,
+          }}
+        >
+          <AmountDisplay amount={amount} />
           <TransactionDateFields
             transaction={transactionName}
             onChangeTransaction={setTransactionName}
             dateTime={dateTime}
             onChangeDateTime={setDateTime}
           />
+        </View>
 
-          <View style={styles.keypadWrap}>
-            <Keypad onKeyPress={handleKeyPress} />
-          </View>
+        <View style={styles.keypadWrap}>
+          <Keypad onKeyPress={handleKeyPress} />
+        </View>
 
         <View style={[styles.footer, { backgroundColor: bgColor }]}>
           <SaveButton
@@ -329,7 +355,9 @@ const styles = StyleSheet.create({
   transferAccountCol: { flex: 1, minWidth: 0 },
   transferArrow: { paddingBottom: 12 },
 
-  keypadWrap: { paddingHorizontal: spacing.marginMobile },
+  keypadWrap: {
+    paddingHorizontal: spacing.marginMobile,
+  },
 
   footer: {
     paddingHorizontal: spacing.marginMobile,
