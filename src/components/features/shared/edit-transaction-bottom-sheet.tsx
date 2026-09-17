@@ -197,7 +197,8 @@ export function EditTransactionBottomSheet({
       >
         <KeyboardAvoidingView
           style={[styles.screen, { backgroundColor: bgColor }]}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          behavior="padding"
+          keyboardVerticalOffset={0}
         >
           <Animated.View
             style={[

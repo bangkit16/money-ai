@@ -1,4 +1,10 @@
 // migrated to useColor
+import { Text } from "@/components/ui/text";
+import { radius, shadow, spacing, typography } from "@/constants/theme";
+import { useColor } from "@/hooks/useColor";
+import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useMemo, useState } from "react";
 import {
   Animated,
@@ -11,12 +17,6 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
-import { radius, spacing, typography, shadow } from "@/constants/theme";
-import { useColor } from "@/hooks/useColor";
-import { Text } from "@/components/ui/text";
-import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 
 type AiPromptBottomSheetProps = {
   visible: boolean;
@@ -131,9 +131,8 @@ export default function AiPromptBottomSheet({
     >
       <KeyboardAvoidingView
         style={styles.overlay}
-        // behavior={Platform.OS === "ios" ? "padding" : undefined}
-          behavior="padding"
-  keyboardVerticalOffset={0}
+        behavior="padding"
+        keyboardVerticalOffset={0}
       >
         <TouchableWithoutFeedback onPress={handleClose}>
           <Animated.View
@@ -145,7 +144,10 @@ export default function AiPromptBottomSheet({
           style={[
             styles.sheet,
             shadow.heroCard,
-            { backgroundColor: cardColor, transform: [{ translateY: sheetTranslateY }] },
+            {
+              backgroundColor: cardColor,
+              transform: [{ translateY: sheetTranslateY }],
+            },
           ]}
         >
           <View style={[styles.handleBar, { backgroundColor: handleColor }]} />
@@ -155,25 +157,30 @@ export default function AiPromptBottomSheet({
               <View style={styles.aiIconChip}>
                 <Ionicons name="sparkles" size={14} color={whiteColor} />
               </View>
-              <Text style={[styles.title, { color: textColor }]}>Ask Dompety AI</Text>
+              <Text style={[styles.title, { color: textColor }]}>
+                Ask Dompety AI
+              </Text>
             </View>
             <TouchableOpacity hitSlop={10} onPress={handleClose}>
-              <Ionicons
-                name="close"
-                size={22}
-                color={textMutedColor}
-              />
+              <Ionicons name="close" size={22} color={textMutedColor} />
             </TouchableOpacity>
           </View>
 
           <TextInput
             value={prompt}
             onChangeText={setPrompt}
-            placeholder={isListening ? "Mendengarkan..." : "Tanyakan sesuatu tentang keuanganmu..."}
+            placeholder={
+              isListening
+                ? "Mendengarkan..."
+                : "Tanyakan sesuatu tentang keuanganmu..."
+            }
             placeholderTextColor={textMutedColor}
             multiline
             autoFocus
-            style={[styles.input, { color: textColor, backgroundColor: mutedBgColor }]}
+            style={[
+              styles.input,
+              { color: textColor, backgroundColor: mutedBgColor },
+            ]}
           />
 
           <View style={styles.footerRow}>

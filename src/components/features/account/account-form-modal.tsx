@@ -101,7 +101,8 @@ export function AccountFormModal({
     >
       <KeyboardAvoidingView
         style={styles.modalOverlay}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior="padding"
+        keyboardVerticalOffset={0}
       >
         <Animated.View style={[styles.modalBackdrop, { opacity: backdropOpacity }]}>
           <TouchableOpacity

@@ -64,7 +64,8 @@ export default function RegisterScreen() {
     >
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior="padding"
+        keyboardVerticalOffset={0}
       >
         <StatusBar style="light" />
 
