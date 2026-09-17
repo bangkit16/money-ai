@@ -18,7 +18,8 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.bangkit16s.dompety"
+      "package": "com.bangkit16s.dompety",
+      "softwareKeyboardLayoutMode": "resize"
     },
     "web": {
       "output": "static",

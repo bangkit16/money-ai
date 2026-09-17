@@ -4,6 +4,7 @@ import type { QueryClient } from "@tanstack/react-query";
 export function invalidateTransactionCaches(client: QueryClient) {
   client.invalidateQueries({ queryKey: ["transactions"] });
   client.invalidateQueries({ queryKey: ["account"] });
+  client.invalidateQueries({ queryKey: ["accounts-with-totals"] });
   client.invalidateQueries({ queryKey: ["dashboard-transactions"] });
   client.invalidateQueries({ queryKey: ["dashboard-recent-transactions"] });
   client.invalidateQueries({ queryKey: ["analytics-current-month"] });

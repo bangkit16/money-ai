@@ -7,7 +7,7 @@ import { TransferCard } from "@/components/features/account/transfer-card";
 import { AppBar } from "@/components/features/shared/app-bar";
 import { ConfirmDialog } from "@/components/features/shared/confirm-dialog";
 import { Text } from "@/components/ui/text";
-import { Toast, useToast } from "@/components/ui/toast";
+import { useToast } from "@/components/ui/toast";
 import { spacing, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
 import { useT } from "@/i18n";
@@ -39,7 +39,7 @@ export default function AccountScreen() {
     isLoading,
     error,
   } = useQuery<AccountRow[]>({
-    queryKey: ["account"],
+    queryKey: ["accounts-with-totals"],
     queryFn: AccountService.GetAccountsWithTotals,
   });
 
@@ -47,6 +47,7 @@ export default function AccountScreen() {
     mutationFn: AccountService.CreateAccount,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["account"] });
+      queryClient.invalidateQueries({ queryKey: ["accounts-with-totals"] });
       closeForm();
     },
     onError: (err: Error) =>
@@ -58,6 +59,7 @@ export default function AccountScreen() {
       AccountService.UpdateAccount(id, accountName),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["account"] });
+      queryClient.invalidateQueries({ queryKey: ["accounts-with-totals"] });
       closeForm();
     },
     onError: (err: Error) =>
@@ -68,6 +70,7 @@ export default function AccountScreen() {
     mutationFn: AccountService.DeleteAccount,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["account"] });
+      queryClient.invalidateQueries({ queryKey: ["accounts-with-totals"] });
       setDeleteConfirmAccount(null);
     },
     onError: (err: Error) => {
@@ -81,6 +84,7 @@ export default function AccountScreen() {
       AccountService.SetPrimaryAccount(id, isPrimary),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["account"] });
+      queryClient.invalidateQueries({ queryKey: ["accounts-with-totals"] });
       toast.success(variables.isPrimary ? t("account.primarySet") : t("account.primaryUnset"));
     },
   });
