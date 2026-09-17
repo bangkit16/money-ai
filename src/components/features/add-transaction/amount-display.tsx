@@ -25,7 +25,7 @@ export function AmountDisplay({ amount }: { amount: string }) {
 }
 
 const styles = StyleSheet.create({
-  block: { alignItems: "center", paddingVertical: 4 },
+  block: { alignItems: "baseline", paddingVertical: 4 },
   label: {
     ...typography.labelCaps,
     marginBottom: 8,
@@ -37,12 +37,12 @@ const styles = StyleSheet.create({
   },
   currencySymbol: {
     ...typography.headlineLg,
-    fontSize: 22,
+    fontSize: 12,
     marginRight: 4,
   },
   value: {
     ...typography.displayLg,
-    fontSize: 32,
+    fontSize: 22,
     maxWidth: "100%",
   },
 });

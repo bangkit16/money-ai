@@ -278,10 +278,12 @@ export default function TransactionScreen() {
             paddingTop: 8,
           }}
         >
-          <AmountDisplay amount={amount} />
+          {/* <AmountDisplay amount={amount} /> */}
           <TransactionDateFields
             transaction={transactionName}
             onChangeTransaction={setTransactionName}
+            amount={amount}
+            // onChangeAmount={setAmount}
             dateTime={dateTime}
             onChangeDateTime={setDateTime}
           />

@@ -1,5 +1,6 @@
 // migrated to useColor
 import { DateField, TimeField } from "@/components/DateTimeField";
+import { AmountDisplay } from "@/components/features/add-transaction/amount-display";
 import { Text } from "@/components/ui/text";
 import { spacing, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
@@ -9,14 +10,16 @@ import { StyleSheet, TextInput, View } from "react-native";
 type TransactionDateFieldsProps = {
   transaction: string;
   onChangeTransaction: (text: string) => void;
+  amount: string;
+  // onChangeAmount: (text: string) => void;
   dateTime: Date;
   onChangeDateTime: (date: Date) => void;
 };
 
-// Transaction + Tanggal/Waktu — dua baris: baris pertama transaction, baris kedua tanggal dan waktu
 export function TransactionDateFields({
   transaction,
   onChangeTransaction,
+  amount,
   dateTime,
   onChangeDateTime,
 }: TransactionDateFieldsProps) {
@@ -30,14 +33,12 @@ export function TransactionDateFields({
     new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
   const setTimePart = (date: Date) => {
-    // Gabungkan bagian jam dari picker waktu dengan tanggal yang sudah dipilih
     const combined = new Date(toDateOnly(dateTime));
     combined.setHours(date.getHours(), date.getMinutes(), 0, 0);
     onChangeDateTime(combined);
   };
 
   const setDatePart = (date: Date) => {
-    // Pertahankan jam yang sudah dipilih saat mengganti tanggal
     const combined = new Date(toDateOnly(date));
     combined.setHours(dateTime.getHours(), dateTime.getMinutes(), 0, 0);
     onChangeDateTime(combined);
@@ -60,6 +61,9 @@ export function TransactionDateFields({
               styles.inputSoft,
             ]}
           />
+        </View>
+        <View style={[styles.fieldBlock, { flex: 1 }]}>
+          <AmountDisplay amount={amount} />
         </View>
       </View>
       <View style={styles.row}>

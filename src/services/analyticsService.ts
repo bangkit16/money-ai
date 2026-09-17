@@ -34,7 +34,7 @@ export type TopCategory = {
 
 // Color palette fallback (urut konsisten dengan legend chart) — green brand
 const PALETTE = [
-  "#0a2505", // primary deep
+  "#0b3d03", // primary deep
   "#1b4d1b", // forest
   "#3FA796", // teal
   "#6b8e4e", // sage

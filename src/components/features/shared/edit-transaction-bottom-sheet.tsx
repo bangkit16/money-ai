@@ -293,6 +293,8 @@ export function EditTransactionBottomSheet({
               <TransactionDateFields
                 transaction={transactionName}
                 onChangeTransaction={setTransactionName}
+                amount={amount}
+                // onChangeAmount={setAmount}
                 dateTime={dateTime}
                 onChangeDateTime={setDateTime}
               />
