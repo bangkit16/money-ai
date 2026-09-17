@@ -131,7 +131,9 @@ export default function AiPromptBottomSheet({
     >
       <KeyboardAvoidingView
         style={styles.overlay}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        // behavior={Platform.OS === "ios" ? "padding" : undefined}
+          behavior="padding"
+  keyboardVerticalOffset={0}
       >
         <TouchableWithoutFeedback onPress={handleClose}>
           <Animated.View
