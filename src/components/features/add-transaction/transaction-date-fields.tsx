@@ -13,8 +13,7 @@ type TransactionDateFieldsProps = {
   onChangeDateTime: (date: Date) => void;
 };
 
-// Transaction + Tanggal/Waktu — fixed satu baris, selalu terlihat di atas numpad.
-// Tanggal & waktu dipisah agar pemilihan jam eksplisit, bukan tersembunyi di alur "Next".
+// Transaction + Tanggal/Waktu — dua baris: baris pertama transaction, baris kedua tanggal dan waktu
 export function TransactionDateFields({
   transaction,
   onChangeTransaction,
@@ -47,7 +46,7 @@ export function TransactionDateFields({
   return (
     <View style={styles.block}>
       <View style={styles.row}>
-        <View style={[styles.fieldBlock, { flex: 3 }]}>
+        <View style={[styles.fieldBlock, { flex: 1 }]}>
           <Text style={[styles.label, { color: textMutedColor }]}>
             {t("add.transactionLabel")}
           </Text>
@@ -62,13 +61,15 @@ export function TransactionDateFields({
             ]}
           />
         </View>
-        <View style={[styles.fieldBlock, { flex: 2 }]}>
+      </View>
+      <View style={styles.row}>
+        <View style={[styles.fieldBlock, { flex: 1 }]}>
           <Text style={[styles.label, { color: textMutedColor }]}>
             {t("add.dateLabel")}
           </Text>
           <DateField value={dateTime} onChange={setDatePart} />
         </View>
-        <View style={[styles.fieldBlock, { flex: 2 }]}>
+        <View style={[styles.fieldBlock, { flex: 1 }]}>
           <Text style={[styles.label, { color: textMutedColor }]}>
             {t("add.timeLabel")}
           </Text>
@@ -84,13 +85,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.marginMobile,
     paddingTop: 8,
     paddingBottom: 16,
-    gap: 16,
+    gap: 2,
+    flexDirection: "column",
   },
-  row: { flexDirection: "row", gap: 12 },
+  row: { flexDirection: "row", gap: 6, marginBottom: 8 },
   fieldBlock: {},
   label: {
     ...typography.labelCaps,
-    marginBottom: 8,
+    marginBottom: 4,
   },
   inputSoft: {
     flexDirection: "row",

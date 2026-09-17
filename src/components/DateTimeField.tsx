@@ -7,7 +7,7 @@ type Props = {
 };
 
 export function DateField({ value, onChange }: Props) {
-  return <DatePicker mode="datetime" value={value} onChange={(v) => v && onChange(v)} />;
+  return <DatePicker mode="date" value={value} onChange={(v) => v && onChange(v)} />;
 }
 
 export function TimeField({ value, onChange }: Props) {
