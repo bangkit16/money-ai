@@ -10,9 +10,11 @@ import { makeRedirectUri } from "expo-auth-session";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as WebBrowser from "expo-web-browser";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
   Platform,
   StyleSheet,
   TextInput,
@@ -23,7 +25,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useToast } from "@/components/ui/toast";
 import { createSessionFromUrl } from "@/lib/auth";
-import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import {
+  GoogleSignin,
+  statusCodes,
+} from "@react-native-google-signin/google-signin";
 
 // Wajib dipanggil di level module supaya WebBrowser tahu kapan harus
 // menutup sesi auth-nya sendiri saat browser di-redirect balik ke app.
@@ -53,9 +58,11 @@ export default function LoginScreen() {
   const primaryColor = useColor("primary");
 
   // console.log(process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID!);
-  GoogleSignin.configure({
-    webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID!,
-  });
+  useEffect(() => {
+    GoogleSignin.configure({
+      webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID!,
+    });
+  }, []);
 
   const handleEmailLogin = async () => {
     if (!email || !password) {
@@ -123,30 +130,36 @@ export default function LoginScreen() {
       const response = await GoogleSignin.signIn();
       setConsoleLog(" Google sign-in response: " + JSON.stringify(response));
       const idToken = response.data?.idToken;
-      if (!idToken) throw new Error("Tidak ada idToken dari Google");
       setConsoleLog(" Google sign-in idToken: " + idToken);
 
-      const { data, error } = await supabase.auth.signInWithIdToken({
-        provider: "google",
-        token: idToken,
-      });
-      if (error) {
-        toast.error("Gagal masuk dengan Google: " + error.message);
-        setConsoleLog(" Google sign-in error: " + error.message);
-        throw error;
-      }
+      if (idToken) {
+        // Daftarkan / Masuk ke Supabase menggunakan idToken tersebut
+        const { data, error } = await supabase.auth.signInWithIdToken({
+          provider: "google",
+          token: idToken,
+        });
 
-      setConsoleLog(" Google sign-in data: " + JSON.stringify(data));
-      
+        if (error) {
+          toast.error("Gagal masuk dengan Google: " + error.message);
+          setConsoleLog(" Google sign-in error: " + error.message);
+          throw error;
+        }
 
-      toast.success("Berhasil masuk dengan Google");
-      if (data?.session) {
         toast.success("Berhasil Session dibuat");
-        // await supabase.auth.setSession(data.session);
+        // await supabase.auth.setSession(data.session);   
+        Alert.alert("Sukses! Session ", `Selamat datang, ${data.user?.email}`);
         router.replace("/(tabs)");
+        Alert.alert("Sukses!", `Selamat datang, ${data.user?.email}`);
+
+      } else {
+        throw new Error("ID Token Google tidak ditemukan.");
       }
-    } catch (error) {
-      console.error("Google sign-in error:", error);
+    } catch (error: any) {
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        Alert.alert("Dibatalkan", "Proses login dibatalkan oleh pengguna.");
+      } else {
+        Alert.alert("Error", error.message || "Terjadi kesalahan sistem.");
+      }
     } finally {
       setLoading(false);
     }
@@ -157,112 +170,123 @@ export default function LoginScreen() {
       style={[styles.screen, { backgroundColor: bgColor }]}
       edges={["top"]}
     >
-      <StatusBar style="light" />
-
-      {/* Bagian atas: brand hero */}
-      <LoginHero />
-
-      {/* Bagian bawah: card sign-in (overlap ke hero) */}
-      <View
-        style={[styles.sheet, shadow.heroCard, { backgroundColor: sheetColor }]}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior="padding"
+        keyboardVerticalOffset={0}
       >
-        <View style={styles.sheetHeader}>
-          <Text style={[styles.title, { color: textColor }]}>
-            {t("login.welcome")}
-          </Text>
-          <Text style={[styles.subtitle, { color: textMutedColor }]}>
-            {t("login.subtitle")}
-          </Text>
-        </View>
+        <StatusBar style="light" />
 
-        {error ? (
-          <View style={styles.errorBox}>
-            <Text style={{ color: "#DC2626", fontSize: 11 }}>{error}</Text>
-          </View>
-        ) : null}
+        {/* Bagian atas: brand hero */}
+        <LoginHero />
 
-        <TextInput
+        {/* Bagian bawah: card sign-in (overlap ke hero) */}
+        <View
           style={[
-            styles.input,
-            { color: textColor, borderColor: textMutedColor + "40" },
+            styles.sheet,
+            shadow.heroCard,
+            { backgroundColor: sheetColor },
           ]}
-          placeholder="Email"
-          placeholderTextColor={textMutedColor}
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          autoComplete="email"
-        />
-
-        <TextInput
-          style={[
-            styles.input,
-            { color: textColor, borderColor: textMutedColor + "40" },
-          ]}
-          placeholder="Password"
-          placeholderTextColor={textMutedColor}
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          autoComplete="password"
-        />
-
-        <TouchableOpacity
-          style={[styles.emailButton, { backgroundColor: primaryColor }]}
-          onPress={handleEmailLogin}
-          disabled={emailLoading}
-          activeOpacity={0.8}
         >
-          {emailLoading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.emailButtonText}>Masuk</Text>
-          )}
-        </TouchableOpacity>
-
-        <View style={styles.divider}>
-          <View
-            style={[
-              styles.dividerLine,
-              { backgroundColor: textMutedColor + "30" },
-            ]}
-          />
-          <Text style={[styles.dividerText, { color: textMutedColor }]}>
-            atau
-          </Text>
-          <View
-            style={[
-              styles.dividerLine,
-              { backgroundColor: textMutedColor + "30" },
-            ]}
-          />
-        </View>
-
-        <GoogleSignInButton loading={loading} onPress={handleGoogleSignIn} />
-
-        <TouchableOpacity
-          onPress={() => router.replace("/register")}
-          style={styles.linkBtn}
-        >
-          <Text style={[styles.linkText, { color: textMutedColor }]}>
-            Belum punya akun?{" "}
-            <Text style={{ color: primaryColor, fontFamily: "Poppins-Bold" }}>
-              Daftar
+          <View style={styles.sheetHeader}>
+            <Text style={[styles.title, { color: textColor }]}>
+              {t("login.welcome")}
             </Text>
-          </Text>
-          <Text style={[styles.linkText, { color: textMutedColor }]}>
-            {consoleLog}
-          </Text>
-        </TouchableOpacity>
+            <Text style={[styles.subtitle, { color: textMutedColor }]}>
+              {t("login.subtitle")}
+            </Text>
+          </View>
 
-        <Text style={[styles.termsText, { color: textMutedColor }]}>
-          {t("login.terms", { brand: "Dompety's" })}
-          <Text style={styles.termsLink}>{t("login.termsOfService")}</Text>
-          {t("login.termsAnd")}
-          <Text style={styles.termsLink}>{t("login.privacyPolicy")}</Text>.
-        </Text>
-      </View>
+          {error ? (
+            <View style={styles.errorBox}>
+              <Text style={{ color: "#DC2626", fontSize: 11 }}>{error}</Text>
+            </View>
+          ) : null}
+
+          <TextInput
+            style={[
+              styles.input,
+              { color: textColor, borderColor: textMutedColor + "40" },
+            ]}
+            placeholder="Email"
+            placeholderTextColor={textMutedColor}
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            autoComplete="email"
+          />
+
+          <TextInput
+            style={[
+              styles.input,
+              { color: textColor, borderColor: textMutedColor + "40" },
+            ]}
+            placeholder="Password"
+            placeholderTextColor={textMutedColor}
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            autoComplete="password"
+          />
+
+          <TouchableOpacity
+            style={[styles.emailButton, { backgroundColor: primaryColor }]}
+            onPress={handleEmailLogin}
+            disabled={emailLoading}
+            activeOpacity={0.8}
+          >
+            {emailLoading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.emailButtonText}>Masuk</Text>
+            )}
+          </TouchableOpacity>
+
+          <View style={styles.divider}>
+            <View
+              style={[
+                styles.dividerLine,
+                { backgroundColor: textMutedColor + "30" },
+              ]}
+            />
+            <Text style={[styles.dividerText, { color: textMutedColor }]}>
+              atau
+            </Text>
+            <View
+              style={[
+                styles.dividerLine,
+                { backgroundColor: textMutedColor + "30" },
+              ]}
+            />
+          </View>
+
+          <GoogleSignInButton loading={loading} onPress={handleGoogleSignIn} />
+
+          <TouchableOpacity
+            onPress={() => router.replace("/register")}
+            style={styles.linkBtn}
+          >
+            <Text style={[styles.linkText, { color: textMutedColor }]}>
+              Belum punya akun?{" "}
+              <Text style={{ color: primaryColor, fontFamily: "Poppins-Bold" }}>
+                Daftar
+              </Text>
+            </Text>
+            <Text style={[styles.linkText, { color: textMutedColor }]}>
+              {consoleLog}
+            </Text>
+          </TouchableOpacity>
+
+          <Text style={[styles.termsText, { color: textMutedColor }]}>
+            {t("login.terms", { brand: "Dompety's" })}
+            <Text style={styles.termsLink}>{t("login.termsOfService")}</Text>
+            {t("login.termsAnd")}
+            <Text style={styles.termsLink}>{t("login.privacyPolicy")}</Text>.
+          </Text>
+        </View>
+        {/* </View> */}
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
