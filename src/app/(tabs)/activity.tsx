@@ -8,10 +8,11 @@ import { groupByDate } from "@/components/features/activity/utils";
 import { Text } from "@/components/ui/text";
 import { spacing, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
+import { useDebounce } from "@/hooks/useDebounce";
 import { useT } from "@/i18n";
 import { useSettings } from "@/providers/settings-provider";
 import { ActivityService } from "@/services/activityService";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -21,11 +22,13 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 
-type TxType = "INCOME" | "EXPENSE";
+type TxType = "INCOME" | "EXPENSE" | "TRANSFER";
 
 export default function ActivityScreen() {
   const [query, setQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<"all" | TxType>("all");
+
+  const debouncedQuery = useDebounce(query, 500);
 
   const bgColor = useColor("background");
   const primaryColor = useColor("primary");
@@ -35,32 +38,26 @@ export default function ActivityScreen() {
   const { language } = useSettings();
 
   const {
-    data: transactions,
+    data,
     isLoading,
     error,
-  } = useQuery({
-    queryKey: ["transactions"],
-    queryFn: ActivityService.GetTransactions,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
+    queryKey: ["transactions", activeFilter, debouncedQuery],
+    queryFn: ({ pageParam = 0 }) => ActivityService.GetTransactions(pageParam, 10, activeFilter, debouncedQuery),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) => lastPage.length > 0 ? allPages.length : undefined,
   });
 
 
+  const allTransactions = useMemo(() => data?.pages.flat() ?? [], [data]);
+
   const filteredSections = useMemo(() => {
-    if (!transactions) return [];
-
-    const filtered = transactions.filter((tx) => {
-      const matchesFilter =
-        activeFilter === "all" || tx.transaction_type === activeFilter;
-      const q = query.trim().toLowerCase();
-      const matchesQuery =
-        q.length === 0 ||
-        (tx.transaction ?? "").toLowerCase().includes(q) ||
-        (tx.category?.category ?? "").toLowerCase().includes(q) ||
-        (tx.category?.category_en ?? "").toLowerCase().includes(q);
-      return matchesFilter && matchesQuery;
-    });
-
-    return groupByDate(filtered, t, language);
-  }, [transactions, query, activeFilter, t, language]);
+    if (!allTransactions.length) return [];
+    return groupByDate(allTransactions, t, language);
+  }, [allTransactions, t, language]);
 
   const handleEditPress = (
     transaction: import("@/services/activityService").ActivityTransactionRow
@@ -72,50 +69,69 @@ export default function ActivityScreen() {
     <View style={[styles.screen, { backgroundColor: bgColor }]}>
       <AppBar />
 
-      {isLoading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="small" color={primaryColor} />
-          <Text style={[styles.loadingText, { color: textMutedColor }]}>
-            {t("activity.loading")}
-          </Text>
-        </View>
-      ) : error ? (
-        <Text style={[styles.emptyText, { color: outlineColor }]}>
-          {t("activity.loadError", { message: (error as Error).message })}
-        </Text>
-      ) : (
-        <SectionList
-          sections={filteredSections}
-          keyExtractor={(item) => String(item.id)}
-          contentContainerStyle={styles.listContent}
-          stickySectionHeadersEnabled={false}
-          ListHeaderComponent={
-            <View style={styles.searchBlock}>
-              <SearchBar value={query} onChangeText={setQuery} />
-              <FilterChips activeFilter={activeFilter} onChange={setActiveFilter} />
-            </View>
-          }
-          renderSectionHeader={({ section }) => (
-            <DateSectionHeader label={section.label} total={section.total} />
-          )}
-          renderItem={({ item, index, section }) => (
-            <TransactionListItem
-              item={item}
-              isFirst={index === 0}
-              isLast={index === section.data.length - 1}
-              onPress={() => handleEditPress(item)}
-            />
-          )}
-          renderSectionFooter={() => (
-            <View style={{ height: spacing.gutter }} />
-          )}
-          ListEmptyComponent={
+      <SectionList
+        sections={filteredSections}
+        keyExtractor={(item) => String(item.id)}
+        contentContainerStyle={styles.listContent}
+        stickySectionHeadersEnabled={false}
+        ListHeaderComponent={
+          <>
+          <View style={styles.searchBlock}>
+            <SearchBar value={query} onChangeText={setQuery} />
+            <FilterChips activeFilter={activeFilter} onChange={setActiveFilter} />
+          </View>
+            {isLoading && (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="small" color={primaryColor} />
+                <Text style={[styles.loadingText, { color: textMutedColor }]}>
+                  {t("activity.loading")}
+                </Text>
+              </View>
+            )}
+          </>
+        }
+        renderSectionHeader={({ section }) => (
+          <DateSectionHeader label={section.label} total={section.total} />
+        )}
+        renderItem={({ item, index, section }) => (
+          <TransactionListItem
+            item={item}
+            isFirst={index === 0}
+            isLast={index === section.data.length - 1}
+            onPress={() => handleEditPress(item)}
+          />
+        )}
+        renderSectionFooter={() => (
+          <View style={{ height: spacing.gutter }} />
+        )}
+        ListEmptyComponent={
+          error ? (
+            <Text style={[styles.emptyText, { color: outlineColor }]}>
+              {t("activity.loadError", { message: (error as Error).message })}
+            </Text>
+          ) : (
             <Text style={[styles.emptyText, { color: outlineColor }]}>
               {t("activity.empty")}
             </Text>
+          )
+        }
+        onEndReached={() => {
+          if (hasNextPage && !isFetchingNextPage) {
+            fetchNextPage();
           }
-        />
-      )}
+        }}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          isFetchingNextPage ? (
+            <View style={styles.footerLoader}>
+              <ActivityIndicator size="small" color={primaryColor} />
+              <Text style={[styles.loadingText, { color: textMutedColor }]}>
+                {t("activity.loading")}
+              </Text>
+            </View>
+          ) : null
+        }
+      />
     </View>
   );
 }
@@ -139,5 +155,11 @@ const styles = StyleSheet.create({
     ...typography.bodyLg,
     textAlign: "center",
     marginTop: 40,
+  },
+
+  footerLoader: {
+    paddingVertical: 20,
+    alignItems: "center",
+    gap: 8,
   },
 });

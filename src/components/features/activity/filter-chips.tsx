@@ -2,15 +2,16 @@
 import { radius, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
 import { useT } from "@/i18n";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, TouchableOpacity, ScrollView } from "react-native"; // Mengganti View dengan ScrollView
 import { Text } from "@/components/ui/text";
 
-type TxType = "INCOME" | "EXPENSE";
+type TxType = "INCOME" | "EXPENSE" | "TRANSFER";
 
 const FILTERS: { key: "all" | TxType; labelKey: string }[] = [
   { key: "all", labelKey: "activity.filterAll" },
   { key: "EXPENSE", labelKey: "activity.filterExpenses" },
   { key: "INCOME", labelKey: "activity.filterIncome" },
+  { key: "TRANSFER", labelKey: "activity.filterTransfer" },
 ];
 
 type FilterChipsProps = {
@@ -25,8 +26,13 @@ export function FilterChips({ activeFilter, onChange }: FilterChipsProps) {
   const textMutedColor = useColor("textMuted");
   const whiteColor = useColor("background");
   const t = useT();
+
   return (
-    <View style={styles.row}>
+    <ScrollView
+      horizontal // Mengaktifkan scroll horizontal
+      showsHorizontalScrollIndicator={false} // Menyembunyikan scrollbar agar tampilan lebih bersih
+      contentContainerStyle={styles.scrollContainer} // Menggunakan contentContainerStyle untuk layouting item di dalamnya
+    >
       {FILTERS.map((f) => {
         const active = activeFilter === f.key;
         return (
@@ -36,7 +42,10 @@ export function FilterChips({ activeFilter, onChange }: FilterChipsProps) {
             style={[
               styles.chip,
               { backgroundColor: cardColor, borderColor },
-              active && { backgroundColor: primaryColor, borderColor: primaryColor },
+              active && {
+                backgroundColor: primaryColor,
+                borderColor: primaryColor,
+              },
             ]}
           >
             <Text
@@ -51,17 +60,24 @@ export function FilterChips({ activeFilter, onChange }: FilterChipsProps) {
           </TouchableOpacity>
         );
       })}
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: "row", gap: 8, flexWrap: "wrap" },
+  // Menggunakan contentContainerStyle pada ScrollView
+  scrollContainer: {
+    flexDirection: "row",
+    gap: 8,
+    paddingRight: 16, // Opsional: memberi sedikit jarak di ujung kiri dan kanan saat di-swipe
+  },
   chip: {
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: radius.full,
     borderWidth: 1,
   },
-  chipText: { ...typography.labelCaps },
+  chipText: {
+    ...typography.labelCaps,
+  },
 });
