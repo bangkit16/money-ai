@@ -44,6 +44,7 @@ export const translations: Record<LanguageCode, Dict> = {
     "tabs.activity": "Aktivitas",
     "tabs.analytics": "Analitik",
     "tabs.account": "Rekening",
+    "tabs.notifications": "Notifikasi",
     "tabs.settings": "Pengaturan",
     // dashboard
     "dashboard.loading": "Memuat dasbor...",
@@ -214,6 +215,7 @@ export const translations: Record<LanguageCode, Dict> = {
     "tabs.activity": "Activity",
     "tabs.analytics": "Analytics",
     "tabs.account": "Account",
+    "tabs.notifications": "Notifications",
     "tabs.settings": "Settings",
     "dashboard.loading": "Loading dashboard...",
     "dashboard.loadError": "Failed to load data: {message}",
