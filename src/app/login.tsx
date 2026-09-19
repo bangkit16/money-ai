@@ -1,5 +1,6 @@
 // migrated to useColor
 import { GoogleSignInButton } from "@/components/features/login/google-sign-in-button";
+import { Modal, Switch } from "react-native";
 import { LoginHero } from "@/components/features/login/login-hero";
 import { Text } from "@/components/ui/text";
 import { shadow, spacing, typography } from "@/constants/theme";
@@ -88,6 +89,8 @@ export default function LoginScreen() {
   };
 
   const [consoleLog, setConsoleLog] = useState<string>("");
+  const [showTerms, setShowTerms] = useState(false);
+  const [agree, setAgree] = useState(false);
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
@@ -273,17 +276,32 @@ export default function LoginScreen() {
                 Daftar
               </Text>
             </Text>
-            <Text style={[styles.linkText, { color: textMutedColor }]}>
-              {consoleLog}
-            </Text>
           </TouchableOpacity>
 
-          <Text style={[styles.termsText, { color: textMutedColor }]}>
-            {t("login.terms", { brand: "Dompety's" })}
-            <Text style={styles.termsLink}>{t("login.termsOfService")}</Text>
-            {t("login.termsAnd")}
-            <Text style={styles.termsLink}>{t("login.privacyPolicy")}</Text>.
-          </Text>
+          {/* Terms Modal */}
+          <Modal visible={showTerms} animationType="slide" transparent={true} onRequestClose={() => setShowTerms(false)}>
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>Terms of Service</Text>
+                <Text style={styles.modalBody}>[Isi Terms of Service di sini...]</Text>
+                <View style={styles.checkboxContainer}>
+                  <Switch value={agree} onValueChange={setAgree} />
+                  <Text style={styles.checkboxLabel}>Dengan ini saya setuju dengan layanan blblabla</Text>
+                </View>
+                <TouchableOpacity onPress={() => setShowTerms(false)} style={styles.modalCloseBtn}>
+                  <Text style={styles.modalCloseText}>Tutup</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
+          <TouchableOpacity onPress={() => setShowTerms(true)}>
+            <Text style={[styles.termsText, { color: textMutedColor }]}>
+              {t("login.terms", { brand: "Dompety's" })}
+              <Text style={styles.termsLink}>{t("login.termsOfService")}</Text>
+              {t("login.termsAnd")}
+              <Text style={styles.termsLink}>{t("login.privacyPolicy")}</Text>.
+            </Text>
+          </TouchableOpacity>
         </View>
         {/* </View> */}
       </KeyboardAvoidingView>
@@ -358,4 +376,46 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   termsLink: { fontSize: 10 },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "#00000088",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 20,
+    width: "80%",
+    maxHeight: "80%",
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  modalBody: {
+    fontSize: 14,
+    marginBottom: 20,
+  },
+  checkboxContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 15,
+  },
+  checkboxLabel: {
+    marginLeft: 8,
+    fontSize: 14,
+    color: "#000",
+  },
+  modalCloseBtn: {
+    alignSelf: "flex-end",
+    padding: 8,
+    backgroundColor: "#2196F3",
+    borderRadius: 6,
+  },
+  modalCloseText: {
+    color: "#fff",
+    fontSize: 14,
+  },
 });
