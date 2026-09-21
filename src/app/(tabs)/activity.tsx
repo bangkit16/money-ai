@@ -1,10 +1,10 @@
 // migrated to useColor
-import { FilterChips } from "@/components/features/activity/filter-chips";
-import { AppBar } from "@/components/features/shared/app-bar";
-import { SearchBar } from "@/components/features/activity/search-bar";
 import { DateSectionHeader } from "@/components/features/activity/date-section-header";
+import { FilterChips } from "@/components/features/activity/filter-chips";
+import { SearchBar } from "@/components/features/activity/search-bar";
 import { TransactionListItem } from "@/components/features/activity/transaction-list-item";
 import { groupByDate } from "@/components/features/activity/utils";
+import { AppBar } from "@/components/features/shared/app-bar";
 import { Text } from "@/components/ui/text";
 import { spacing, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
@@ -13,14 +13,9 @@ import { useT } from "@/i18n";
 import { useSettings } from "@/providers/settings-provider";
 import { ActivityService } from "@/services/activityService";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
-import {
-  ActivityIndicator,
-  SectionList,
-  StyleSheet,
-  View,
-} from "react-native";
 import { router } from "expo-router";
+import { useMemo, useState } from "react";
+import { ActivityIndicator, SectionList, StyleSheet, View } from "react-native";
 
 type TxType = "INCOME" | "EXPENSE" | "TRANSFER";
 
@@ -46,11 +41,17 @@ export default function ActivityScreen() {
     isFetchingNextPage,
   } = useInfiniteQuery({
     queryKey: ["transactions", activeFilter, debouncedQuery],
-    queryFn: ({ pageParam = 0 }) => ActivityService.GetTransactions(pageParam, 10, activeFilter, debouncedQuery),
+    queryFn: ({ pageParam = 0 }) =>
+      ActivityService.GetTransactions(
+        pageParam,
+        10,
+        activeFilter,
+        debouncedQuery,
+      ),
     initialPageParam: 0,
-    getNextPageParam: (lastPage, allPages) => lastPage.length > 0 ? allPages.length : undefined,
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.length > 0 ? allPages.length : undefined,
   });
-
 
   const allTransactions = useMemo(() => data?.pages.flat() ?? [], [data]);
 
@@ -60,9 +61,12 @@ export default function ActivityScreen() {
   }, [allTransactions, t, language]);
 
   const handleEditPress = (
-    transaction: import("@/services/activityService").ActivityTransactionRow
+    transaction: import("@/services/activityService").ActivityTransactionRow,
   ) => {
-    router.push({ pathname: "/add-transaction", params: { id: String(transaction.id) } });
+    router.push({
+      pathname: "/add-transaction",
+      params: { id: String(transaction.id) },
+    });
   };
 
   return (
@@ -76,10 +80,13 @@ export default function ActivityScreen() {
         stickySectionHeadersEnabled={false}
         ListHeaderComponent={
           <>
-          <View style={styles.searchBlock}>
-            <SearchBar value={query} onChangeText={setQuery} />
-            <FilterChips activeFilter={activeFilter} onChange={setActiveFilter} />
-          </View>
+            <View style={styles.searchBlock}>
+              <SearchBar value={query} onChangeText={setQuery} />
+              <FilterChips
+                activeFilter={activeFilter}
+                onChange={setActiveFilter}
+              />
+            </View>
             {isLoading && (
               <View style={styles.loadingContainer}>
                 <ActivityIndicator size="small" color={primaryColor} />
@@ -101,9 +108,7 @@ export default function ActivityScreen() {
             onPress={() => handleEditPress(item)}
           />
         )}
-        renderSectionFooter={() => (
-          <View style={{ height: spacing.gutter }} />
-        )}
+        renderSectionFooter={() => <View style={{ height: spacing.gutter }} />}
         ListEmptyComponent={
           error ? (
             <Text style={[styles.emptyText, { color: outlineColor }]}>
@@ -132,6 +137,7 @@ export default function ActivityScreen() {
           ) : null
         }
       />
+      {/* <View style={styles.bannerWrapper}><ActivityBannerAd /></View> */}
     </View>
   );
 }
@@ -147,7 +153,7 @@ const styles = StyleSheet.create({
   },
   loadingText: { ...typography.bodySm },
 
-  listContent: { paddingHorizontal: spacing.marginMobile, paddingBottom: 40 },
+  listContent: { paddingHorizontal: spacing.marginMobile, paddingBottom: 110 },
 
   searchBlock: { gap: 24, paddingTop: 16, marginBottom: 8 },
 
@@ -161,5 +167,17 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     alignItems: "center",
     gap: 8,
+  },
+
+  bannerWrapper: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    alignItems: "center",
+    width: "100%",
+    height: 60,
+    backgroundColor: "white",
+    zIndex: 1,
   },
 });

@@ -10,6 +10,7 @@ import { AuthGuard } from "@/components/auth-guard";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SplashScreen, Stack } from "expo-router";
 import { useEffect } from "react";
+import initialize  from "react-native-google-mobile-ads";
 import { ModeProvider } from "@/providers/mode-provider";
 import { SettingsProvider } from "@/providers/settings-provider";
 import { ToastProvider } from "@/components/ui/toast";
@@ -33,6 +34,7 @@ export default function RootLayout() {
     if (fontsLoaded || error) {
       SplashScreen.hideAsync();
     }
+    // initialize();
   }, [fontsLoaded, error]);
 
   if (!fontsLoaded && !error) {

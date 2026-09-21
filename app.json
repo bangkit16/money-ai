@@ -46,7 +46,8 @@
         }
       ],
       "expo-image",
-      "@react-native-google-signin/google-signin"
+      "@react-native-google-signin/google-signin",
+      ["react-native-google-mobile-ads", {"androidAppId": "ca-app-pub-3230523634633671~3589422419"}]
     ],
     "experiments": {
       "typedRoutes": true,
