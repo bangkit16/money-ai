@@ -17,7 +17,7 @@ type AppBarProps = {
 
 export function AppBar({
   title = "Dompety",
-  showNotifications = true,
+  showNotifications = false,
   transparent = false,
 }: AppBarProps) {
   const bgColor = useColor("background");
