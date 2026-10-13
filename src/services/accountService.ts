@@ -8,6 +8,7 @@ export type AccountRow = {
   user_id: string;
   total_amount: number;
   is_primary: boolean;
+  exclude_from_total: boolean;
 };
 
 export class AccountService {
@@ -40,16 +41,28 @@ export class AccountService {
           user_id: acc.user_id,
           total_amount: totalAmount,
           is_primary: acc.is_primary ?? false,
+          exclude_from_total: acc.exclude_from_total ?? false,
         };
       });
   }
 
-  static async CreateAccount(accountName: string) {
-    accountActions.create(accountName);
+  static async CreateAccount(accountName: string, excludeFromTotal = false) {
+    accountActions.create(accountName, excludeFromTotal);
   }
 
-  static async UpdateAccount(id: number, accountName: string) {
-    accountActions.update(id, accountName);
+  static async UpdateAccount(
+    id: number,
+    accountName: string,
+    excludeFromTotal?: boolean
+  ) {
+    accountActions.update(id, {
+      account_name: accountName,
+      exclude_from_total: excludeFromTotal,
+    });
+  }
+
+  static async ToggleExcludeFromTotal(id: number, exclude: boolean) {
+    accountActions.setExcludeFromTotal(id, exclude);
   }
 
   static async DeleteAccount(id: number) {

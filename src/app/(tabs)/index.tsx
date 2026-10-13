@@ -5,6 +5,7 @@ import { RecentTransactions } from "@/components/features/dashboard/recent-trans
 import { AppBar } from "@/components/features/shared/app-bar";
 import { useColor } from "@/hooks/useColor";
 import { useTransactions } from "@/hooks/useTransactions";
+import { useAccounts } from "@/hooks/useAccounts";
 import { useMemo } from "react";
 import {
   ScrollView,
@@ -20,6 +21,7 @@ export default function DashboardScreen() {
   const { language } = useSettings();
 
   const { transactions: allEnrichedTx, recentTransactions: recentTx } = useTransactions();
+  const { totalBalance } = useAccounts();
 
   const allTx = useMemo(() => {
     return allEnrichedTx.map((tx) => ({
@@ -49,19 +51,21 @@ export default function DashboardScreen() {
     >();
 
     for (const tx of allTx) {
+      if (tx.account?.exclude_from_total) continue;
+
       const isIncome = tx.transaction_type === "INCOME";
       const signedAmount = isIncome ? tx.amount : -tx.amount;
 
       if (isIncome) totalIncome += tx.amount;
-      else totalExpense += tx.amount;
+      else if (tx.transaction_type === "EXPENSE") totalExpense += tx.amount;
 
       const txDate = new Date(tx.created_at);
       if (txDate >= monthStart) {
         if (isIncome) thisMonthIncome += tx.amount;
-        else thisMonthExpense += tx.amount;
+        else if (tx.transaction_type === "EXPENSE") thisMonthExpense += tx.amount;
       } else if (txDate >= prevMonthStart && txDate < monthStart) {
         if (isIncome) prevMonthIncome += tx.amount;
-        else prevMonthExpense += tx.amount;
+        else if (tx.transaction_type === "EXPENSE") prevMonthExpense += tx.amount;
       }
 
       if (tx.account) {
@@ -77,7 +81,7 @@ export default function DashboardScreen() {
       }
     }
 
-    const netWorth = totalIncome - totalExpense;
+    const netWorth = totalBalance;
     const thisMonthNet = thisMonthIncome - thisMonthExpense;
     const prevMonthNet = prevMonthIncome - prevMonthExpense;
     const trendPct =

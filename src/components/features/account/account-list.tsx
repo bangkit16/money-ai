@@ -94,6 +94,14 @@ export function AccountList({
                     </Text>
                   </View>
                 )}
+                {account.exclude_from_total && (
+                  <View style={[styles.excludedBadge, { backgroundColor: onSurfaceVariantColor + "1a" }]}>
+                    <MaterialIcons name="visibility-off" size={11} color={onSurfaceVariantColor} />
+                    <Text style={[styles.excludedBadgeText, { color: onSurfaceVariantColor }]}>
+                      {t("account.excluded")}
+                    </Text>
+                  </View>
+                )}
               </View>
               <Text
                 style={[
@@ -178,6 +186,19 @@ const styles = StyleSheet.create({
   primaryBadgeText: {
     ...typography.bodySm,
     fontWeight: "600",
+    fontSize: 11,
+  },
+  excludedBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: radius.full,
+  },
+  excludedBadgeText: {
+    ...typography.bodySm,
+    fontWeight: "500",
     fontSize: 11,
   },
   optionsButton: {

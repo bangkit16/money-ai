@@ -10,13 +10,14 @@ export type AccountEntity = {
   created_at: string;
   user_id: string;
   is_primary: boolean;
+  exclude_from_total?: boolean;
 };
 
 export const accounts$ = observable<Record<number, AccountEntity>>(
   syncedSupabase({
     supabase,
     collection: "account" as any,
-    select: (from) => from.select("id, account_name, created_at, user_id, is_primary"),
+    select: (from) => from.select("*"),
     filter: (query) => query.order("created_at", { ascending: true }),
     actions: ["read", "create", "update", "delete"],
     realtime: true,
@@ -30,7 +31,7 @@ export const accounts$ = observable<Record<number, AccountEntity>>(
 );
 
 export const accountActions = {
-  create(accountName: string) {
+  create(accountName: string, excludeFromTotal = false) {
     const user = user$.peek();
     if (!user) throw new Error("User belum login");
     const id = Date.now();
@@ -40,17 +41,35 @@ export const accountActions = {
       created_at: new Date().toISOString(),
       user_id: user.id,
       is_primary: false,
+      exclude_from_total: excludeFromTotal,
     });
     return id;
   },
 
-  update(id: number, accountName: string) {
+  update(
+    id: number,
+    input: string | { account_name?: string; exclude_from_total?: boolean }
+  ) {
     if (!accounts$[id]?.peek()) return;
-    accounts$[id].account_name.set(accountName);
+    if (typeof input === "string") {
+      accounts$[id].account_name.set(input);
+    } else {
+      if (input.account_name !== undefined) {
+        accounts$[id].account_name.set(input.account_name);
+      }
+      if (input.exclude_from_total !== undefined) {
+        accounts$[id].exclude_from_total.set(input.exclude_from_total);
+      }
+    }
   },
 
   delete(id: number) {
     accounts$[id]?.delete();
+  },
+
+  setExcludeFromTotal(id: number, exclude: boolean) {
+    if (!accounts$[id]?.peek()) return;
+    accounts$[id].exclude_from_total.set(exclude);
   },
 
   setPrimary(id: number, isPrimary: boolean) {

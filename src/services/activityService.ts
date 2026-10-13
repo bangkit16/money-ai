@@ -9,8 +9,8 @@ export type ActivityTransactionRow = {
   amount: number;
   transaction_type: TransactionType;
   category: { id: number; category: string; category_en: string | null; slug: string; icon: string } | null;
-  from_account: { id: number; account_name: string } | null;
-  to_account: { id: number; account_name: string } | null;
+  from_account: { id: number; account_name: string; exclude_from_total?: boolean } | null;
+  to_account: { id: number; account_name: string; exclude_from_total?: boolean } | null;
 };
 
 export class ActivityService {
@@ -65,10 +65,18 @@ export class ActivityService {
             }
           : null,
         from_account: fromAcc
-          ? { id: fromAcc.id, account_name: fromAcc.account_name }
+          ? {
+              id: fromAcc.id,
+              account_name: fromAcc.account_name,
+              exclude_from_total: fromAcc.exclude_from_total ?? false,
+            }
           : null,
         to_account: toAcc
-          ? { id: toAcc.id, account_name: toAcc.account_name }
+          ? {
+              id: toAcc.id,
+              account_name: toAcc.account_name,
+              exclude_from_total: toAcc.exclude_from_total ?? false,
+            }
           : null,
       };
     });

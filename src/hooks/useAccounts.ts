@@ -31,8 +31,15 @@ export function useAccounts() {
           user_id: acc.user_id,
           total_amount: total,
           is_primary: acc.is_primary ?? false,
+          exclude_from_total: acc.exclude_from_total ?? false,
         } as AccountRow;
       });
+  });
+
+  const totalBalance = useSelector(() => {
+    return accountsWithTotals
+      .filter((acc) => !acc.exclude_from_total)
+      .reduce((sum, acc) => sum + acc.total_amount, 0);
   });
 
   const accountOptions = useSelector(() => {
@@ -41,15 +48,18 @@ export function useAccounts() {
       id: acc.id,
       account_name: acc.account_name,
       is_primary: acc.is_primary ?? false,
+      exclude_from_total: acc.exclude_from_total ?? false,
     }));
   });
 
   return {
     accounts: accountsWithTotals,
     accountOptions,
+    totalBalance,
     createAccount: accountActions.create,
     updateAccount: accountActions.update,
     deleteAccount: accountActions.delete,
     setPrimaryAccount: accountActions.setPrimary,
+    setExcludeFromTotal: accountActions.setExcludeFromTotal,
   };
 }

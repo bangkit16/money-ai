@@ -16,6 +16,8 @@ type AccountOptionsSheetProps = {
   onEdit: (account: AccountRow) => void;
   onDelete: (account: AccountRow) => void;
   onSetPrimary: (account: AccountRow) => void;
+  onAdjustBalance: (account: AccountRow) => void;
+  onToggleExclude: (account: AccountRow) => void;
 };
 
 export function AccountOptionsSheet({
@@ -24,6 +26,8 @@ export function AccountOptionsSheet({
   onEdit,
   onDelete,
   onSetPrimary,
+  onAdjustBalance,
+  onToggleExclude,
 }: AccountOptionsSheetProps) {
   const cardColor = useColor("card");
   const handleColor = useColor("border");
@@ -93,6 +97,16 @@ export function AccountOptionsSheet({
     onClose();
   };
 
+  const handleAdjustBalance = () => {
+    if (account) onAdjustBalance(account);
+    onClose();
+  };
+
+  const handleToggleExclude = () => {
+    if (account) onToggleExclude(account);
+    onClose();
+  };
+
   return (
     <Modal
       visible={visible || mounted}
@@ -117,6 +131,48 @@ export function AccountOptionsSheet({
         >
           <View style={[styles.modalHandle, { backgroundColor: handleColor }]} />
           <Text style={[styles.optionsTitle, { color: textColor }]}>{account?.account_name}</Text>
+
+          {/* Penyesuaian Saldo */}
+          <TouchableOpacity
+            style={[styles.optionRow, { borderTopColor: borderColor }]}
+            onPress={handleAdjustBalance}
+          >
+            <MaterialIcons
+              name="tune"
+              size={20}
+              color={primaryColor}
+            />
+            <Text
+              style={[
+                styles.optionRowText,
+                { color: textColor, fontWeight: "600" },
+              ]}
+            >
+              {t("account.adjustBalance")}
+            </Text>
+          </TouchableOpacity>
+
+          {/* Toggle Exclude dari Total Saldo */}
+          <TouchableOpacity
+            style={[styles.optionRow, { borderTopColor: borderColor }]}
+            onPress={handleToggleExclude}
+          >
+            <MaterialIcons
+              name={account?.exclude_from_total ? "visibility" : "visibility-off"}
+              size={20}
+              color={account?.exclude_from_total ? primaryColor : textColor}
+            />
+            <Text
+              style={[
+                styles.optionRowText,
+                { color: account?.exclude_from_total ? primaryColor : textColor },
+              ]}
+            >
+              {account?.exclude_from_total
+                ? t("account.includeInTotal")
+                : t("account.excludeFromTotal")}
+            </Text>
+          </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.optionRow, { borderTopColor: borderColor }]}

@@ -39,10 +39,18 @@ export function useTransactions() {
             }
           : null,
         from_account: fromAcc
-          ? { id: fromAcc.id, account_name: fromAcc.account_name }
+          ? {
+              id: fromAcc.id,
+              account_name: fromAcc.account_name,
+              exclude_from_total: fromAcc.exclude_from_total ?? false,
+            }
           : null,
         to_account: toAcc
-          ? { id: toAcc.id, account_name: toAcc.account_name }
+          ? {
+              id: toAcc.id,
+              account_name: toAcc.account_name,
+              exclude_from_total: toAcc.exclude_from_total ?? false,
+            }
           : null,
       } as ActivityTransactionRow;
     });

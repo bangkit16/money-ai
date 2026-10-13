@@ -198,8 +198,8 @@ export default function TransactionScreen() {
             </View>
 
             {isTransfer ? (
-              <View style={styles.transferAccountsRow}>
-                <View style={styles.transferAccountCol}>
+              <View style={styles.transferAccountsContainer}>
+                <View style={styles.fieldBlock}>
                   <Text style={[styles.label, { color: textMutedColor }]}>
                     {t("add.from")}
                   </Text>
@@ -218,12 +218,12 @@ export default function TransactionScreen() {
                 </View>
                 <View style={styles.transferArrow}>
                   <MaterialIcons
-                    name="arrow-forward"
+                    name="arrow-downward"
                     size={20}
                     color={textMutedColor}
                   />
                 </View>
-                <View style={styles.transferAccountCol}>
+                <View style={styles.fieldBlock}>
                   <Text style={[styles.label, { color: textMutedColor }]}>
                     {t("add.to")}
                   </Text>
@@ -349,13 +349,13 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   fieldBlock: {},
-  transferAccountsRow: {
-    flexDirection: "row",
-    alignItems: "flex-end",
+  transferAccountsContainer: {
     gap: 8,
   },
-  transferAccountCol: { flex: 1, minWidth: 0 },
-  transferArrow: { paddingBottom: 12 },
+  transferArrow: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
 
   keypadWrap: {
     paddingHorizontal: spacing.marginMobile,

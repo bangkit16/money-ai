@@ -11,6 +11,7 @@ import {
   Modal,
   Platform,
   StyleSheet,
+  Switch,
   TextInput,
   TouchableOpacity,
   View,
@@ -24,6 +25,8 @@ type AccountFormModalProps = {
   editingAccount: AccountRow | null;
   nameInput: string;
   onChangeName: (text: string) => void;
+  excludeFromTotal: boolean;
+  onChangeExcludeFromTotal: (val: boolean) => void;
   isSubmitting: boolean;
   onClose: () => void;
   onSubmit: () => void;
@@ -34,6 +37,8 @@ export function AccountFormModal({
   editingAccount,
   nameInput,
   onChangeName,
+  excludeFromTotal,
+  onChangeExcludeFromTotal,
   isSubmitting,
   onClose,
   onSubmit,
@@ -133,6 +138,23 @@ export function AccountFormModal({
             autoFocus
           />
 
+          <View style={[styles.switchRow, { borderColor }]}>
+            <View style={styles.switchTextContainer}>
+              <Text style={[styles.switchLabel, { color: textColor }]}>
+                {t("account.excludeFromTotal")}
+              </Text>
+              <Text style={[styles.switchSubLabel, { color: textMutedColor }]}>
+                {t("account.excludeFromTotalDesc")}
+              </Text>
+            </View>
+            <Switch
+              value={excludeFromTotal}
+              onValueChange={onChangeExcludeFromTotal}
+              trackColor={{ false: mutedBgColor, true: primaryColor }}
+              thumbColor={whiteColor}
+            />
+          </View>
+
           <View style={styles.modalActions}>
             <TouchableOpacity
               style={[styles.cancelButton, { borderColor }]}
@@ -195,6 +217,27 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     paddingHorizontal: 16,
     paddingVertical: 14,
+  },
+  switchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 10,
+    paddingHorizontal: 4,
+    gap: 12,
+  },
+  switchTextContainer: {
+    flex: 1,
+    gap: 2,
+  },
+  switchLabel: {
+    ...typography.bodyLg,
+    fontWeight: "600",
+    fontSize: 14,
+  },
+  switchSubLabel: {
+    ...typography.bodySm,
+    fontSize: 12,
   },
   modalActions: { flexDirection: "row", gap: 12, marginTop: 8 },
   cancelButton: {
