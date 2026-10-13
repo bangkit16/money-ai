@@ -2,6 +2,9 @@ import { useState, useCallback, useEffect } from "react";
 import { router } from "expo-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { transactions$ } from "@/store/transactions$";
+import { categories$ } from "@/store/categories$";
+import { accounts$ } from "@/store/accounts$";
 import {
   AddTransactionService,
   type TransactionType,
@@ -65,6 +68,30 @@ export function useTransactionForm(
   const { data: existing, isLoading: isLoadingTx, error: txError } = useQuery({
     queryKey: ["transaction", String(editId!)],
     queryFn: async () => {
+      if (editId) {
+        const localTx = transactions$[Number(editId)]?.peek();
+        if (localTx) {
+          const rawCats = categories$.peek() ?? {};
+          const rawAccs = accounts$.peek() ?? {};
+          const cat = localTx.category_id ? rawCats[localTx.category_id] : null;
+          const acc = localTx.account_id ? rawAccs[localTx.account_id] : null;
+          return {
+            ...localTx,
+            created_at: localTx.transaction_date || localTx.created_at,
+            category: cat
+              ? {
+                  id: cat.id,
+                  category: cat.category,
+                  category_en: cat.category_en,
+                  slug: cat.slug,
+                  icon: cat.icon,
+                }
+              : null,
+            account: acc ? { id: acc.id, account_name: acc.account_name } : null,
+          } as LoadedTx;
+        }
+      }
+
       const { data, error } = await supabase
         .from("transaction")
         .select(

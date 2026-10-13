@@ -15,6 +15,8 @@ import {
 import { invalidateTransactionCaches } from "@/lib/query-invalidation";
 import { supabase } from "@/lib/supabase";
 import { useSettings } from "@/providers/settings-provider";
+import { transactionActions } from "@/store/transactions$";
+import { accounts$ } from "@/store/accounts$";
 import { Ionicons } from "@expo/vector-icons";
 import { useQueryClient } from "@tanstack/react-query";
 import { LinearGradient } from "expo-linear-gradient";
@@ -61,32 +63,19 @@ function AiButton({ accountId }: AiButtonProps) {
   const toast = useToast();
   const { autoSaveTransaction, usePrimaryAccount } = useSettings();
 
-  const applyPrimaryAccount = async (d: AiTransactionItem) => {
+  const applyPrimaryAccount = (d: AiTransactionItem) => {
     if (usePrimaryAccount && d.account_id) return d;
     if (!usePrimaryAccount) return d;
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return d;
-    const { data: primaryAcc } = await supabase
-      .from("account")
-      .select("id, account_name")
-      .eq("user_id", user.id)
-      .eq("is_primary", true)
-      .single();
+    const rawAccounts = accounts$.peek() ?? {};
+    const primaryAcc = Object.values(rawAccounts).find((a) => a.is_primary);
     if (!primaryAcc) return d;
     return { ...d, account_id: primaryAcc.id, account_name: primaryAcc.account_name };
   };
 
-  const saveTransaction = async (d: AiTransactionItem) => {
+  const saveTransaction = (d: AiTransactionItem) => {
     setSaving(true);
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Unauthorized");
-
-      const resolved = await applyPrimaryAccount(d);
+      const resolved = applyPrimaryAccount(d);
 
       const isTransfer = d.transaction_type === "TRANSFER";
       // Validasi transfer: account_id & to_account_id wajib diisi
@@ -96,18 +85,14 @@ function AiButton({ accountId }: AiButtonProps) {
 
       const sourceAccountId = resolved.account_id ?? accountId;
 
-      const { error } = await supabase.from("transaction").insert({
+      transactionActions.create({
         transaction: resolved.description,
         amount: resolved.amount,
         transaction_type: resolved.transaction_type,
         category_id: resolved.category?.id ?? null,
-        account_id: sourceAccountId,
+        account_id: sourceAccountId ?? null,
         to_account_id: resolved.to_account_id ?? null,
-        user_id: user.id,
-        transaction_date: new Date().toISOString(),
       });
-
-      if (error) throw error;
 
       invalidateTransactionCaches(queryClient);
 
@@ -250,12 +235,7 @@ function AiButton({ accountId }: AiButtonProps) {
     console.log("Deleting transaction with target:", deleteTarget);
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from("transaction")
-        .delete()
-        .eq("id", deleteTarget.id);
-
-      if (error) throw error;
+      transactionActions.delete(deleteTarget.id);
 
       invalidateTransactionCaches(queryClient);
       toast.success(t("common.success"), t("ai.transactionDeleted"));
@@ -276,12 +256,7 @@ function AiButton({ accountId }: AiButtonProps) {
       // Hanya kirim field yang valid di tabel transaction
       const { category: _category, ...dbChanges } = updatePayload.changes;
 
-      const { error } = await supabase
-        .from("transaction")
-        .update(dbChanges)
-        .eq("id", updatePayload.transaction_id);
-
-      if (error) throw error;
+      transactionActions.update(updatePayload.transaction_id, dbChanges);
 
       invalidateTransactionCaches(queryClient);
       toast.success(t("common.success"), t("ai.transactionUpdated"));

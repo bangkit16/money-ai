@@ -1,49 +1,34 @@
-// migrated to useColor
-import { colors, spacing, typography } from "@/constants/theme";
+import { spacing, typography } from "@/constants/theme";
 import { HeroBalanceCard } from "@/components/features/dashboard/hero-balance-card";
 import { MonthlySummaryCard } from "@/components/features/dashboard/monthly-summary-card";
 import { RecentTransactions } from "@/components/features/dashboard/recent-transactions";
 import { AppBar } from "@/components/features/shared/app-bar";
 import { useColor } from "@/hooks/useColor";
-import { DashboardService } from "@/services/dashboardService";
-import { useQuery } from "@tanstack/react-query";
+import { useTransactions } from "@/hooks/useTransactions";
 import { useMemo } from "react";
 import {
-  ActivityIndicator,
   ScrollView,
   StyleSheet,
   View,
 } from "react-native";
-import { Text } from "@/components/ui/text";
 import { useT } from "@/i18n";
 import { useSettings } from "@/providers/settings-provider";
 
 export default function DashboardScreen() {
   const bgColor = useColor("background");
-  const primaryColor = useColor("primary");
-  const textMutedColor = useColor("textMuted");
-  const textColor = useColor("text");
-  const errorColor = useColor("error");
   const t = useT();
   const { language } = useSettings();
 
-  const {
-    data: allTx,
-    isLoading: isLoadingAll,
-    error: errorAll,
-  } = useQuery({
-    queryKey: ["dashboard-transactions"],
-    queryFn: DashboardService.GetTransactions,
-  });
+  const { transactions: allEnrichedTx, recentTransactions: recentTx } = useTransactions();
 
-  const {
-    data: recentTx,
-    isLoading: isLoadingRecent,
-    error: errorRecent,
-  } = useQuery({
-    queryKey: ["dashboard-recent-transactions"],
-    queryFn: DashboardService.GetRecentTransactions,
-  });
+  const allTx = useMemo(() => {
+    return allEnrichedTx.map((tx) => ({
+      amount: tx.amount,
+      transaction_type: tx.transaction_type,
+      created_at: tx.created_at,
+      account: tx.from_account,
+    }));
+  }, [allEnrichedTx]);
 
   const summary = useMemo(() => {
     if (!allTx) return null;
@@ -125,67 +110,36 @@ export default function DashboardScreen() {
     };
   }, [allTx, language]);
 
-  const isLoading = isLoadingAll || isLoadingRecent;
-  const error = errorAll || errorRecent;
-
   return (
     <View style={[styles.screen, { backgroundColor: bgColor }]}>
       <AppBar />
 
-      {isLoading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="small" color={primaryColor} />
-          <Text style={[styles.loadingText, { color: textMutedColor }]}>
-            {t("dashboard.loading")}
-          </Text>
-        </View>
-      ) : error ? (
-        <View style={styles.loadingContainer}>
-          <Text style={[styles.errorText, { color: errorColor }]}>
-            {t("dashboard.loadError", { message: (error as Error).message })}
-          </Text>
-        </View>
-      ) : (
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          <HeroBalanceCard
-            netWorth={summary?.netWorth ?? 0}
-            trendPct={summary?.trendPct ?? 0}
-            prevMonthNet={summary?.prevMonthNet ?? 0}
-          />
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <HeroBalanceCard
+          netWorth={summary?.netWorth ?? 0}
+          trendPct={summary?.trendPct ?? 0}
+          prevMonthNet={summary?.prevMonthNet ?? 0}
+        />
 
-          <MonthlySummaryCard
-            income={summary?.thisMonthIncome ?? 0}
-            expense={summary?.thisMonthExpense ?? 0}
-            incomeBarWidth={summary?.incomeBarWidth ?? 0}
-            expenseBarWidth={summary?.expenseBarWidth ?? 0}
-            monthLabel={summary?.monthLabel}
-          />
+        <MonthlySummaryCard
+          income={summary?.thisMonthIncome ?? 0}
+          expense={summary?.thisMonthExpense ?? 0}
+          incomeBarWidth={summary?.incomeBarWidth ?? 0}
+          expenseBarWidth={summary?.expenseBarWidth ?? 0}
+          monthLabel={summary?.monthLabel}
+        />
 
-          <RecentTransactions transactions={recentTx} />
-        </ScrollView>
-      )}
+        <RecentTransactions transactions={recentTx} />
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-
-  loadingContainer: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-  },
-  loadingText: { ...typography.bodySm },
-  errorText: {
-    ...typography.bodyLg,
-    textAlign: "center",
-    paddingHorizontal: spacing.marginMobile,
-  },
 
   scrollContent: {
     paddingHorizontal: spacing.marginMobile,

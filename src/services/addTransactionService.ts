@@ -1,15 +1,8 @@
-import { supabase } from "@/lib/supabase";
+import { categories$, type CategoryRow } from "@/store/categories$";
+import { accounts$ } from "@/store/accounts$";
+import { transactionActions, type TransactionType } from "@/store/transactions$";
 
-export type TransactionType = "INCOME" | "EXPENSE" | "TRANSFER";
-
-export type CategoryRow = {
-  id: number;
-  category: string;
-  category_en: string | null;
-  slug: string;
-  icon: string;
-  category_type: string | null;
-};
+export type { TransactionType, CategoryRow };
 
 export type AccountOptionRow = {
   id: number;
@@ -28,96 +21,64 @@ export type InsertTransactionParams = {
 };
 
 export class AddTransactionService {
-  static async GetCategories(transactionType: TransactionType) {
-    const { data, error } = await supabase
-      .from("category_transaction")
-      .select("*")
-      .or(`category_type.eq.${transactionType},category_type.is.null`);
-    if (error) throw new Error(error.message);
+  static async GetCategories(transactionType: TransactionType): Promise<CategoryRow[]> {
+    const rawCats = categories$.peek() ?? {};
+    const all = Object.values(rawCats) as CategoryRow[];
+    const filtered = all.filter(
+      (c) => !c.category_type || c.category_type === transactionType
+    );
+
     if (transactionType === "TRANSFER") {
-      return (data.filter((row) => row.slug === "transfer" || row.slug === "others")) as CategoryRow[];
+      return filtered.filter(
+        (row) => row.slug === "transfer" || row.slug === "others"
+      );
     }
-    // Push "others" to end for non-TRANSFER types
-    const sorted = [...data].sort((a, b) => {
+
+    return [...filtered].sort((a, b) => {
       if (a.slug === "others") return 1;
       if (b.slug === "others") return -1;
       return 0;
     });
-    return sorted as CategoryRow[];
   }
 
-  static async GetAccountOptions() {
-    const { data, error } = await supabase.from("account").select("*");
-    if (error) throw new Error(error.message);
-    return data as AccountOptionRow[];
+  static async GetAccountOptions(): Promise<AccountOptionRow[]> {
+    const rawAccounts = accounts$.peek() ?? {};
+    return Object.values(rawAccounts).map((acc) => ({
+      id: acc.id,
+      account_name: acc.account_name,
+      is_primary: acc.is_primary ?? false,
+    }));
   }
 
-  // user_id WAJIB — dicek oleh RLS policy (auth.uid() = user_id)
   static async InsertTransaction(params: InsertTransactionParams) {
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-    if (userError) throw userError;
-    if (!user) throw new Error("User belum login");
-
-    const { error } = await supabase.from("transaction").insert({
-      ...params,
-      user_id: user.id,
+    return transactionActions.create({
+      amount: params.amount,
+      transaction: params.transaction,
+      transaction_type: params.transaction_type,
+      category_id: params.category_id,
+      account_id: params.account_id,
+      to_account_id: params.to_account_id,
+      transaction_date: params.transaction_date,
     });
-    if (error) throw error;
   }
 
   static async InsertTransfer(
-    params: Omit<InsertTransactionParams, "transaction_type">,
+    params: Omit<InsertTransactionParams, "transaction_type">
   ) {
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-    if (userError) throw userError;
-    if (!user) throw new Error("User belum login");
-
-    const { error } = await supabase.from("transaction").insert({
+    return transactionActions.create({
       ...params,
       transaction_type: "TRANSFER",
-      user_id: user.id,
     });
-    if (error) throw error;
   }
 
   static async UpdateTransaction(
     id: number,
-    params: Partial<InsertTransactionParams>,
+    params: Partial<InsertTransactionParams>
   ) {
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-    if (userError) throw userError;
-    if (!user) throw new Error("User belum login");
-
-    const { error } = await supabase
-      .from("transaction")
-      .update(params)
-      .eq("id", id)
-      .eq("user_id", user.id);
-    if (error) throw new Error(error.message);
+    transactionActions.update(id, params);
   }
 
   static async DeleteTransaction(id: number) {
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-    if (userError) throw userError;
-    if (!user) throw new Error("User belum login");
-
-    const { error } = await supabase
-      .from("transaction")
-      .delete()
-      .eq("id", id)
-      .eq("user_id", user.id);
-    if (error) throw new Error(error.message);
+    transactionActions.delete(id);
   }
 }

@@ -1,4 +1,3 @@
-// migrated to useColor
 import { AccountFormModal } from "@/components/features/account/account-form-modal";
 import { AccountList } from "@/components/features/account/account-list";
 import { AccountOptionsSheet } from "@/components/features/account/account-options-sheet";
@@ -11,13 +10,12 @@ import { useToast } from "@/components/ui/toast";
 import { spacing, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
 import { useT } from "@/i18n";
-import { AccountService, type AccountRow } from "@/services/accountService";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useAccounts } from "@/hooks/useAccounts";
+import type { AccountRow } from "@/services/accountService";
 import { useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 
 export default function AccountScreen() {
-  const queryClient = useQueryClient();
   const toast = useToast();
   const t = useT();
 
@@ -35,59 +33,12 @@ export default function AccountScreen() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const {
-    data: accounts,
-    isLoading,
-    error,
-  } = useQuery<AccountRow[]>({
-    queryKey: ["accounts-with-totals"],
-    queryFn: AccountService.GetAccountsWithTotals,
-  });
-
-  const { mutate: createAccount, isPending: isCreating } = useMutation({
-    mutationFn: AccountService.CreateAccount,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["account"] });
-      queryClient.invalidateQueries({ queryKey: ["accounts-with-totals"] });
-      closeForm();
-    },
-    onError: (err: Error) =>
-      setErrorMessage(err.message ?? t("account.errorCreate")),
-  });
-
-  const { mutate: updateAccount, isPending: isUpdating } = useMutation({
-    mutationFn: ({ id, accountName }: { id: number; accountName: string }) =>
-      AccountService.UpdateAccount(id, accountName),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["account"] });
-      queryClient.invalidateQueries({ queryKey: ["accounts-with-totals"] });
-      closeForm();
-    },
-    onError: (err: Error) =>
-      setErrorMessage(err.message ?? t("account.errorUpdate")),
-  });
-
-  const { mutate: deleteAccount } = useMutation({
-    mutationFn: AccountService.DeleteAccount,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["account"] });
-      queryClient.invalidateQueries({ queryKey: ["accounts-with-totals"] });
-      setDeleteConfirmAccount(null);
-    },
-    onError: (err: Error) => {
-      setDeleteConfirmAccount(null);
-      setErrorMessage(err.message ?? t("account.errorDelete"));
-    },
-  });
-
-  const { mutate: setPrimaryAccount } = useMutation({
-    mutationFn: ({ id, isPrimary }: { id: number; isPrimary: boolean }) =>
-      AccountService.SetPrimaryAccount(id, isPrimary),
-    onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["account"] });
-      queryClient.invalidateQueries({ queryKey: ["accounts-with-totals"] });
-      toast.success(variables.isPrimary ? t("account.primarySet") : t("account.primaryUnset"));
-    },
-  });
+    accounts,
+    createAccount,
+    updateAccount,
+    deleteAccount,
+    setPrimaryAccount,
+  } = useAccounts();
 
   const openCreateForm = () => {
     setEditingAccount(null);
@@ -111,18 +62,40 @@ export default function AccountScreen() {
     const trimmed = accountNameInput.trim();
     if (!trimmed) return;
 
-    if (editingAccount) {
-      updateAccount({ id: editingAccount.id, accountName: trimmed });
-    } else {
-      createAccount(trimmed);
+    try {
+      if (editingAccount) {
+        updateAccount(editingAccount.id, trimmed);
+      } else {
+        createAccount(trimmed);
+      }
+      closeForm();
+    } catch (err: any) {
+      setErrorMessage(err?.message ?? t("account.errorCreate"));
     }
   };
 
   const confirmDelete = () => {
-    if (deleteConfirmAccount) deleteAccount(deleteConfirmAccount.id);
+    if (deleteConfirmAccount) {
+      try {
+        deleteAccount(deleteConfirmAccount.id);
+        setDeleteConfirmAccount(null);
+      } catch (err: any) {
+        setDeleteConfirmAccount(null);
+        setErrorMessage(err?.message ?? t("account.errorDelete"));
+      }
+    }
   };
 
-  const isSubmitting = isCreating || isUpdating;
+  const handleTogglePrimary = (account: AccountRow) => {
+    try {
+      const nextPrimary = !account.is_primary;
+      setPrimaryAccount(account.id, nextPrimary);
+      toast.success(nextPrimary ? t("account.primarySet") : t("account.primaryUnset"));
+    } catch (err: any) {
+      setErrorMessage(err?.message ?? "Error");
+    }
+  };
+
   const count = accounts?.length ?? 0;
 
   return (
@@ -149,8 +122,8 @@ export default function AccountScreen() {
 
         <AccountList
           accounts={accounts}
-          isLoading={isLoading}
-          error={error as Error | null}
+          isLoading={false}
+          error={null}
           onSelectOptions={(account) => setOptionsAccount(account)}
         />
 
@@ -162,7 +135,7 @@ export default function AccountScreen() {
         editingAccount={editingAccount}
         nameInput={accountNameInput}
         onChangeName={setAccountNameInput}
-        isSubmitting={isSubmitting}
+        isSubmitting={false}
         onClose={closeForm}
         onSubmit={handleSubmitForm}
       />
@@ -172,9 +145,7 @@ export default function AccountScreen() {
         onClose={() => setOptionsAccount(null)}
         onEdit={openEditForm}
         onDelete={(account) => setDeleteConfirmAccount(account)}
-        onSetPrimary={(account) =>
-          setPrimaryAccount({ id: account.id, isPrimary: !account.is_primary })
-        }
+        onSetPrimary={handleTogglePrimary}
       />
 
       <ConfirmDialog

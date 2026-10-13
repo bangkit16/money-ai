@@ -1,4 +1,5 @@
-import { supabase } from "@/lib/supabase";
+import { transactions$ } from "@/store/transactions$";
+import { categories$ } from "@/store/categories$";
 import type { LanguageCode } from "@/providers/settings-provider";
 import { tFor } from "@/i18n";
 
@@ -32,7 +33,6 @@ export type TopCategory = {
   color: string;
 };
 
-// Color palette fallback (urut konsisten dengan legend chart) — green brand
 const PALETTE = [
   "#0b3d03", // primary deep
   "#1b4d1b", // forest
@@ -48,53 +48,42 @@ function monthLabel(d: Date, lang: LanguageCode) {
 }
 
 function startEndOfMonth(d: Date) {
-  const start = new Date(d.getFullYear(), d.getMonth(), 1).toISOString();
-  const end = new Date(d.getFullYear(), d.getMonth() + 1, 1).toISOString();
+  const start = new Date(d.getFullYear(), d.getMonth(), 1).getTime();
+  const end = new Date(d.getFullYear(), d.getMonth() + 1, 1).getTime();
   return { start, end };
 }
 
 export class AnalyticsService {
-  /**
-   * Ambil agregat spending untuk bulan berjalan, dikelompok per kategori.
-   * Hanya transaksi EXPENSE (exclude TRANSFER & INCOME).
-   * Filter user_id via RLS otomatis karena pakai supabase.auth.getUser().
-   */
-  static async GetCurrentMonth(lang: LanguageCode = "id") {
+  static ComputeCurrentMonth(lang: LanguageCode = "id"): AnalyticsData {
     const now = new Date();
     const { start, end } = startEndOfMonth(now);
 
-    const { data, error } = await supabase
-      .from("transaction")
-      .select(
-        "amount, category:category_transaction(id, category, category_en, slug, icon)",
-      )
-      .eq("transaction_type", "EXPENSE")
-      .gte("transaction_date", start)
-      .lt("transaction_date", end);
+    const rawTxs = transactions$.get() ?? {};
+    const rawCats = categories$.get() ?? {};
 
-    if (error) throw new Error(error.message);
+    const rows = Object.values(rawTxs).filter((tx) => {
+      if (tx.transaction_type !== "EXPENSE") return false;
+      const txTime = new Date(tx.transaction_date || tx.created_at).getTime();
+      return txTime >= start && txTime < end;
+    });
 
-    type Row = {
-      amount: number;
-      category: { id: number; category: string; category_en: string | null; slug: string | null; icon: string } | null;
-    };
-    const rows = (data ?? []) as unknown as Row[];
-
-    // Group by category
     const byCat = new Map<number, CategorySummary>();
     let total = 0;
+
     for (const r of rows) {
       const amt = Number(r.amount) || 0;
       total += amt;
-      if (!r.category) continue;
-      const cur = byCat.get(r.category.id);
+      const cat = r.category_id ? rawCats[r.category_id] : null;
+      if (!cat) continue;
+
+      const cur = byCat.get(cat.id);
       if (cur) {
         cur.total += amt;
       } else {
-        byCat.set(r.category.id, {
-          id: r.category.id,
-          name: lang === "en" && r.category.category_en ? r.category.category_en : r.category.category,
-          icon: r.category.icon,
+        byCat.set(cat.id, {
+          id: cat.id,
+          name: lang === "en" && cat.category_en ? cat.category_en : cat.category,
+          icon: cat.icon,
           total: amt,
         });
       }
@@ -109,7 +98,6 @@ export class AnalyticsService {
       color: PALETTE[i % PALETTE.length],
     }));
 
-    // Sisanya digabung jadi "Other" kalau ada lebih dari 4 kategori
     if (sorted.length > 4) {
       const otherTotal = sorted.slice(4).reduce((s, c) => s + c.total, 0);
       segments.push({
@@ -134,6 +122,10 @@ export class AnalyticsService {
       totalSpend: total,
       segments,
       topCategories,
-    } satisfies AnalyticsData;
+    };
+  }
+
+  static async GetCurrentMonth(lang: LanguageCode = "id"): Promise<AnalyticsData> {
+    return this.ComputeCurrentMonth(lang);
   }
 }

@@ -1,6 +1,6 @@
-import { supabase } from "@/lib/supabase";
+import { accounts$, accountActions, type AccountEntity } from "@/store/accounts$";
+import { transactions$ } from "@/store/transactions$";
 
-// Sesuai schema Supabase: id int8, created_at timestamptz, account_name varchar, user_id uuid
 export type AccountRow = {
   id: number;
   account_name: string;
@@ -10,112 +10,53 @@ export type AccountRow = {
   is_primary: boolean;
 };
 
-type TxAmount = { transaction_type: string; amount: number };
-
 export class AccountService {
-  static async GetAccountsWithTotals() {
-    const { data, error } = await supabase
-      .from("account")
-      .select(
-        `
-      id,
-      created_at,
-      account_name,
-      user_id,
-      is_primary,
-      outgoing:transaction!account_id (
-        transaction_type,
-        amount
-      ),
-      incoming:transaction!to_account_id (
-        transaction_type,
-        amount
-      )
-      `,
-      )
-      .order("created_at", { ascending: true });
+  static async GetAccountsWithTotals(): Promise<AccountRow[]> {
+    const rawAccounts = accounts$.peek() ?? {};
+    const accList = Object.values(rawAccounts) as AccountEntity[];
+    const rawTxs = transactions$.peek() ?? {};
+    const txList = Object.values(rawTxs);
 
-    if (error) throw new Error(error.message);
+    return accList
+      .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+      .map((acc) => {
+        let totalAmount = 0;
 
-    const mappedData = data.map((acc) => {
-      let totalAmount = 0;
+        for (const tx of txList) {
+          const amt = Number(tx.amount) || 0;
+          if (tx.account_id === acc.id) {
+            if (tx.transaction_type === "INCOME") totalAmount += amt;
+            else totalAmount -= amt;
+          }
+          if (tx.to_account_id === acc.id) {
+            totalAmount += amt;
+          }
+        }
 
-      // Sisi keluar dari akun ini: INCOME nambah, EXPENSE & TRANSFER (keluar) mengurangi
-      for (const tx of acc.outgoing as TxAmount[]) {
-        const amt = Number(tx.amount) || 0;
-        if (tx.transaction_type === "INCOME") totalAmount += amt;
-        else totalAmount -= amt; // EXPENSE atau TRANSFER keluar
-      }
-
-      // Sisi masuk ke akun ini: cuma TRANSFER yang bisa punya to_account_id,
-      // jadi baris di sini selalu berarti "transfer masuk" -> nambah saldo
-      for (const tx of acc.incoming as TxAmount[]) {
-        const amt = Number(tx.amount) || 0;
-        totalAmount += amt;
-      }
-
-      return {
-        id: acc.id,
-        created_at: acc.created_at,
-        account_name: acc.account_name,
-        user_id: acc.user_id,
-        total_amount: totalAmount,
-        is_primary: acc.is_primary ?? false,
-      };
-    });
-
-    return mappedData as AccountRow[];
+        return {
+          id: acc.id,
+          created_at: acc.created_at,
+          account_name: acc.account_name,
+          user_id: acc.user_id,
+          total_amount: totalAmount,
+          is_primary: acc.is_primary ?? false,
+        };
+      });
   }
 
   static async CreateAccount(accountName: string) {
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-    if (userError) throw userError;
-    if (!user) throw new Error("User belum login");
-
-    const { error } = await supabase
-      .from("account")
-      .insert({ account_name: accountName, user_id: user.id });
-    if (error) throw error;
+    accountActions.create(accountName);
   }
 
   static async UpdateAccount(id: number, accountName: string) {
-    const { error } = await supabase
-      .from("account")
-      .update({ account_name: accountName })
-      .eq("id", id);
-    if (error) throw error;
+    accountActions.update(id, accountName);
   }
 
   static async DeleteAccount(id: number) {
-    const { error } = await supabase.from("account").delete().eq("id", id);
-    if (error) throw error;
+    accountActions.delete(id);
   }
 
   static async SetPrimaryAccount(id: number, isPrimary: boolean) {
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-    if (userError) throw userError;
-    if (!user) throw new Error("User belum login");
-
-    // If setting as primary, unset all others first
-    if (isPrimary) {
-      await supabase
-        .from("account")
-        .update({ is_primary: false })
-        .eq("user_id", user.id)
-        .eq("is_primary", true);
-    }
-
-    const { error } = await supabase
-      .from("account")
-      .update({ is_primary: isPrimary })
-      .eq("id", id);
-
-    if (error) throw error;
+    accountActions.setPrimary(id, isPrimary);
   }
 }

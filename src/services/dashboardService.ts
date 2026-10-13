@@ -1,4 +1,6 @@
-import { supabase } from "@/lib/supabase";
+import { transactions$ } from "@/store/transactions$";
+import { accounts$ } from "@/store/accounts$";
+import { categories$ } from "@/store/categories$";
 import type { TransactionType } from "@/services/addTransactionService";
 
 export type DashboardTxRow = {
@@ -20,25 +22,60 @@ export type RecentTxRow = {
 };
 
 export class DashboardService {
-  static async GetTransactions() {
-    const { data, error } = await supabase
-      .from("transaction")
-      .select(
-        "amount, transaction_type, created_at,   from_account:account!account_id(account_name), to_account:account!to_account_id(account_name)",
-      );
-    if (error) throw new Error(error.message);
-    return data as unknown as DashboardTxRow[];
+  static async GetTransactions(): Promise<DashboardTxRow[]> {
+    const rawTxs = transactions$.peek() ?? {};
+    const rawAccs = accounts$.peek() ?? {};
+
+    return Object.values(rawTxs).map((tx) => ({
+      amount: tx.amount,
+      transaction_type: tx.transaction_type,
+      created_at: tx.transaction_date || tx.created_at,
+      account:
+        tx.account_id && rawAccs[tx.account_id]
+          ? { id: tx.account_id, account_name: rawAccs[tx.account_id].account_name }
+          : null,
+    }));
   }
 
-  static async GetRecentTransactions() {
-    const { data, error } = await supabase
-      .from("transaction")
-      .select(
-        "id, created_at, transaction, amount, transaction_type, category:category_transaction(id, category, category_en, slug, icon), from_account:account!account_id(id, account_name), to_account:account!to_account_id(id, account_name)",
-      )
-      .order("created_at", { ascending: false })
-      .limit(3);
-    if (error) throw new Error(error.message);
-    return data as unknown as RecentTxRow[];
+  static async GetRecentTransactions(): Promise<RecentTxRow[]> {
+    const rawTxs = transactions$.peek() ?? {};
+    const rawCats = categories$.peek() ?? {};
+    const rawAccs = accounts$.peek() ?? {};
+
+    const list = Object.values(rawTxs);
+    list.sort((a, b) => {
+      const da = new Date(a.transaction_date || a.created_at).getTime();
+      const db = new Date(b.transaction_date || b.created_at).getTime();
+      return db - da;
+    });
+
+    return list.slice(0, 3).map((tx) => {
+      const cat = tx.category_id ? rawCats[tx.category_id] : null;
+      const fromAcc = tx.account_id ? rawAccs[tx.account_id] : null;
+      const toAcc = tx.to_account_id ? rawAccs[tx.to_account_id] : null;
+
+      return {
+        id: tx.id,
+        created_at: tx.transaction_date || tx.created_at,
+        transaction: tx.transaction,
+        amount: tx.amount,
+        transaction_type: tx.transaction_type,
+        category: cat
+          ? {
+              id: cat.id,
+              category: cat.category,
+              category_en: cat.category_en,
+              slug: cat.slug,
+              icon: cat.icon,
+            }
+          : null,
+        from_account: fromAcc
+          ? { id: fromAcc.id, account_name: fromAcc.account_name }
+          : null,
+        to_account: toAcc
+          ? { id: toAcc.id, account_name: toAcc.account_name }
+          : null,
+      };
+    });
   }
 }

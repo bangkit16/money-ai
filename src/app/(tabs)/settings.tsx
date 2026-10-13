@@ -15,6 +15,8 @@ import { router } from "expo-router";
 import { useState } from "react";
 import { Platform, ScrollView, StyleSheet, View } from "react-native";
 import { supabase } from "@/lib/supabase";
+import { transactions$ } from "@/store/transactions$";
+import { accounts$ } from "@/store/accounts$";
 import { AppBar } from "@/components/features/shared/app-bar";
 import { useT } from "@/i18n";
 
@@ -41,6 +43,8 @@ export default function SettingsScreen() {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
+      transactions$.set({});
+      accounts$.set({});
       router.replace("/login");
     } catch (error) {
       console.error("Logout error:", error);

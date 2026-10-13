@@ -1,5 +1,6 @@
-import { supabase } from "@/lib/supabase";
-import type { TransactionType } from "@/services/addTransactionService";
+import { transactions$, type TransactionType } from "@/store/transactions$";
+import { categories$ } from "@/store/categories$";
+import { accounts$ } from "@/store/accounts$";
 
 export type ActivityTransactionRow = {
   id: number;
@@ -13,26 +14,63 @@ export type ActivityTransactionRow = {
 };
 
 export class ActivityService {
-  static async GetTransactions(page = 0, limit = 10, filter: "all" | TransactionType = "all", search = "") {
-    const offset = page * limit;
-    let query = supabase
-      .from("transaction")
-      .select(
-        "id, created_at, transaction, amount, transaction_type, category:category_transaction(id, category, category_en, slug, icon), from_account:account!account_id(id, account_name), to_account:account!to_account_id(id, account_name)",
-      )
-      .order("created_at", { ascending: false });
+  static async GetTransactions(
+    page = 0,
+    limit = 10,
+    filter: "all" | TransactionType = "all",
+    search = ""
+  ): Promise<ActivityTransactionRow[]> {
+    const rawTxs = transactions$.peek() ?? {};
+    const rawCats = categories$.peek() ?? {};
+    const rawAccs = accounts$.peek() ?? {};
+
+    let list = Object.values(rawTxs);
 
     if (filter !== "all") {
-      query = query.eq("transaction_type", filter);
+      list = list.filter((tx) => tx.transaction_type === filter);
     }
 
     if (search.trim()) {
       const q = search.trim().toLowerCase();
-      query = query.ilike("transaction", `%${q}%`);
+      list = list.filter((tx) => (tx.transaction ?? "").toLowerCase().includes(q));
     }
 
-    const { data, error } = await query.range(offset, offset + limit - 1);
-    if (error) throw new Error(error.message);
-    return data as unknown as ActivityTransactionRow[];
+    list.sort((a, b) => {
+      const da = new Date(a.transaction_date || a.created_at).getTime();
+      const db = new Date(b.transaction_date || b.created_at).getTime();
+      return db - da;
+    });
+
+    const offset = page * limit;
+    const paginated = list.slice(offset, offset + limit);
+
+    return paginated.map((tx) => {
+      const cat = tx.category_id ? rawCats[tx.category_id] : null;
+      const fromAcc = tx.account_id ? rawAccs[tx.account_id] : null;
+      const toAcc = tx.to_account_id ? rawAccs[tx.to_account_id] : null;
+
+      return {
+        id: tx.id,
+        created_at: tx.transaction_date || tx.created_at,
+        transaction: tx.transaction,
+        amount: tx.amount,
+        transaction_type: tx.transaction_type,
+        category: cat
+          ? {
+              id: cat.id,
+              category: cat.category,
+              category_en: cat.category_en,
+              slug: cat.slug,
+              icon: cat.icon,
+            }
+          : null,
+        from_account: fromAcc
+          ? { id: fromAcc.id, account_name: fromAcc.account_name }
+          : null,
+        to_account: toAcc
+          ? { id: toAcc.id, account_name: toAcc.account_name }
+          : null,
+      };
+    });
   }
 }
