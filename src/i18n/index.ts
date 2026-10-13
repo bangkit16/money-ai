@@ -170,10 +170,12 @@ export const translations: Record<LanguageCode, Dict> = {
     // analytics — categories section
     "analytics.loadingInsights": "Memuat insight...",
     "analytics.spendingStructure": "Struktur Pengeluaran",
+    "analytics.incomeStructure": "Struktur Pemasukan",
     "analytics.total": "TOTAL",
     "analytics.insightsFor": "Insights untuk {month}",
     "analytics.monthlyTotal": "Total Bulanan",
     "analytics.noSpending": "Belum ada pengeluaran bulan ini.",
+    "analytics.noIncome": "Belum ada pemasukan bulan ini.",
     // confirm modal
     "confirm.title": "Konfirmasi Transaksi",
     "confirm.type": "Tipe",
@@ -345,10 +347,12 @@ export const translations: Record<LanguageCode, Dict> = {
     "add.saveButton": "Save Transaction",
     "analytics.loadingInsights": "Loading insights...",
     "analytics.spendingStructure": "Spending Structure",
+    "analytics.incomeStructure": "Income Structure",
     "analytics.total": "TOTAL",
     "analytics.insightsFor": "Insights for {month}",
     "analytics.monthlyTotal": "Monthly Total",
     "analytics.noSpending": "No spending yet for this month.",
+    "analytics.noIncome": "No income yet for this month.",
     // confirm modal
     "confirm.title": "Confirm Transaction",
     "confirm.type": "Type",

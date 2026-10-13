@@ -10,19 +10,21 @@ import { useT } from "@/i18n";
 type Props = {
   segments: DonutSegment[];
   totalSpend: number;
+  type?: "EXPENSE" | "INCOME";
 };
 
-export function SpendingStructureCard({ segments, totalSpend }: Props) {
+export function SpendingStructureCard({ segments, totalSpend, type = "EXPENSE" }: Props) {
   const { formatCurrency } = useFormatCurrency();
   const cardColor = useColor("card");
   const onSurfaceColor = useColor("onSurface");
   const onSurfaceVariantColor = useColor("onSurfaceVariant");
   const primaryColor = useColor("primary");
   const t = useT();
+  const title = type === "INCOME" ? t("analytics.incomeStructure") : t("analytics.spendingStructure");
   return (
     <View style={[styles.card, shadow.card, { alignItems: "center", backgroundColor: cardColor }]}>
       <Text style={[styles.titleMd, { alignSelf: "flex-start", marginBottom: 16, color: onSurfaceColor }]}>
-        {t("analytics.spendingStructure")}
+        {title}
       </Text>
       <View
         style={{

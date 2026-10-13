@@ -17,9 +17,10 @@ export type TopCategory = {
 
 type Props = {
   items: TopCategory[];
+  type?: "EXPENSE" | "INCOME";
 };
 
-export function TopCategoriesList({ items }: Props) {
+export function TopCategoriesList({ items, type = "EXPENSE" }: Props) {
   const { formatCurrency } = useFormatCurrency();
   const cardColor = useColor("card");
   const primaryColor = useColor("primary");
@@ -29,7 +30,9 @@ export function TopCategoriesList({ items }: Props) {
   if (items.length === 0) {
     return (
       <View style={[styles.card, shadow.card, styles.empty, { backgroundColor: cardColor }]}>
-        <Text style={[styles.emptyText, { color: onSurfaceVariantColor }]}>{t("analytics.noSpending")}</Text>
+        <Text style={[styles.emptyText, { color: onSurfaceVariantColor }]}>
+          {type === "INCOME" ? t("analytics.noIncome") : t("analytics.noSpending")}
+        </Text>
       </View>
     );
   }

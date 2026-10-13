@@ -53,8 +53,13 @@ function startEndOfMonth(d: Date) {
   return { start, end };
 }
 
+export type AnalyticsType = "EXPENSE" | "INCOME";
+
 export class AnalyticsService {
-  static ComputeCurrentMonth(lang: LanguageCode = "id"): AnalyticsData {
+  static ComputeCurrentMonth(
+    lang: LanguageCode = "id",
+    type: AnalyticsType = "EXPENSE"
+  ): AnalyticsData {
     const now = new Date();
     const { start, end } = startEndOfMonth(now);
 
@@ -62,7 +67,7 @@ export class AnalyticsService {
     const rawCats = categories$.get() ?? {};
 
     const rows = Object.values(rawTxs).filter((tx) => {
-      if (tx.transaction_type !== "EXPENSE") return false;
+      if (tx.transaction_type !== type) return false;
       const txTime = new Date(tx.transaction_date || tx.created_at).getTime();
       return txTime >= start && txTime < end;
     });
@@ -125,7 +130,10 @@ export class AnalyticsService {
     };
   }
 
-  static async GetCurrentMonth(lang: LanguageCode = "id"): Promise<AnalyticsData> {
-    return this.ComputeCurrentMonth(lang);
+  static async GetCurrentMonth(
+    lang: LanguageCode = "id",
+    type: AnalyticsType = "EXPENSE"
+  ): Promise<AnalyticsData> {
+    return this.ComputeCurrentMonth(lang, type);
   }
 }
