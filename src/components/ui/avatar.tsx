@@ -43,7 +43,7 @@ interface AvatarProps {
 
 export const Avatar = memo(function Avatar({
   children,
-  size = 40,
+  size = 36,
   style,
 }: AvatarProps) {
   const [status, setStatus] = useState<AvatarImageStatus>('loading');

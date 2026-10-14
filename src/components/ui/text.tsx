@@ -65,11 +65,11 @@ export const Text = React.memo(
 
         switch (variant) {
           case "heading":
-            return { ...baseStyle, fontSize: 22, fontWeight: "700" };
-          case "title":
             return { ...baseStyle, fontSize: 18, fontWeight: "700" };
+          case "title":
+            return { ...baseStyle, fontSize: 16, fontWeight: "700" };
           case "subtitle":
-            return { ...baseStyle, fontSize: 15, fontWeight: "600" };
+            return { ...baseStyle, fontSize: 13, fontWeight: "600" };
           case "caption":
             return {
               ...baseStyle,

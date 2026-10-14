@@ -40,8 +40,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderRadius: radius.xl,
-    paddingHorizontal: 16,
-    height: 52,
+    paddingHorizontal: 12,
+    height: 48,
   },
   input: {
     flex: 1,

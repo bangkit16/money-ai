@@ -92,10 +92,10 @@ export const Button = forwardRef<View, ButtonProps>(
       // Size variants
       switch (size) {
         case 'sm':
-          Object.assign(baseStyle, { height: 44, paddingHorizontal: 24 });
+          Object.assign(baseStyle, { height: 40, paddingHorizontal: 20 });
           break;
         case 'lg':
-          Object.assign(baseStyle, { height: 54, paddingHorizontal: 36 });
+          Object.assign(baseStyle, { height: 50, paddingHorizontal: 32 });
           break;
         case 'icon':
           Object.assign(baseStyle, {
@@ -105,7 +105,7 @@ export const Button = forwardRef<View, ButtonProps>(
           });
           break;
         default:
-          Object.assign(baseStyle, { height: HEIGHT, paddingHorizontal: 32 });
+          Object.assign(baseStyle, { height: HEIGHT, paddingHorizontal: 28 });
       }
 
       // Variant styles

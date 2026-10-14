@@ -163,7 +163,7 @@ export function RecentTransactions({
 }
 
 const styles = StyleSheet.create({
-  card: { borderRadius: radius.xl, padding: 24 },
+  card: { borderRadius: radius.xl, padding: 20 },
 
   sectionHeaderRow: {
     flexDirection: "row",
@@ -177,30 +177,30 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: 20,
+    padding: 16,
   },
   txLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 16,
+    gap: 12,
     flexShrink: 1,
   },
   txIconCircle: {
-    width: 48,
-    height: 48,
+    width: 44,
+    height: 44,
     borderRadius: radius.full,
     alignItems: "center",
     justifyContent: "center",
   },
-  txName: { ...typography.titleMd, fontSize: 14 },
+  txName: { ...typography.titleMd, fontSize: 13 },
   txMeta: { ...typography.bodySm },
   txRight: { alignItems: "flex-end" },
-  txAmount: { ...typography.titleMd, fontSize: 14 },
-  txSource: { ...typography.labelCaps, fontSize: 9 },
+  txAmount: { ...typography.titleMd, fontSize: 13 },
+  txSource: { ...typography.labelCaps, fontSize: 8 },
 
   emptyText: {
     ...typography.bodyLg,
     textAlign: "center",
-    paddingVertical: 24,
+    paddingVertical: 20,
   },
 });

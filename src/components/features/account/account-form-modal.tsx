@@ -215,14 +215,14 @@ const styles = StyleSheet.create({
   input: {
     ...typography.bodyLg,
     borderRadius: radius.lg,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
   },
   switchRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: 10,
+    paddingVertical: 8,
     paddingHorizontal: 4,
     gap: 12,
   },
@@ -233,16 +233,16 @@ const styles = StyleSheet.create({
   switchLabel: {
     ...typography.bodyLg,
     fontWeight: "600",
-    fontSize: 14,
+    fontSize: 13,
   },
   switchSubLabel: {
     ...typography.bodySm,
-    fontSize: 12,
+    fontSize: 11,
   },
   modalActions: { flexDirection: "row", gap: 12, marginTop: 8 },
   cancelButton: {
     flex: 1,
-    paddingVertical: 16,
+    paddingVertical: 12,
     borderRadius: radius.xl,
     borderWidth: 1,
     alignItems: "center",
@@ -250,15 +250,15 @@ const styles = StyleSheet.create({
   },
   cancelButtonText: {
     ...typography.titleMd,
-    fontSize: 13,
+    fontSize: 12,
   },
   saveButton: {
     flex: 1,
-    paddingVertical: 14,
+    paddingVertical: 12,
     borderRadius: radius.xl,
     alignItems: "center",
     justifyContent: "center",
   },
   saveButtonDisabled: { opacity: 0.4 },
-  saveButtonText: { ...typography.titleMd, fontSize: 13 },
+  saveButtonText: { ...typography.titleMd, fontSize: 12 },
 });

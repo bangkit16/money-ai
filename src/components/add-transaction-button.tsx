@@ -19,8 +19,8 @@ function AddTransactionButton() {
 
 const styles = StyleSheet.create({
   fab: {
-    width: 60,
-    height: 60,
+    width: 56,
+    height: 56,
     borderRadius: radius.full,
     borderWidth: 2,
     backgroundColor: "#038303",

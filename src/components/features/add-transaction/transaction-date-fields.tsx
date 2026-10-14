@@ -87,12 +87,12 @@ export function TransactionDateFields({
 const styles = StyleSheet.create({
   block: {
     paddingHorizontal: spacing.marginMobile,
-    paddingTop: 8,
-    paddingBottom: 16,
+    paddingTop: 6,
+    paddingBottom: 12,
     gap: 2,
     flexDirection: "column",
   },
-  row: { flexDirection: "row", gap: 6, marginBottom: 8 },
+  row: { flexDirection: "row", gap: 6, marginBottom: 6 },
   fieldBlock: {},
   label: {
     ...typography.labelCaps,
@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
   },
 });

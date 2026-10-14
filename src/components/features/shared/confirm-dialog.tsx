@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
   confirmCard: {
     width: "100%",
     borderRadius: radius.xl,
-    padding: 24,
+    padding: 20,
     gap: 12,
   },
   modalTitle: {
@@ -108,12 +108,12 @@ const styles = StyleSheet.create({
   },
   confirmText: {
     ...typography.bodyLg,
-    lineHeight: 22,
+    lineHeight: 20,
   },
   modalActions: { flexDirection: "row", gap: 12, marginTop: 8 },
   cancelButton: {
     flex: 1,
-    paddingVertical: 16,
+    paddingVertical: 12,
     borderRadius: radius.xl,
     borderWidth: 1,
     alignItems: "center",
@@ -121,20 +121,20 @@ const styles = StyleSheet.create({
   },
   cancelButtonText: {
     ...typography.titleMd,
-    fontSize: 13,
+    fontSize: 12,
   },
   deleteButton: {
     flex: 1,
-    paddingVertical: 14,
+    paddingVertical: 12,
     borderRadius: radius.xl,
     alignItems: "center",
     justifyContent: "center",
   },
   saveButton: {
-    paddingVertical: 14,
+    paddingVertical: 12,
     borderRadius: radius.xl,
     alignItems: "center",
     justifyContent: "center",
   },
-  saveButtonText: { ...typography.titleMd, fontSize: 13 },
+  saveButtonText: { ...typography.titleMd, fontSize: 12 },
 });

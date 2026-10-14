@@ -48,11 +48,11 @@ export function TransferCard() {
 }
 
 const styles = StyleSheet.create({
-  card: { borderRadius: radius.xl, padding: 24 },
+  card: { borderRadius: radius.xl, padding: 20 },
   heroLabel: { ...typography.labelCaps, opacity: 0.8 },
   heroDivider: {
     height: 1,
-    marginVertical: 20,
+    marginVertical: 16,
   },
   buttonTransfer: {
     flexDirection: "row",

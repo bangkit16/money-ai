@@ -357,14 +357,14 @@ const styles = StyleSheet.create({
   numericInput: {
     flex: 1,
     ...typography.headlineLg,
-    fontSize: 20,
-    paddingVertical: 12,
+    fontSize: 18,
+    paddingVertical: 10,
   },
   noteInput: {
     ...typography.bodyLg,
     borderRadius: radius.lg,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
   },
   diffRow: {
     flexDirection: "row",
@@ -382,20 +382,20 @@ const styles = StyleSheet.create({
   modalActions: { flexDirection: "row", gap: 12, marginTop: 8 },
   cancelButton: {
     flex: 1,
-    paddingVertical: 14,
+    paddingVertical: 12,
     borderRadius: radius.xl,
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
   },
-  cancelButtonText: { ...typography.titleMd, fontSize: 13 },
+  cancelButtonText: { ...typography.titleMd, fontSize: 12 },
   saveButton: {
     flex: 1,
-    paddingVertical: 14,
+    paddingVertical: 12,
     borderRadius: radius.xl,
     alignItems: "center",
     justifyContent: "center",
   },
   saveButtonDisabled: { opacity: 0.4 },
-  saveButtonText: { ...typography.titleMd, fontSize: 13 },
+  saveButtonText: { ...typography.titleMd, fontSize: 12 },
 });

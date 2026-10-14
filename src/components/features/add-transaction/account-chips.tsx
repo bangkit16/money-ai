@@ -78,8 +78,8 @@ export function AccountChips({
 
 const styles = StyleSheet.create({
   chip: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     borderRadius: radius.full,
     borderWidth: 1,
   },

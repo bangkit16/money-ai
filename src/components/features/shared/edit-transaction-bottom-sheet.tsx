@@ -340,8 +340,8 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
   },
   headerBtn: {
-    width: 40,
-    height: 40,
+    width: 36,
+    height: 36,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -352,9 +352,9 @@ const styles = StyleSheet.create({
   topScroll: { flexGrow: 0 },
   topScrollContent: {
     paddingHorizontal: spacing.marginMobile,
-    paddingTop: 8,
-    paddingBottom: 8,
-    gap: 16,
+    paddingTop: 6,
+    paddingBottom: 6,
+    gap: 12,
   },
 
   label: {

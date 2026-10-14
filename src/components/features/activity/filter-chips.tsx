@@ -72,8 +72,8 @@ const styles = StyleSheet.create({
     paddingRight: 16, // Opsional: memberi sedikit jarak di ujung kiri dan kanan saat di-swipe
   },
   chip: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     borderRadius: radius.full,
     borderWidth: 1,
   },

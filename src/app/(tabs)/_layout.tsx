@@ -25,9 +25,9 @@ export default function TabsLayout() {
           tabBarStyle: {
             backgroundColor: tabBarBg,
             borderTopWidth: 0,
-            height: 84,
-            paddingTop: 8,
-            paddingBottom: 8,
+            height: 80,
+            paddingTop: 6,
+            paddingBottom: 6,
           },
           tabBarLabelStyle: {
             fontFamily: "Poppins-Bold",
@@ -98,10 +98,10 @@ const styles = StyleSheet.create({
 
   fab: {
     position: "absolute",
-    right: 23,
-    bottom: 90,
+    right: 20,
+    bottom: 86,
     flexDirection: "row",
-    gap: 10,
+    gap: 8,
     justifyContent: "flex-end",
     alignItems: "flex-end",
   },

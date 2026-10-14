@@ -8,7 +8,9 @@
     "scheme": "dompety",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/images/icon.png",
+      "bundleIdentifier": "com.bangkit16s.dompety",
+      "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
@@ -46,8 +48,19 @@
         }
       ],
       "expo-image",
-      "@react-native-google-signin/google-signin",
-      ["react-native-google-mobile-ads", {"androidAppId": "ca-app-pub-3230523634633671~3589422419"}]
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.93363001051-4ts9knbfvnad7v6jag22mku089hl4klc"
+        }
+      ],
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-3230523634633671~3589422419",
+          "iosAppId": "ca-app-pub-3230523634633671~3589422419"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

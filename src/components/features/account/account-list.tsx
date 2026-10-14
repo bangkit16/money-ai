@@ -132,14 +132,14 @@ export function AccountList({
 }
 
 const styles = StyleSheet.create({
-  card: { borderRadius: radius.xl, padding: 16 },
-  amount: { ...typography.titleMd, fontSize: 14 },
+  card: { borderRadius: radius.xl, padding: 12 },
+  amount: { ...typography.titleMd, fontSize: 13 },
 
   loadingContainer: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 24,
+    paddingVertical: 20,
     gap: 8,
   },
   loadingText: { ...typography.bodySm },
@@ -147,24 +147,24 @@ const styles = StyleSheet.create({
   emptyText: {
     ...typography.bodyLg,
     textAlign: "center",
-    paddingVertical: 24,
+    paddingVertical: 20,
   },
 
   accountRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: 20,
+    padding: 16,
   },
   accountLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 16,
+    gap: 12,
     flexShrink: 1,
   },
   accountIconCircle: {
-    width: 48,
-    height: 48,
+    width: 44,
+    height: 44,
     borderRadius: radius.full,
     alignItems: "center",
     justifyContent: "center",

@@ -69,8 +69,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   brandIcon: {
-    width: 32,
-    height: 32,
+    width: 28,
+    height: 28,
   },
   wordmark: { ...typography.headlineLgMobile },
   notificationButton: {

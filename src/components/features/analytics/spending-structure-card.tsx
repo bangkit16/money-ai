@@ -55,7 +55,7 @@ export function SpendingStructureCard({ segments, totalSpend, type = "EXPENSE" }
 }
 
 const styles = StyleSheet.create({
-  card: { borderRadius: radius.xl, padding: 24 },
+  card: { borderRadius: radius.xl, padding: 20 },
   titleMd: { ...typography.titleMd },
   mutedLabel: { ...typography.labelCaps },
 
@@ -65,14 +65,14 @@ const styles = StyleSheet.create({
   legendGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 16,
-    marginTop: 24,
+    gap: 12,
+    marginTop: 20,
     width: "100%",
   },
   legendItem: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: 6,
     width: "45%",
   },
   legendDot: { width: 10, height: 10, borderRadius: radius.full },

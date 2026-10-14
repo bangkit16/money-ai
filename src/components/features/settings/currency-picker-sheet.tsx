@@ -165,18 +165,18 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    paddingVertical: 16,
+    paddingVertical: 12,
     borderTopWidth: 1,
   },
-  symbol: { ...typography.titleMd, fontSize: 18, width: 36, textAlign: "center" },
+  symbol: { ...typography.titleMd, fontSize: 16, width: 32, textAlign: "center" },
   code: { ...typography.bodyLg },
   optionCancelRow: {
-    paddingVertical: 16,
+    paddingVertical: 12,
     alignItems: "center",
     marginTop: 4,
   },
   optionCancelText: {
     ...typography.titleMd,
-    fontSize: 13,
+    fontSize: 12,
   },
 });

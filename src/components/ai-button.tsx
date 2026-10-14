@@ -441,8 +441,8 @@ function AiButton({ accountId }: AiButtonProps) {
 
 const styles = StyleSheet.create({
   fabContainer: {
-    width: 48,
-    height: 48,
+    width: 44,
+    height: 44,
     borderRadius: radius.full,
     borderWidth: 2,
     shadowColor: "#051125",
@@ -459,7 +459,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  fabLoading: { width: 160, height: 48 },
+  fabLoading: { width: 156, height: 44 },
   gradientLoading: { paddingHorizontal: 12 },
   resultOverlay: {
     flex: 1,

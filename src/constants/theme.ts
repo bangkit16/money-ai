@@ -40,46 +40,46 @@ export const colors = {
 
 export const typography = {
   displayLg: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: "700" as const,
-    lineHeight: 36,
+    lineHeight: 32,
     letterSpacing: -0.5,
   },
   headlineLg: {
-    fontSize: 24,
-    fontWeight: "600" as const,
-    lineHeight: 32,
-    letterSpacing: -0.3,
-  },
-  headlineLgMobile: {
     fontSize: 20,
     fontWeight: "600" as const,
     lineHeight: 28,
+    letterSpacing: -0.3,
   },
-  titleMd: { fontSize: 16, fontWeight: "600" as const, lineHeight: 24 },
-  bodyLg: { fontSize: 14, fontWeight: "400" as const, lineHeight: 20 },
-  bodySm: { fontSize: 12, fontWeight: "400" as const, lineHeight: 16 },
+  headlineLgMobile: {
+    fontSize: 18,
+    fontWeight: "600" as const,
+    lineHeight: 24,
+  },
+  titleMd: { fontSize: 14, fontWeight: "600" as const, lineHeight: 20 },
+  bodyLg: { fontSize: 12, fontWeight: "400" as const, lineHeight: 18 },
+  bodySm: { fontSize: 10, fontWeight: "400" as const, lineHeight: 14 },
   labelCaps: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: "700" as const,
-    lineHeight: 14,
+    lineHeight: 12,
     letterSpacing: 0.6,
     textTransform: "uppercase" as const,
   },
 };
 
 export const radius = {
-  sm: 4,
-  md: 8,
-  lg: 12,
-  xl: 16,
+  sm: 3,
+  md: 6,
+  lg: 10,
+  xl: 12,
   full: 9999,
 };
 
 export const spacing = {
-  unit: 8,
-  gutter: 16,
-  marginMobile: 16,
+  unit: 6,
+  gutter: 12,
+  marginMobile: 12,
 };
 
 export const shadow = {

@@ -171,17 +171,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    paddingVertical: 16,
+    paddingVertical: 12,
     borderTopWidth: 1,
   },
   optionRowText: { ...typography.bodyLg, flex: 1 },
   optionCancelRow: {
-    paddingVertical: 16,
+    paddingVertical: 12,
     alignItems: "center",
     marginTop: 4,
   },
   optionCancelText: {
     ...typography.titleMd,
-    fontSize: 13,
+    fontSize: 12,
   },
 });

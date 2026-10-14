@@ -60,13 +60,16 @@ export default function LoginScreen() {
   
   GoogleSignin.configure({
     webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID!,
+    iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID!,
   });
 
   // console.log(process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID!);
   useEffect(() => {
     console.log("Google Web Client ID:", process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID!);
     GoogleSignin.configure({
+      iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID!,
       webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID!,
+      profileImageSize: 150,
     });
   }, []);
 
@@ -318,15 +321,15 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
 
   sheet: {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
     paddingHorizontal: spacing.marginMobile,
-    paddingTop: 20,
-    paddingBottom: Platform.OS === "ios" ? 32 : 20,
+    paddingTop: 16,
+    paddingBottom: Platform.OS === "ios" ? 28 : 16,
     marginTop: -20,
   },
   sheetHeader: {
-    marginBottom: 20,
+    marginBottom: 16,
   },
   title: { ...typography.headlineLgMobile },
   subtitle: {
@@ -335,29 +338,29 @@ const styles = StyleSheet.create({
   },
   errorBox: {
     backgroundColor: "#FEE2E2",
-    borderRadius: 10,
-    padding: 10,
-    marginBottom: 12,
+    borderRadius: 8,
+    padding: 8,
+    marginBottom: 10,
   },
   input: {
     borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 13,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 12,
     fontFamily: "Poppins-Regular",
-    marginBottom: 10,
+    marginBottom: 8,
   },
   emailButton: {
-    borderRadius: 10,
-    paddingVertical: 12,
+    borderRadius: 8,
+    paddingVertical: 10,
     alignItems: "center",
     marginTop: 4,
   },
   emailButtonText: {
     color: "#fff",
     fontFamily: "Poppins-Bold",
-    fontSize: 13,
+    fontSize: 12,
   },
   divider: {
     flexDirection: "row",

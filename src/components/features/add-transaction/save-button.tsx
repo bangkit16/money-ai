@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 8,
     borderRadius: radius.xl,
-    paddingVertical: 16,
+    paddingVertical: 12,
   },
   disabled: { opacity: 0.4 },
   text: { ...typography.titleMd },

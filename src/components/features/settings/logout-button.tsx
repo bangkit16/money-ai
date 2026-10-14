@@ -27,7 +27,7 @@ const styles = StyleSheet.create({
     gap: 8,
     borderWidth: 1,
     borderRadius: radius.xl,
-    paddingVertical: 16,
+    paddingVertical: 12,
   },
-  text: { ...typography.titleMd, fontSize: 13 },
+  text: { ...typography.titleMd, fontSize: 12 },
 });

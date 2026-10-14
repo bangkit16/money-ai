@@ -78,8 +78,8 @@ export const Input = forwardRef<TextInput, InputProps>(
         flexDirection: isTextarea ? 'column' : 'row',
         alignItems: isTextarea ? 'stretch' : 'center',
         minHeight: getHeight(),
-        paddingHorizontal: 16,
-        paddingVertical: isTextarea ? 12 : 0,
+        paddingHorizontal: 12,
+        paddingVertical: isTextarea ? 10 : 0,
       };
 
       switch (variant) {
