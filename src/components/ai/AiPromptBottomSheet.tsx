@@ -3,9 +3,12 @@ import { Text } from "@/components/ui/text";
 import { radius, shadow, spacing, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
+import { useT } from "@/i18n";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useMemo, useState } from "react";
+import { aiQuota$ } from "@/store/profile$";
+import { useSelector } from "@legendapp/state/react";
 import {
   Animated,
   KeyboardAvoidingView,
@@ -39,6 +42,8 @@ export default function AiPromptBottomSheet({
   const mutedBgColor = useColor("muted");
   const primaryColor = useColor("primary");
   const whiteColor = useColor("background");
+  const quota = useSelector(aiQuota$);
+  const t = useT();
 
   const [prompt, setPrompt] = useState("");
   const [mounted, setMounted] = useState(visible);
@@ -158,7 +163,7 @@ export default function AiPromptBottomSheet({
                 <Ionicons name="sparkles" size={14} color={whiteColor} />
               </View>
               <Text style={[styles.title, { color: textColor }]}>
-                Ask Dompety AI
+                {t("ai.askTitle")}
               </Text>
             </View>
             <TouchableOpacity hitSlop={10} onPress={handleClose}>
@@ -170,9 +175,7 @@ export default function AiPromptBottomSheet({
             value={prompt}
             onChangeText={setPrompt}
             placeholder={
-              isListening
-                ? "Mendengarkan..."
-                : "Tanyakan sesuatu tentang keuanganmu..."
+              isListening ? t("ai.listening") : t("ai.promptPlaceholder")
             }
             placeholderTextColor={textMutedColor}
             multiline
@@ -201,6 +204,20 @@ export default function AiPromptBottomSheet({
                 color={isListening ? RECORDING_RED : primaryColor}
               />
             </TouchableOpacity>
+
+            <View style={[styles.quotaBadge, { backgroundColor: mutedBgColor }]}>
+              <Ionicons
+                name={quota.isPro ? "sparkles" : "flash-outline"}
+                size={12}
+                color={quota.isPro ? "#EAB308" : primaryColor}
+              />
+              <Text style={[styles.quotaText, { color: textMutedColor }]}>
+                {t("ai.quotaRemaining", {
+                  remaining: quota.remaining,
+                  max: quota.max,
+                })}
+              </Text>
+            </View>
 
             <TouchableOpacity
               style={styles.sendButtonContainer}
@@ -275,9 +292,22 @@ const styles = StyleSheet.create({
 
   footerRow: {
     flexDirection: "row",
-    justifyContent: "flex-end",
+    justifyContent: "space-between",
     alignItems: "center",
-    gap: 12,
+    gap: 8,
+  },
+  quotaBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: radius.full,
+  },
+  quotaText: {
+    ...typography.bodySm,
+    fontSize: 11,
+    fontWeight: "600",
   },
   voiceButton: {
     width: 48,

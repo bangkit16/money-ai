@@ -1,4 +1,6 @@
 import { supabase } from "@/lib/supabase";
+import { user$ } from "@/store/auth$";
+import { profile$ } from "@/store/profile$";
 
 export type AiCategory = {
   id: number;
@@ -68,13 +70,74 @@ export type AiPromptResult =
   | { action: "confirm_delete"; data: AiDeleteTarget }
   | { action: "confirm_update"; data: AiUpdatePayload };
 
+export class AiQuotaExceededError extends Error {
+  isPro: boolean;
+  maxQuota: number;
+
+  constructor(isPro: boolean, maxQuota: number) {
+    super(
+      isPro
+        ? `Batas harian AI Pro tercapai (${maxQuota}/${maxQuota}). Kuota akan direset besok.`
+        : `Batas harian AI Free tercapai (${maxQuota}/${maxQuota}). Tonton iklan atau upgrade ke Pro.`
+    );
+    this.name = "AiQuotaExceededError";
+    this.isPro = isPro;
+    this.maxQuota = maxQuota;
+  }
+}
+
 export async function askAi(prompt: string): Promise<AiPromptResult> {
+  const user = user$.peek();
+  if (!user) throw new Error("Silakan login terlebih dahulu.");
+
+  // Atomic quota check & increment di Supabase
+  const { data: quotaCheck, error: rpcError } = await supabase.rpc(
+    "check_and_increment_ai_usage",
+    { p_user_id: user.id }
+  );
+
+  if (rpcError) {
+    console.error("Quota check RPC error:", rpcError);
+    throw new Error("Gagal memvalidasi kuota AI.");
+  }
+
+  if (quotaCheck && !quotaCheck.allowed) {
+    throw new AiQuotaExceededError(quotaCheck.is_pro, quotaCheck.max_quota);
+  }
+
+  if (quotaCheck) {
+    profile$.ai_daily_usage.set(quotaCheck.current_usage);
+    profile$.is_pro.set(quotaCheck.is_pro);
+  }
+
   const { data, error } = await supabase.functions.invoke("ai-prompt", {
     body: { prompt },
   });
   if (error) throw error;
   return data as AiPromptResult;
 }
+
+export async function claimRewardedAiBonus(bonus = 3): Promise<boolean> {
+  const user = user$.peek();
+  if (!user) return false;
+
+  const { data, error } = await supabase.rpc("add_rewarded_ai_usage", {
+    p_user_id: user.id,
+    p_bonus: bonus,
+  });
+
+  if (error) {
+    console.error("Bonus claim error:", error);
+    return false;
+  }
+
+  if (data?.success) {
+    profile$.ai_daily_usage.set(data.current_usage);
+    return true;
+  }
+  return false;
+}
+
 
 export function formatRupiah(n: number) {
   return new Intl.NumberFormat("id-ID", {

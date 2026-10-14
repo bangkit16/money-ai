@@ -57,9 +57,14 @@ export default function LoginScreen() {
   const textColor = useColor("text");
   const textMutedColor = useColor("textMuted");
   const primaryColor = useColor("primary");
+  
+  GoogleSignin.configure({
+    webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID!,
+  });
 
   // console.log(process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID!);
   useEffect(() => {
+    console.log("Google Web Client ID:", process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID!);
     GoogleSignin.configure({
       webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID!,
     });

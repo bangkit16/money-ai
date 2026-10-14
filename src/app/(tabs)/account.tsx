@@ -12,6 +12,8 @@ import { spacing, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
 import { useT } from "@/i18n";
 import { useAccounts } from "@/hooks/useAccounts";
+import { isPro$ } from "@/store/profile$";
+import { useSelector } from "@legendapp/state/react";
 import type { AccountRow } from "@/services/accountService";
 import { useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
@@ -44,7 +46,13 @@ export default function AccountScreen() {
     setExcludeFromTotal,
   } = useAccounts();
 
+  const isPro = useSelector(isPro$);
+
   const openCreateForm = () => {
+    if (!isPro && accounts.length >= 4) {
+      toast.error("Batas akun gratis maksimal 4. Upgrade ke Pro untuk akun tanpa batas.");
+      return;
+    }
     setEditingAccount(null);
     setAccountNameInput("");
     setExcludeFromTotalInput(false);

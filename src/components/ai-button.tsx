@@ -11,6 +11,7 @@ import {
   type AiDeleteTarget,
   type AiUpdatePayload,
   formatRupiah,
+  AiQuotaExceededError,
 } from "@/lib/ai";
 import { invalidateTransactionCaches } from "@/lib/query-invalidation";
 import { supabase } from "@/lib/supabase";
@@ -33,6 +34,9 @@ import AiPromptBottomSheet from "./ai/AiPromptBottomSheet";
 import AiTransactionConfirmModal from "./ai/AiTransactionConfirmModal";
 import AiDeleteConfirmModal from "./ai/AiDeleteConfirmModal";
 import AiUpdateConfirmModal from "./ai/AiUpdateConfirmModal";
+import { AiQuotaExceededModal } from "@/components/features/pro/AiQuotaExceededModal";
+import { UpgradeModal } from "@/components/features/pro/UpgradeModal";
+import { useRewardedAd } from "@/hooks/useRewardedAd";
 import { useToast } from "./ui/toast";
 
 type AiButtonProps = {
@@ -58,6 +62,9 @@ function AiButton({ accountId }: AiButtonProps) {
   const [saving, setSaving] = useState(false);
   const [resultMessage, setResultMessage] = useState<string | null>(null);
   const [resultVisible, setResultVisible] = useState(false);
+  const [quotaExceededData, setQuotaExceededData] = useState<{ isPro: boolean; maxQuota: number } | null>(null);
+  const [upgradeModalVisible, setUpgradeModalVisible] = useState(false);
+  const { showRewardedAd } = useRewardedAd();
   const queryClient = useQueryClient();
   const t = useT();
   const toast = useToast();
@@ -142,8 +149,13 @@ function AiButton({ accountId }: AiButtonProps) {
       } else if (result.action === "confirm_update") {
         setUpdatePayload(result.data);
       }
-    } catch (e) {
-      setResultMessage("Gagal memproses permintaan. Coba lagi.");
+    } catch (e: any) {
+      if (e instanceof AiQuotaExceededError) {
+        setQuotaExceededData({ isPro: e.isPro, maxQuota: e.maxQuota });
+      } else {
+        setResultMessage(e?.message || "Gagal memproses permintaan. Coba lagi.");
+        setResultVisible(true);
+      }
     } finally {
       setLoading(false);
     }
@@ -409,6 +421,20 @@ function AiButton({ accountId }: AiButtonProps) {
           </View>
         </View>
       </Modal>
+
+      <AiQuotaExceededModal
+        visible={!!quotaExceededData}
+        isPro={quotaExceededData?.isPro ?? false}
+        maxQuota={quotaExceededData?.maxQuota ?? 5}
+        onClose={() => setQuotaExceededData(null)}
+        onWatchAd={() => showRewardedAd()}
+        onUpgradePro={() => setUpgradeModalVisible(true)}
+      />
+
+      <UpgradeModal
+        visible={upgradeModalVisible}
+        onClose={() => setUpgradeModalVisible(false)}
+      />
     </>
   );
 }

@@ -2,6 +2,7 @@ import { observable } from "@legendapp/state";
 import { syncedSupabase } from "@legendapp/state/sync-plugins/supabase";
 import { supabase } from "@/lib/supabase";
 import { user$ } from "./auth$";
+import { isPro$ } from "./profile$";
 import "./supabaseSync";
 
 export type AccountEntity = {
@@ -34,6 +35,13 @@ export const accountActions = {
   create(accountName: string, excludeFromTotal = false) {
     const user = user$.peek();
     if (!user) throw new Error("User belum login");
+
+    const isPro = isPro$.peek();
+    const currentCount = Object.keys(accounts$.peek() ?? {}).length;
+    if (!isPro && currentCount >= 4) {
+      throw new Error("Akun gratis maksimal 4. Upgrade ke Pro untuk akun tanpa batas.");
+    }
+
     const id = Date.now();
     accounts$[id].set({
       id,

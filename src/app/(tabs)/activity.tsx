@@ -3,6 +3,7 @@ import { DateSectionHeader } from "@/components/features/activity/date-section-h
 import { FilterChips } from "@/components/features/activity/filter-chips";
 import { SearchBar } from "@/components/features/activity/search-bar";
 import { TransactionListItem } from "@/components/features/activity/transaction-list-item";
+import { ActivityBannerAd } from "@/components/features/activity/banner-ad";
 import { groupByDate } from "@/components/features/activity/utils";
 import { AppBar } from "@/components/features/shared/app-bar";
 import { Text } from "@/components/ui/text";
@@ -12,6 +13,8 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { useT } from "@/i18n";
 import { useSettings } from "@/providers/settings-provider";
 import { ActivityService } from "@/services/activityService";
+import { isPro$ } from "@/store/profile$";
+import { useSelector } from "@legendapp/state/react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useMemo, useState } from "react";
@@ -31,6 +34,7 @@ export default function ActivityScreen() {
   const outlineColor = useColor("border");
   const t = useT();
   const { language } = useSettings();
+  const isPro = useSelector(isPro$);
 
   const {
     data,
@@ -137,7 +141,11 @@ export default function ActivityScreen() {
           ) : null
         }
       />
-      {/* <View style={styles.bannerWrapper}><ActivityBannerAd /></View> */}
+      {!isPro && (
+        <View style={styles.bannerWrapper}>
+          <ActivityBannerAd />
+        </View>
+      )}
     </View>
   );
 }
