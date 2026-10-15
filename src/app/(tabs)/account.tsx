@@ -50,7 +50,7 @@ export default function AccountScreen() {
 
   const openCreateForm = () => {
     if (!isPro && accounts.length >= 4) {
-      toast.error("Batas akun gratis maksimal 4. Upgrade ke Pro untuk akun tanpa batas.");
+      toast.error("Batas akun gratis maksimal 4. Upgrade ke Pro untuk rekening tanpa batas.");
       return;
     }
     setEditingAccount(null);

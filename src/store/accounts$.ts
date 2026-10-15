@@ -39,7 +39,7 @@ export const accountActions = {
     const isPro = isPro$.peek();
     const currentCount = Object.keys(accounts$.peek() ?? {}).length;
     if (!isPro && currentCount >= 4) {
-      throw new Error("Akun gratis maksimal 4. Upgrade ke Pro untuk akun tanpa batas.");
+      throw new Error("Akun gratis maksimal 4. Upgrade ke Pro untuk Rekening tanpa batas.");
     }
 
     const id = Date.now();

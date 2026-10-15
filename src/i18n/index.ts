@@ -210,7 +210,7 @@ export const translations: Record<LanguageCode, Dict> = {
     "ai.quotaRemaining": "{remaining}/{max} kuota tersisa",
     // settings upgrade banner
     "settings.upgradeTitle": "✨ Upgrade ke Dompety AI Pro",
-    "settings.upgradeSubtitle": "60 kuota AI/hari, akun tanpa batas & bebas iklan",
+    "settings.upgradeSubtitle": "60 kuota AI/hari, rekening tanpa batas & bebas iklan",
     "settings.upgradeButton": "Upgrade",
     // profile
     "profile.aiQuota": "Kuota AI: {remaining}/{max} tersisa hari ini",
@@ -220,7 +220,7 @@ export const translations: Record<LanguageCode, Dict> = {
     "pro.subtitle": "Catat keuangan lebih cerdas tanpa batas kuota & bebas iklan.",
     "pro.feature1Title": "60 Kuota AI / Hari",
     "pro.feature1Desc": "12x lebih banyak untuk input transaksi suara & teks.",
-    "pro.feature2Title": "Akun Tanpa Batas",
+    "pro.feature2Title": "Rekening Tanpa Batas",
     "pro.feature2Desc": "Bebas tambah rekening bank, e-wallet, dan dompet kas.",
     "pro.feature3Title": "100% Bebas Iklan",
     "pro.feature3Desc": "Aplikasi bersih tanpa gangguan iklan banner & video.",
