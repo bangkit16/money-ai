@@ -21,10 +21,9 @@ import {
   GestureDetector,
 } from 'react-native-gesture-handler';
 import Animated, {
+  Easing,
   useAnimatedStyle,
   useSharedValue,
-  withDelay,
-  withSpring,
   withTiming,
 } from 'react-native-reanimated';
 import { runOnJS } from 'react-native-worklets';
@@ -55,12 +54,6 @@ const TOAST_MARGIN = 8;
 const DYNAMIC_ISLAND_WIDTH = 126;
 const EXPANDED_WIDTH = screenWidth - 32;
 
-// Reanimated spring configuration
-const SPRING_CONFIG = {
-  stiffness: 80,
-  damping: 4,
-};
-
 export function Toast({
   id,
   title,
@@ -86,11 +79,10 @@ export function Toast({
   const translateY = useSharedValue(-100);
   const translateX = useSharedValue(0);
   const opacity = useSharedValue(0);
-  const scale = useSharedValue(0.8);
   const width = useSharedValue(DYNAMIC_ISLAND_WIDTH);
   const height = useSharedValue(DYNAMIC_ISLAND_HEIGHT);
   const borderRadius = useSharedValue(18.5);
-  const contentOpacity = useSharedValue(0);
+  const contentOpacity = useSharedValue(1);
 
   // Project colors
   const cardColor = useColor('card');
@@ -106,35 +98,20 @@ export function Toast({
 
   useEffect(() => {
     if (isExpanded) {
-      // If there's content, start directly with expanded state
       width.value = EXPANDED_WIDTH;
       height.value = EXPANDED_HEIGHT;
       borderRadius.value = 20;
+    }
 
-      if (reduceMotion) {
-        translateY.value = 0;
-        opacity.value = 1;
-        scale.value = 1;
-        contentOpacity.value = 1;
-      } else {
-        // Animate in expanded toast
-        translateY.value = withSpring(0, SPRING_CONFIG);
-        opacity.value = withTiming(1, { duration: 300 });
-        scale.value = withSpring(1, SPRING_CONFIG);
-        contentOpacity.value = withDelay(100, withTiming(1, { duration: 300 }));
-      }
+    if (reduceMotion) {
+      translateY.value = 0;
+      opacity.value = 1;
     } else {
-      // If no content, show compact Dynamic Island with icon only
-      if (reduceMotion) {
-        translateY.value = 0;
-        opacity.value = 1;
-        scale.value = 1;
-      } else {
-        // Animate in compact toast
-        translateY.value = withSpring(0, SPRING_CONFIG);
-        opacity.value = withTiming(1, { duration: 200 });
-        scale.value = withSpring(1, SPRING_CONFIG);
-      }
+      translateY.value = withTiming(0, {
+        duration: 250,
+        easing: Easing.out(Easing.quad),
+      });
+      opacity.value = withTiming(1, { duration: 200 });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reduceMotion]);
@@ -182,13 +159,15 @@ export function Toast({
       runOnJS(onDismiss)(id);
     };
 
-    translateY.value = withSpring(-100, SPRING_CONFIG);
-    opacity.value = withTiming(0, { duration: 250 }, (finished) => {
+    translateY.value = withTiming(-100, {
+      duration: 200,
+      easing: Easing.in(Easing.quad),
+    });
+    opacity.value = withTiming(0, { duration: 200 }, (finished) => {
       if (finished) {
         onDismissAction();
       }
     });
-    scale.value = withSpring(0.8, SPRING_CONFIG);
   };
 
   const panGesture = Gesture.Pan()
@@ -227,8 +206,8 @@ export function Toast({
           }
         });
       } else if (!reduceMotion) {
-        // Snap back with spring animation
-        translateX.value = withSpring(0, SPRING_CONFIG);
+        // Snap back
+        translateX.value = withTiming(0, { duration: 200 });
       }
     });
 
@@ -243,7 +222,6 @@ export function Toast({
     transform: [
       { translateY: translateY.value },
       { translateX: translateX.value },
-      { scale: scale.value },
     ],
   }));
 
