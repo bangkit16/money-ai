@@ -8,7 +8,7 @@ import { ThemePickerSheet } from "@/components/features/settings/theme-picker-sh
 import { ConfirmDialog } from "@/components/features/shared/confirm-dialog";
 import { Text } from "@/components/ui/text";
 import { useColor } from "@/hooks/useColor";
-import { useModeContext, type Mode } from "@/providers/mode-provider";
+import { useModeContext } from "@/providers/mode-provider";
 import { CURRENCIES, LANGUAGES, useSettings } from "@/providers/settings-provider";
 import { radius, spacing, typography } from "@/constants/theme";
 import { router } from "expo-router";
@@ -27,12 +27,6 @@ import { invalidateTransactionCaches } from "@/lib/query-invalidation";
 import { useToast } from "@/components/ui/toast";
 import { AppBar } from "@/components/features/shared/app-bar";
 import { useT } from "@/i18n";
-
-const MODE_LABEL: Record<Mode, string> = {
-  light: "Terang",
-  dark: "Gelap",
-  system: "Sistem",
-};
 
 export default function SettingsScreen() {
   const [confirmVisible, setConfirmVisible] = useState(false);
@@ -125,13 +119,13 @@ export default function SettingsScreen() {
             activeOpacity={0.85}
           >
             <View style={styles.proBannerText}>
-              <Text style={styles.proBannerTitle}>✨ Upgrade ke Money AI Pro</Text>
+              <Text style={styles.proBannerTitle}>{t("settings.upgradeTitle")}</Text>
               <Text style={styles.proBannerSubtitle}>
-                60 kuota AI/hari, akun tanpa batas & bebas iklan
+                {t("settings.upgradeSubtitle")}
               </Text>
             </View>
             <View style={styles.proBannerButton}>
-              <Text style={styles.proBannerButtonText}>Upgrade</Text>
+              <Text style={styles.proBannerButtonText}>{t("settings.upgradeButton")}</Text>
             </View>
           </TouchableOpacity>
         )}
@@ -142,7 +136,7 @@ export default function SettingsScreen() {
             iconColor={primary}
             title={t("settings.theme")}
             description={t("settings.themeDesc")}
-            value={modeCtx ? MODE_LABEL[modeCtx.mode] : "Sistem"}
+            value={modeCtx ? t(`theme.${modeCtx.mode}`) : t("theme.system")}
             onPress={() => setThemeVisible(true)}
           />
           <SettingRow

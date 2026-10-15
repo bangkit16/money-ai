@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Modal,
   StyleSheet,
@@ -9,11 +9,12 @@ import {
 } from "react-native";
 import { Text } from "@/components/ui/text";
 import { useColor } from "@/hooks/useColor";
-import { radius, shadow, spacing, typography } from "@/constants/theme";
+import { radius, shadow, spacing } from "@/constants/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { PRO_PRICING, ProService, type SubscriptionPlan } from "@/services/proService";
 import { useToast } from "@/components/ui/toast";
+import { useT } from "@/i18n";
 
 type UpgradeModalProps = {
   visible: boolean;
@@ -21,6 +22,7 @@ type UpgradeModalProps = {
 };
 
 export function UpgradeModal({ visible, onClose }: UpgradeModalProps) {
+  const t = useT();
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan>("yearly");
   const [loading, setLoading] = useState(false);
 
@@ -37,13 +39,13 @@ export function UpgradeModal({ visible, onClose }: UpgradeModalProps) {
       const duration = selectedPlan === "yearly" ? 12 : 1;
       const ok = await ProService.activatePro(duration);
       if (ok) {
-        toast.success("Selamat! Anda telah menjadi anggota Pro.");
+        toast.success(t("pro.subscribeSuccess"));
         onClose();
       } else {
-        toast.error("Gagal memproses langganan.");
+        toast.error(t("pro.subscribeError"));
       }
     } catch (e: any) {
-      toast.error(e?.message ?? "Terjadi kesalahan.");
+      toast.error(e?.message ?? t("common.genericError"));
     } finally {
       setLoading(false);
     }
@@ -52,18 +54,18 @@ export function UpgradeModal({ visible, onClose }: UpgradeModalProps) {
   const features = [
     {
       icon: "sparkles",
-      title: "60 Permintaan AI / Hari",
-      desc: "Jatah 12x lebih banyak untuk catat transaksi via suara & teks.",
+      title: t("pro.feature1Title"),
+      desc: t("pro.feature1Desc"),
     },
     {
-      icon: "wallet",
-      title: "Akun & Dompet Tanpa Batas",
-      desc: "Bebas buat rekening bank, e-wallet, kas tanpa limit 4 akun.",
+      icon: "wallet-outline",
+      title: t("pro.feature2Title"),
+      desc: t("pro.feature2Desc"),
     },
     {
-      icon: "shield-checkmark",
-      title: "100% Bebas Iklan",
-      desc: "Aplikasi bersih tanpa gangguan banner maupun rewarded ads.",
+      icon: "shield-checkmark-outline",
+      title: t("pro.feature3Title"),
+      desc: t("pro.feature3Desc"),
     },
   ];
 
@@ -76,35 +78,44 @@ export function UpgradeModal({ visible, onClose }: UpgradeModalProps) {
     >
       <View style={styles.overlay}>
         <View style={[styles.card, { backgroundColor: cardColor }, shadow.heroCard]}>
-          <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
-            <Ionicons name="close" size={24} color={textColor} />
+          <TouchableOpacity
+            style={styles.closeBtn}
+            onPress={onClose}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          >
+            <Ionicons name="close" size={20} color={textMuted} />
           </TouchableOpacity>
 
           <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
+            {/* Header Icon */}
+            <LinearGradient
+              colors={["#FEF08A", "#F59E0B"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.heroIconBadge}
+            >
+              <Ionicons name="star" size={20} color="#78350F" />
+            </LinearGradient>
+
             <View style={styles.badgeContainer}>
-              <LinearGradient
-                colors={["#EAB308", "#CA8A04"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.proBadge}
-              >
-                <Ionicons name="star" size={14} color="#FFFFFF" />
-                <Text style={styles.proBadgeText}>MONEY AI PRO</Text>
-              </LinearGradient>
+              <View style={styles.proBadge}>
+                <Text style={styles.proBadgeText}>{t("pro.modalBadge")}</Text>
+              </View>
             </View>
 
             <Text style={[styles.title, { color: textColor }]}>
-              Buka Semua Potensi Keuangan
+              {t("pro.title")}
             </Text>
             <Text style={[styles.subtitle, { color: textMuted }]}>
-              Kelola uang lebih cepat, cerdas, dan tanpa hambatan kuota.
+              {t("pro.subtitle")}
             </Text>
 
+            {/* Feature list */}
             <View style={styles.featureList}>
               {features.map((f, i) => (
                 <View key={i} style={styles.featureRow}>
-                  <View style={[styles.iconBox, { backgroundColor: primaryColor + "15" }]}>
-                    <Ionicons name={f.icon as any} size={20} color={primaryColor} />
+                  <View style={[styles.iconBox, { backgroundColor: primaryColor + "14" }]}>
+                    <Ionicons name={f.icon as any} size={16} color={primaryColor} />
                   </View>
                   <View style={styles.featureText}>
                     <Text style={[styles.featureTitle, { color: textColor }]}>{f.title}</Text>
@@ -123,30 +134,35 @@ export function UpgradeModal({ visible, onClose }: UpgradeModalProps) {
                 style={[
                   styles.planOption,
                   { borderColor: selectedPlan === "yearly" ? primaryColor : borderColor },
-                  selectedPlan === "yearly" && { backgroundColor: primaryColor + "08" },
+                  selectedPlan === "yearly" && { backgroundColor: primaryColor + "0a" },
                 ]}
               >
-                <View style={styles.planHeader}>
-                  <View style={styles.radioRow}>
-                    <Ionicons
-                      name={selectedPlan === "yearly" ? "radio-button-on" : "radio-button-off"}
-                      size={20}
-                      color={selectedPlan === "yearly" ? primaryColor : textMuted}
-                    />
-                    <Text style={[styles.planName, { color: textColor }]}>
-                      {PRO_PRICING.yearly.name}
+                <View style={styles.planLeft}>
+                  <Ionicons
+                    name={selectedPlan === "yearly" ? "radio-button-on" : "radio-button-off"}
+                    size={18}
+                    color={selectedPlan === "yearly" ? primaryColor : textMuted}
+                  />
+                  <View style={styles.planInfo}>
+                    <View style={styles.planTitleRow}>
+                      <Text style={[styles.planName, { color: textColor }]}>
+                        {t("pro.planYearly")}
+                      </Text>
+                      <View style={styles.discountTag}>
+                        <Text style={styles.discountText}>{t("pro.discountYearly")}</Text>
+                      </View>
+                    </View>
+                    <Text style={[styles.planSubtext, { color: textMuted }]}>
+                      {t("pro.planYearlySubtext")}
                     </Text>
                   </View>
-                  <View style={styles.discountTag}>
-                    <Text style={styles.discountText}>{PRO_PRICING.yearly.discountBadge}</Text>
-                  </View>
                 </View>
-                <Text style={[styles.planPrice, { color: textColor }]}>
-                  {PRO_PRICING.yearly.priceText}
-                  <Text style={[styles.planPeriod, { color: textMuted }]}>
-                    {" " + PRO_PRICING.yearly.periodText}
+
+                <View style={styles.planRight}>
+                  <Text style={[styles.planPrice, { color: textColor }]}>
+                    {PRO_PRICING.yearly.priceText}
                   </Text>
-                </Text>
+                </View>
               </TouchableOpacity>
 
               {/* Monthly */}
@@ -156,30 +172,34 @@ export function UpgradeModal({ visible, onClose }: UpgradeModalProps) {
                 style={[
                   styles.planOption,
                   { borderColor: selectedPlan === "monthly" ? primaryColor : borderColor },
-                  selectedPlan === "monthly" && { backgroundColor: primaryColor + "08" },
+                  selectedPlan === "monthly" && { backgroundColor: primaryColor + "0a" },
                 ]}
               >
-                <View style={styles.planHeader}>
-                  <View style={styles.radioRow}>
-                    <Ionicons
-                      name={selectedPlan === "monthly" ? "radio-button-on" : "radio-button-off"}
-                      size={20}
-                      color={selectedPlan === "monthly" ? primaryColor : textMuted}
-                    />
+                <View style={styles.planLeft}>
+                  <Ionicons
+                    name={selectedPlan === "monthly" ? "radio-button-on" : "radio-button-off"}
+                    size={18}
+                    color={selectedPlan === "monthly" ? primaryColor : textMuted}
+                  />
+                  <View style={styles.planInfo}>
                     <Text style={[styles.planName, { color: textColor }]}>
-                      {PRO_PRICING.monthly.name}
+                      {t("pro.planMonthly")}
+                    </Text>
+                    <Text style={[styles.planSubtext, { color: textMuted }]}>
+                      {t("pro.planMonthlySubtext")}
                     </Text>
                   </View>
                 </View>
-                <Text style={[styles.planPrice, { color: textColor }]}>
-                  {PRO_PRICING.monthly.priceText}
-                  <Text style={[styles.planPeriod, { color: textMuted }]}>
-                    {" " + PRO_PRICING.monthly.periodText}
+
+                <View style={styles.planRight}>
+                  <Text style={[styles.planPrice, { color: textColor }]}>
+                    {PRO_PRICING.monthly.priceText}
                   </Text>
-                </Text>
+                </View>
               </TouchableOpacity>
             </View>
 
+            {/* CTA Button */}
             <TouchableOpacity
               activeOpacity={0.85}
               style={[styles.subscribeBtn, { backgroundColor: primaryColor }]}
@@ -187,17 +207,22 @@ export function UpgradeModal({ visible, onClose }: UpgradeModalProps) {
               disabled={loading}
             >
               {loading ? (
-                <ActivityIndicator color="#FFFFFF" />
+                <ActivityIndicator color="#FFFFFF" size="small" />
               ) : (
                 <Text style={styles.subscribeText}>
-                  Langganan Sekarang (
-                  {selectedPlan === "yearly"
-                    ? PRO_PRICING.yearly.priceText
-                    : PRO_PRICING.monthly.priceText}
-                  )
+                  {t("pro.subscribeCta", {
+                    price:
+                      selectedPlan === "yearly"
+                        ? PRO_PRICING.yearly.priceText
+                        : PRO_PRICING.monthly.priceText,
+                  })}
                 </Text>
               )}
             </TouchableOpacity>
+
+            <Text style={[styles.guaranteeText, { color: textMuted }]}>
+              {t("pro.guarantee")}
+            </Text>
           </ScrollView>
         </View>
       </View>
@@ -208,73 +233,90 @@ export function UpgradeModal({ visible, onClose }: UpgradeModalProps) {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: "rgba(5,17,37,0.55)",
     justifyContent: "center",
     alignItems: "center",
     padding: spacing.marginMobile,
   },
   card: {
     width: "100%",
+    maxWidth: 380,
     maxHeight: "90%",
-    borderRadius: radius.xxl,
-    padding: 20,
+    borderRadius: 18,
+    paddingHorizontal: 18,
+    paddingTop: 20,
+    paddingBottom: 16,
     position: "relative",
   },
   closeBtn: {
     position: "absolute",
-    right: 16,
-    top: 16,
+    right: 14,
+    top: 14,
     zIndex: 10,
-    padding: 4,
+    width: 28,
+    height: 28,
+    borderRadius: radius.full,
+    alignItems: "center",
+    justifyContent: "center",
   },
   content: {
     alignItems: "center",
-    paddingTop: 8,
-    paddingBottom: 16,
+  },
+  heroIconBadge: {
+    width: 44,
+    height: 44,
+    borderRadius: radius.full,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 10,
   },
   badgeContainer: {
-    marginBottom: 12,
-  },
-  proBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: radius.full,
-  },
-  proBadgeText: {
-    color: "#FFFFFF",
-    fontSize: 11,
-    fontWeight: "700",
-    letterSpacing: 0.5,
-  },
-  title: {
-    ...typography.titleLg,
-    fontSize: 20,
-    textAlign: "center",
     marginBottom: 6,
   },
-  subtitle: {
-    ...typography.bodySm,
-    textAlign: "center",
-    marginBottom: 20,
+  proBadge: {
+    backgroundColor: "rgba(234,179,8,0.14)",
     paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: radius.full,
+    borderWidth: 1,
+    borderColor: "rgba(234,179,8,0.35)",
+  },
+  proBadgeText: {
+    color: "#B45309",
+    fontSize: 9.5,
+    fontWeight: "700",
+    letterSpacing: 0.6,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: "700",
+    textAlign: "center",
+    marginBottom: 4,
+  },
+  subtitle: {
+    fontSize: 11,
+    textAlign: "center",
+    marginBottom: 16,
+    paddingHorizontal: 12,
+    lineHeight: 15,
   },
   featureList: {
     width: "100%",
-    gap: 14,
-    marginBottom: 22,
+    gap: 10,
+    marginBottom: 16,
+    backgroundColor: "rgba(0,0,0,0.02)",
+    padding: 12,
+    borderRadius: 12,
   },
   featureRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 14,
+    gap: 10,
   },
   iconBox: {
-    width: 40,
-    height: 40,
-    borderRadius: radius.lg,
+    width: 32,
+    height: 32,
+    borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -282,69 +324,84 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   featureTitle: {
-    ...typography.titleSm,
-    fontSize: 14,
+    fontSize: 12,
+    fontWeight: "600",
   },
   featureDesc: {
-    ...typography.bodySm,
-    fontSize: 12,
+    fontSize: 10.5,
     marginTop: 1,
+    lineHeight: 14,
   },
   plansContainer: {
     width: "100%",
-    gap: 12,
-    marginBottom: 20,
+    gap: 8,
+    marginBottom: 16,
   },
   planOption: {
-    borderWidth: 2,
-    borderRadius: radius.xl,
-    padding: 14,
-  },
-  planHeader: {
     flexDirection: "row",
+    alignItems: "center",
     justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 4,
+    borderWidth: 1.5,
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
   },
-  radioRow: {
+  planLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: 10,
+    flex: 1,
+  },
+  planInfo: {
+    flex: 1,
+    gap: 2,
+  },
+  planTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
   },
   planName: {
-    ...typography.titleMd,
-    fontSize: 15,
+    fontSize: 12.5,
+    fontWeight: "600",
   },
   discountTag: {
     backgroundColor: "#16A34A",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingHorizontal: 6,
+    paddingVertical: 1.5,
     borderRadius: radius.full,
   },
   discountText: {
     color: "#FFFFFF",
-    fontSize: 11,
+    fontSize: 9,
     fontWeight: "700",
   },
-  planPrice: {
-    ...typography.titleLg,
-    fontSize: 18,
-    paddingLeft: 28,
+  planSubtext: {
+    fontSize: 10,
   },
-  planPeriod: {
-    ...typography.bodySm,
+  planRight: {
+    alignItems: "flex-end",
+    paddingLeft: 6,
+  },
+  planPrice: {
     fontSize: 13,
+    fontWeight: "700",
   },
   subscribeBtn: {
     width: "100%",
-    paddingVertical: 14,
-    borderRadius: radius.xl,
+    height: 42,
+    borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
   },
   subscribeText: {
     color: "#FFFFFF",
-    ...typography.titleMd,
-    fontSize: 15,
+    fontSize: 12.5,
+    fontWeight: "600",
+  },
+  guaranteeText: {
+    fontSize: 9.5,
+    textAlign: "center",
+    marginTop: 8,
   },
 });

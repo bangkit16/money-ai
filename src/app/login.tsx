@@ -158,9 +158,9 @@ export default function LoginScreen() {
 
         toast.success("Berhasil Session dibuat");
         // await supabase.auth.setSession(data.session);   
-        Alert.alert("Sukses! Session ", `Selamat datang, ${data.user?.email}`);
+        // Alert.alert("Sukses! Session ", `Selamat datang, ${data.user?.email}`);
         router.replace("/(tabs)");
-        Alert.alert("Sukses!", `Selamat datang, ${data.user?.email}`);
+        // Alert.alert("Sukses!", `Selamat datang, ${data.user?.email}`);
 
       } else {
         throw new Error("ID Token Google tidak ditemukan.");

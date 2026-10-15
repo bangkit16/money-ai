@@ -2,6 +2,7 @@ import { Text } from "@/components/ui/text";
 import { radius, shadow, typography } from "@/constants/theme";
 import { useAuth } from "@/hooks/useAuth";
 import { useColor } from "@/hooks/useColor";
+import { useT } from "@/i18n";
 import { isPro$, aiQuota$ } from "@/store/profile$";
 import { useSelector } from "@legendapp/state/react";
 import { StyleSheet, View } from "react-native";
@@ -9,6 +10,7 @@ import { StyleSheet, View } from "react-native";
 // Kartu profil user yang sedang login (dari Supabase session).
 export function ProfileCard() {
   const { session } = useAuth();
+  const t = useT();
   const cardBg = useColor("card");
   const border = useColor("border");
   const muted = useColor("textMuted");
@@ -40,7 +42,7 @@ export function ProfileCard() {
           {email}
         </Text>
         <Text style={[styles.quotaText, { color: muted }]}>
-          Kuota AI: {quota.remaining}/{quota.max} tersisa hari ini
+          {t("profile.aiQuota", { remaining: quota.remaining, max: quota.max })}
         </Text>
       </View>
       {provider ? (

@@ -1,9 +1,9 @@
-import React from "react";
 import { Modal, StyleSheet, TouchableOpacity, View } from "react-native";
 import { Text } from "@/components/ui/text";
 import { useColor } from "@/hooks/useColor";
-import { radius, shadow, spacing, typography } from "@/constants/theme";
+import { radius, shadow, spacing } from "@/constants/theme";
 import { Ionicons } from "@expo/vector-icons";
+import { useT } from "@/i18n";
 
 type AiQuotaExceededModalProps = {
   visible: boolean;
@@ -22,6 +22,7 @@ export function AiQuotaExceededModal({
   onWatchAd,
   onUpgradePro,
 }: AiQuotaExceededModalProps) {
+  const t = useT();
   const cardColor = useColor("card");
   const textColor = useColor("text");
   const textMuted = useColor("textMuted");
@@ -47,14 +48,14 @@ export function AiQuotaExceededModal({
 
           <Text style={[styles.title, { color: textColor }]}>
             {isPro
-              ? `Batas AI Pro Tercapai (${maxQuota}/${maxQuota})`
-              : `Kuota AI Harian Habis (${maxQuota}/${maxQuota})`}
+              ? t("aiQuota.proLimitTitle", { max: maxQuota })
+              : t("aiQuota.freeLimitTitle", { max: maxQuota })}
           </Text>
 
           <Text style={[styles.description, { color: textMuted }]}>
             {isPro
-              ? "Anda telah mencapai batas wajar harian 60 permintaan AI. Kuota harian Anda akan direset otomatis besok."
-              : "Dapatkan tambahan +3 kuota gratis dengan menonton iklan video, atau tingkatkan ke Pro untuk kuota 60/hari dan tanpa iklan."}
+              ? t("aiQuota.proLimitDesc")
+              : t("aiQuota.freeLimitDesc")}
           </Text>
 
           <View style={styles.actionsContainer}>
@@ -69,7 +70,7 @@ export function AiQuotaExceededModal({
                   }}
                 >
                   <Ionicons name="play-circle-outline" size={20} color="#FFFFFF" />
-                  <Text style={styles.primaryButtonText}>Tonton Iklan (+3 Kuota)</Text>
+                  <Text style={styles.primaryButtonText}>{t("aiQuota.watchAd")}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -82,7 +83,7 @@ export function AiQuotaExceededModal({
                 >
                   <Ionicons name="star" size={18} color="#EAB308" />
                   <Text style={[styles.secondaryButtonText, { color: textColor }]}>
-                    Upgrade ke Pro (Rp14.900)
+                    {t("aiQuota.upgradePro", { price: "Rp14.900" })}
                   </Text>
                 </TouchableOpacity>
               </>
@@ -94,7 +95,7 @@ export function AiQuotaExceededModal({
               onPress={onClose}
             >
               <Text style={[styles.cancelText, { color: textMuted }]}>
-                {isPro ? "Mengerti" : "Nanti Saja"}
+                {isPro ? t("aiQuota.understand") : t("aiQuota.later")}
               </Text>
             </TouchableOpacity>
           </View>
@@ -107,74 +108,75 @@ export function AiQuotaExceededModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: "rgba(5,17,37,0.55)",
     justifyContent: "center",
     alignItems: "center",
     padding: spacing.marginMobile,
   },
   card: {
     width: "100%",
-    borderRadius: radius.xxl,
-    padding: 24,
+    maxWidth: 360,
+    borderRadius: 18,
+    padding: 20,
     alignItems: "center",
   },
   iconCircle: {
-    width: 64,
-    height: 64,
+    width: 48,
+    height: 48,
     borderRadius: radius.full,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 16,
+    marginBottom: 12,
   },
   title: {
-    ...typography.titleLg,
-    fontSize: 18,
+    fontSize: 15.5,
+    fontWeight: "700",
     textAlign: "center",
-    marginBottom: 8,
+    marginBottom: 6,
   },
   description: {
-    ...typography.bodySm,
+    fontSize: 11,
     textAlign: "center",
-    lineHeight: 20,
-    marginBottom: 20,
+    lineHeight: 16,
+    marginBottom: 18,
     paddingHorizontal: 8,
   },
   actionsContainer: {
     width: "100%",
-    gap: 10,
+    gap: 8,
   },
   primaryButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
-    paddingVertical: 14,
-    borderRadius: radius.xl,
+    height: 42,
+    borderRadius: 10,
   },
   primaryButtonText: {
     color: "#FFFFFF",
-    ...typography.titleMd,
-    fontSize: 15,
+    fontSize: 12.5,
+    fontWeight: "600",
   },
   secondaryButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
-    paddingVertical: 12,
-    borderRadius: radius.xl,
+    height: 40,
+    borderRadius: 10,
     borderWidth: 1,
   },
   secondaryButtonText: {
-    ...typography.titleSm,
-    fontSize: 14,
+    fontSize: 12,
+    fontWeight: "600",
   },
   cancelButton: {
-    paddingVertical: 10,
+    paddingVertical: 8,
     alignItems: "center",
+    marginTop: 2,
   },
   cancelText: {
-    ...typography.bodySm,
-    fontSize: 13,
+    fontSize: 11,
   },
 });
