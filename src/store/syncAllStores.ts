@@ -12,9 +12,9 @@ import { refreshProfile } from "./profile$";
 export async function syncAllStores(): Promise<void> {
   await Promise.allSettled([
     refreshProfile(),
-    syncState(accounts$).sync(),
-    syncState(transactions$).sync(),
-    syncState(categories$).sync(),
+    Promise.resolve().then(() => syncState(accounts$).sync?.()),
+    Promise.resolve().then(() => syncState(transactions$).sync?.()),
+    Promise.resolve().then(() => syncState(categories$).sync?.()),
   ]);
 }
 

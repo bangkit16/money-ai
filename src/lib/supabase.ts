@@ -19,3 +19,13 @@ export const supabase = createClient(
       detectSessionInUrl: false,
     },
   })
+
+// Bind channel.unsubscribe so detached callbacks from @legendapp/state don't throw on undefined `this.timeout`
+const origChannel = supabase.channel.bind(supabase)
+supabase.channel = ((name: string, opts?: any) => {
+  const chan = origChannel(name, opts)
+  if (chan && typeof chan.unsubscribe === 'function') {
+    chan.unsubscribe = chan.unsubscribe.bind(chan)
+  }
+  return chan
+}) as typeof supabase.channel
