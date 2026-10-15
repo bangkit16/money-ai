@@ -17,9 +17,10 @@ const FILTERS: { key: "all" | TxType; labelKey: string }[] = [
 type FilterChipsProps = {
   activeFilter: "all" | TxType;
   onChange: (key: "all" | TxType) => void;
+  prefix?: React.ReactNode;
 };
 
-export function FilterChips({ activeFilter, onChange }: FilterChipsProps) {
+export function FilterChips({ activeFilter, onChange, prefix }: FilterChipsProps) {
   const cardColor = useColor("card");
   const borderColor = useColor("border");
   const primaryColor = useColor("primary");
@@ -33,6 +34,7 @@ export function FilterChips({ activeFilter, onChange }: FilterChipsProps) {
       showsHorizontalScrollIndicator={false} // Menyembunyikan scrollbar agar tampilan lebih bersih
       contentContainerStyle={styles.scrollContainer} // Menggunakan contentContainerStyle untuk layouting item di dalamnya
     >
+      {prefix}
       {FILTERS.map((f) => {
         const active = activeFilter === f.key;
         return (

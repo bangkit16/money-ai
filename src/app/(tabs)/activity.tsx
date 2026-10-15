@@ -1,4 +1,5 @@
 // migrated to useColor
+import { AccountFilterDropdown } from "@/components/features/activity/account-filter-dropdown";
 import { DateSectionHeader } from "@/components/features/activity/date-section-header";
 import { FilterChips } from "@/components/features/activity/filter-chips";
 import { SearchBar } from "@/components/features/activity/search-bar";
@@ -8,6 +9,7 @@ import { groupByDate } from "@/components/features/activity/utils";
 import { AppBar } from "@/components/features/shared/app-bar";
 import { Text } from "@/components/ui/text";
 import { spacing, typography } from "@/constants/theme";
+import { useAccounts } from "@/hooks/useAccounts";
 import { useColor } from "@/hooks/useColor";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useT } from "@/i18n";
@@ -25,6 +27,7 @@ type TxType = "INCOME" | "EXPENSE" | "TRANSFER";
 export default function ActivityScreen() {
   const [query, setQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<"all" | TxType>("all");
+  const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null);
 
   const debouncedQuery = useDebounce(query, 500);
 
@@ -35,6 +38,13 @@ export default function ActivityScreen() {
   const t = useT();
   const { language } = useSettings();
   const isPro = useSelector(isPro$);
+  const { accountOptions } = useAccounts();
+
+  const effectiveAccountId =
+    selectedAccountId !== null &&
+    accountOptions.some((acc) => acc.id === selectedAccountId)
+      ? selectedAccountId
+      : null;
 
   const {
     data,
@@ -44,13 +54,14 @@ export default function ActivityScreen() {
     hasNextPage,
     isFetchingNextPage,
   } = useInfiniteQuery({
-    queryKey: ["transactions", activeFilter, debouncedQuery],
+    queryKey: ["transactions", activeFilter, debouncedQuery, effectiveAccountId],
     queryFn: ({ pageParam = 0 }) =>
       ActivityService.GetTransactions(
         pageParam,
         10,
         activeFilter,
         debouncedQuery,
+        effectiveAccountId,
       ),
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) =>
@@ -89,6 +100,15 @@ export default function ActivityScreen() {
               <FilterChips
                 activeFilter={activeFilter}
                 onChange={setActiveFilter}
+                prefix={
+                  accountOptions.length > 0 ? (
+                    <AccountFilterDropdown
+                      accounts={accountOptions}
+                      selectedAccountId={effectiveAccountId}
+                      onChange={setSelectedAccountId}
+                    />
+                  ) : null
+                }
               />
             </View>
             {isLoading && (
@@ -163,7 +183,7 @@ const styles = StyleSheet.create({
 
   listContent: { paddingHorizontal: spacing.marginMobile, paddingBottom: 110 },
 
-  searchBlock: { gap: 24, paddingTop: 16, marginBottom: 8 },
+  searchBlock: { gap: 16, paddingTop: 16, marginBottom: 8 },
 
   emptyText: {
     ...typography.bodyLg,

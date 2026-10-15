@@ -18,7 +18,8 @@ export class ActivityService {
     page = 0,
     limit = 10,
     filter: "all" | TransactionType = "all",
-    search = ""
+    search = "",
+    accountId?: number | null
   ): Promise<ActivityTransactionRow[]> {
     const rawTxs = transactions$.peek() ?? {};
     const rawCats = categories$.peek() ?? {};
@@ -28,6 +29,15 @@ export class ActivityService {
 
     if (filter !== "all") {
       list = list.filter((tx) => tx.transaction_type === filter);
+    }
+
+    if (accountId !== undefined && accountId !== null) {
+      const targetId = Number(accountId);
+      list = list.filter(
+        (tx) =>
+          (tx.account_id != null && Number(tx.account_id) === targetId) ||
+          (tx.to_account_id != null && Number(tx.to_account_id) === targetId)
+      );
     }
 
     if (search.trim()) {
