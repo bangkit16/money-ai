@@ -4,3 +4,5 @@ export * from "./categories$";
 export * from "./transactions$";
 export * from "./supabaseSync";
 export * from "./profile$";
+export * from "./syncAllStores";
+

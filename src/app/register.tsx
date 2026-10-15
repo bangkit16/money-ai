@@ -3,6 +3,7 @@ import { Text } from "@/components/ui/text";
 import { shadow, spacing, typography } from "@/constants/theme";
 import { useColor } from "@/hooks/useColor";
 import { supabase } from "@/lib/supabase";
+import { syncAllStores } from "@/store/syncAllStores";
 import { StatusBar } from "expo-status-bar";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -42,7 +43,7 @@ export default function RegisterScreen() {
     setLoading(true);
     setError("");
 
-    const { error: authError } = await supabase.auth.signUp({
+    const { data: authData, error: authError } = await supabase.auth.signUp({
       email: email.trim(),
       password,
     });
@@ -53,7 +54,12 @@ export default function RegisterScreen() {
       return;
     }
 
-    router.replace("/(tabs)");
+    if (authData?.session) {
+      await syncAllStores();
+      router.replace("/(tabs)");
+    } else {
+      router.replace("/login");
+    }
     setLoading(false);
   };
 

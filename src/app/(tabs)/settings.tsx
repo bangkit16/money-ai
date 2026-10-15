@@ -21,6 +21,7 @@ import { transactions$ } from "@/store/transactions$";
 import { accounts$ } from "@/store/accounts$";
 import { user$ } from "@/store/auth$";
 import { isPro$ } from "@/store/profile$";
+import { clearAllStores } from "@/store/syncAllStores";
 import { useSelector } from "@legendapp/state/react";
 import { UpgradeModal } from "@/components/features/pro/UpgradeModal";
 import { invalidateTransactionCaches } from "@/lib/query-invalidation";
@@ -88,8 +89,7 @@ export default function SettingsScreen() {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      transactions$.set({});
-      accounts$.set({});
+      await clearAllStores();
       router.replace("/login");
     } catch (error) {
       console.error("Logout error:", error);

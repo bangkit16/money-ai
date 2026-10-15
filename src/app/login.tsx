@@ -26,6 +26,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useToast } from "@/components/ui/toast";
 import { createSessionFromUrl } from "@/lib/auth";
+import { syncAllStores } from "@/store/syncAllStores";
 import {
   GoogleSignin,
   statusCodes,
@@ -92,6 +93,7 @@ export default function LoginScreen() {
       return;
     }
 
+    await syncAllStores();
     router.replace("/(tabs)");
     setEmailLoading(false);
   };
@@ -130,6 +132,7 @@ export default function LoginScreen() {
         if (result.type === "success" && result.url) {
           const session = await createSessionFromUrl(result.url);
           if (session) {
+            await syncAllStores();
             router.replace("/(tabs)");
           }
         }
@@ -157,8 +160,7 @@ export default function LoginScreen() {
         }
 
         toast.success("Berhasil Session dibuat");
-        // await supabase.auth.setSession(data.session);   
-        // Alert.alert("Sukses! Session ", `Selamat datang, ${data.user?.email}`);
+        await syncAllStores();
         router.replace("/(tabs)");
         // Alert.alert("Sukses!", `Selamat datang, ${data.user?.email}`);
 

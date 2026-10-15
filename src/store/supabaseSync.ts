@@ -20,9 +20,8 @@ configureObservableSync({
   },
 });
 
-// Konfigurasi Supabase sync: hanya aktif saat user login & ID numerik berbasis timestamp
+// Konfigurasi Supabase sync: ID numerik berbasis timestamp
 configureSyncedSupabase({
-  enabled: isAuthenticated$,
   generateId: () => Date.now(),
 });
 
