@@ -24,7 +24,7 @@ export function useRewardedAd() {
   useEffect(() => {
     if (rewardedAd.earnedReward && !claimedRef.current) {
       claimedRef.current = true;
-      claimRewardedAiBonus(3).then((success) => {
+      claimRewardedAiBonus().then((success) => {
         if (success) {
           toast.success("Bonus +3 kuota AI harian berhasil ditambahkan!");
         }

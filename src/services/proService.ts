@@ -24,31 +24,12 @@ export const PRO_PRICING = {
 
 export class ProService {
   /**
-   * Mengaktifkan status Pro di Supabase untuk pengujian / via RevenueCat webhook
+   * Aktivasi Pro harus via webhook payment gateway / StoreKit / Play Billing.
+   * Client-side direct update dinonaktifkan (vulnerability fix).
    */
-  static async activatePro(durationMonths: number): Promise<boolean> {
-    const user = user$.peek();
-    if (!user) throw new Error("User belum login");
-
-    const expiresAt = new Date();
-    expiresAt.setMonth(expiresAt.getMonth() + durationMonths);
-
-    const { error } = await supabase
-      .from("profiles")
-      .update({
-        is_pro: true,
-        pro_expires_at: expiresAt.toISOString(),
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", user.id);
-
-    if (error) {
-      console.error("Gagal aktivasi Pro:", error);
-      return false;
-    }
-
-    await refreshProfile();
-    return true;
+  static async activatePro(_durationMonths: number): Promise<boolean> {
+    // ponytail: ditutup demi keamanan. Sambungkan ke Edge Function verifikasi receipt IAP.
+    throw new Error("Aktivasi Pro harus melalui verifikasi server / IAP.");
   }
 
   /**

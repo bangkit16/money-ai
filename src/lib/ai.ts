@@ -117,14 +117,12 @@ export async function askAi(prompt: string): Promise<AiPromptResult> {
   return data as AiPromptResult;
 }
 
-export async function claimRewardedAiBonus(bonus = 3): Promise<boolean> {
+export async function claimRewardedAiBonus(): Promise<boolean> {
   const user = user$.peek();
   if (!user) return false;
 
-  const { data, error } = await supabase.rpc("add_rewarded_ai_usage", {
-    p_user_id: user.id,
-    p_bonus: bonus,
-  });
+  // ponytail: user_id & bonus dipindah ke server RPC demi cegah manipulasi client
+  const { data, error } = await supabase.rpc("add_rewarded_ai_usage");
 
   if (error) {
     console.error("Bonus claim error:", error);
