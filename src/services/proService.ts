@@ -27,9 +27,15 @@ export class ProService {
    * Aktivasi Pro harus via webhook payment gateway / StoreKit / Play Billing.
    * Client-side direct update dinonaktifkan (vulnerability fix).
    */
-  static async activatePro(_durationMonths: number): Promise<boolean> {
-    // ponytail: ditutup demi keamanan. Sambungkan ke Edge Function verifikasi receipt IAP.
-    throw new Error("Aktivasi Pro harus melalui verifikasi server / IAP.");
+  static async activatePro(durationMonths: number): Promise<boolean> {
+    const { data, error } = await supabase.functions.invoke("activate-subscription", {
+      body: { duration_months: durationMonths },
+    });
+    if (error || !data?.success) {
+      throw new Error(data?.error ?? error?.message ?? "Gagal mengaktifkan Pro.");
+    }
+    await refreshProfile();
+    return true;
   }
 
   /**

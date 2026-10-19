@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { user$ } from "@/store/auth$";
-import { profile$ } from "@/store/profile$";
+import { getTodayUtcString, profile$ } from "@/store/profile$";
 
 export type AiCategory = {
   id: number;
@@ -108,6 +108,7 @@ export async function askAi(prompt: string): Promise<AiPromptResult> {
   if (quotaCheck) {
     profile$.ai_daily_usage.set(quotaCheck.current_usage);
     profile$.is_pro.set(quotaCheck.is_pro);
+    profile$.last_ai_usage_date.set(getTodayUtcString());
   }
 
   const { data, error } = await supabase.functions.invoke("ai-prompt", {
@@ -131,6 +132,7 @@ export async function claimRewardedAiBonus(): Promise<boolean> {
 
   if (data?.success) {
     profile$.ai_daily_usage.set(data.current_usage);
+    profile$.last_ai_usage_date.set(getTodayUtcString());
     return true;
   }
   return false;

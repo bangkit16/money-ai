@@ -12,12 +12,21 @@ export type ProfileEntity = {
   updated_at?: string;
 };
 
+export function getTodayUtcString(): string {
+  return new Date().toISOString().split("T")[0];
+}
+
+export function isAiUsageExpired(lastDate?: string | null): boolean {
+  if (!lastDate) return false;
+  return lastDate < getTodayUtcString();
+}
+
 const defaultProfile: ProfileEntity = {
   id: "",
   is_pro: false,
   pro_expires_at: null,
   ai_daily_usage: 0,
-  last_ai_usage_date: new Date().toISOString().split("T")[0],
+  last_ai_usage_date: getTodayUtcString(),
 };
 
 export const profile$ = observable<ProfileEntity>(defaultProfile);
@@ -26,7 +35,9 @@ export const isPro$ = observable<boolean>(() => profile$.is_pro.get() ?? false);
 
 export const aiQuota$ = observable(() => {
   const isPro = profile$.is_pro.get() ?? false;
-  const usage = profile$.ai_daily_usage.get() ?? 0;
+  const lastDate = profile$.last_ai_usage_date.get();
+  const rawUsage = profile$.ai_daily_usage.get() ?? 0;
+  const usage = isAiUsageExpired(lastDate) ? 0 : rawUsage;
   const max = isPro ? 60 : 5;
   const remaining = Math.max(0, max - usage);
   return {
@@ -53,12 +64,13 @@ export async function refreshProfile() {
     .single();
 
   if (!error && data) {
+    const expired = isAiUsageExpired(data.last_ai_usage_date);
     profile$.set({
       id: data.id,
       is_pro: data.is_pro ?? false,
       pro_expires_at: data.pro_expires_at ?? null,
-      ai_daily_usage: data.ai_daily_usage ?? 0,
-      last_ai_usage_date: data.last_ai_usage_date ?? new Date().toISOString().split("T")[0],
+      ai_daily_usage: expired ? 0 : (data.ai_daily_usage ?? 0),
+      last_ai_usage_date: data.last_ai_usage_date ?? getTodayUtcString(),
       created_at: data.created_at,
       updated_at: data.updated_at,
     });
@@ -82,7 +94,12 @@ function setupProfileSubscription(userId: string) {
       },
       (payload) => {
         if (payload.new) {
-          profile$.assign(payload.new as any);
+          const newProfile = payload.new as any;
+          const expired = isAiUsageExpired(newProfile.last_ai_usage_date);
+          profile$.assign({
+            ...newProfile,
+            ai_daily_usage: expired ? 0 : (newProfile.ai_daily_usage ?? 0),
+          });
         }
       }
     )

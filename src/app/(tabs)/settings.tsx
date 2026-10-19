@@ -32,11 +32,13 @@ import { useT } from "@/i18n";
 export default function SettingsScreen() {
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [deleteDataVisible, setDeleteDataVisible] = useState(false);
+  const [deleteAccountVisible, setDeleteAccountVisible] = useState(false);
   const [themeVisible, setThemeVisible] = useState(false);
   const [currencyVisible, setCurrencyVisible] = useState(false);
   const [languageVisible, setLanguageVisible] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isDeletingData, setIsDeletingData] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [upgradeVisible, setUpgradeVisible] = useState(false);
   const isPro = useSelector(isPro$);
   const modeCtx = useModeContext();
@@ -81,6 +83,27 @@ export default function SettingsScreen() {
     } finally {
       setIsDeletingData(false);
       setDeleteDataVisible(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setIsDeletingAccount(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("delete-account");
+      if (error || !data?.success) {
+        throw new Error(data?.error ?? error?.message ?? "Gagal menghapus akun.");
+      }
+
+      await supabase.auth.signOut();
+      await clearAllStores();
+      toast.success(t("settings.deleteAccountSuccess"));
+      router.replace("/login");
+    } catch (error) {
+      console.error("Delete account error:", error);
+      toast.error(t("settings.deleteAccountError"));
+    } finally {
+      setIsDeletingAccount(false);
+      setDeleteAccountVisible(false);
     }
   };
 
@@ -187,9 +210,26 @@ export default function SettingsScreen() {
         </Section>
 
         <Section title={t("settings.account")}>
+          <SettingRow
+            icon="delete-forever"
+            iconColor={destructive}
+            title={t("settings.deleteAccount")}
+            description={t("settings.deleteAccountDesc")}
+            onPress={() => setDeleteAccountVisible(true)}
+          />
           <LogoutButton onPress={() => setConfirmVisible(true)} />
         </Section>
       </ScrollView>
+
+      <ConfirmDialog
+        visible={deleteAccountVisible}
+        title={t("settings.deleteAccountConfirmTitle")}
+        message={t("settings.deleteAccountConfirmMessage")}
+        confirmLabel={t("settings.deleteAccountConfirmButton")}
+        isConfirming={isDeletingAccount}
+        onClose={() => setDeleteAccountVisible(false)}
+        onConfirm={handleDeleteAccount}
+      />
 
       <ConfirmDialog
         visible={deleteDataVisible}

@@ -45,3 +45,4 @@ example
 
 .agents/
 .claude/
+supabase/.temp/

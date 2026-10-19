@@ -1,3 +1,3 @@
-export function initMobileAds() {
+export async function initMobileAds(): Promise<void> {
   // No-op di web
 }
