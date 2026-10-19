@@ -1,6 +1,7 @@
 // migrated to useColor
 import { SpendingStructureCard } from "@/components/features/analytics/spending-structure-card";
 import { TopCategoriesList } from "@/components/features/analytics/top-categories-list";
+import { ActivityBannerAd } from "@/components/features/activity/banner-ad";
 import { AppBar } from "@/components/features/shared/app-bar";
 import { Text } from "@/components/ui/text";
 import { radius, shadow, spacing, typography } from "@/constants/theme";
@@ -8,6 +9,7 @@ import { useColor } from "@/hooks/useColor";
 import { useT } from "@/i18n";
 import { useSettings } from "@/providers/settings-provider";
 import { AnalyticsService, type AnalyticsType } from "@/services/analyticsService";
+import { isPro$ } from "@/store/profile$";
 import { useSelector } from "@legendapp/state/react";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useState } from "react";
@@ -24,6 +26,7 @@ export default function AnalyticsScreen() {
   const borderColor = useColor("border");
   const t = useT();
   const { language } = useSettings();
+  const isPro = useSelector(isPro$);
 
   const data = useSelector(() =>
     AnalyticsService.ComputeCurrentMonth(language, activeType)
@@ -96,6 +99,12 @@ export default function AnalyticsScreen() {
           </>
         )}
       </ScrollView>
+
+      {!isPro && (
+        <View style={styles.bannerWrapper}>
+          <ActivityBannerAd />
+        </View>
+      )}
     </View>
   );
 }
@@ -106,7 +115,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: spacing.marginMobile,
     paddingTop: 16,
-    paddingBottom: 60,
+    paddingBottom: 110,
     gap: spacing.gutter,
   },
 
@@ -146,4 +155,16 @@ const styles = StyleSheet.create({
   center: { alignItems: "center", justifyContent: "center", paddingVertical: 48 },
   errorText: { ...typography.bodyLg },
   retry: { ...typography.titleMd, marginTop: 8 },
+
+  bannerWrapper: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    alignItems: "center",
+    width: "100%",
+    height: 60,
+    backgroundColor: "white",
+    zIndex: 1,
+  },
 });

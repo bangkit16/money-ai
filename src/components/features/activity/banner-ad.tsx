@@ -1,8 +1,9 @@
 // migrated to useColor
 import { BannerAd, BannerAdSize, TestIds } from "react-native-google-mobile-ads";
 import { StyleSheet, View } from "react-native";
+import { USE_TEST_ADS } from "@/constants/config";
 
-const AD_UNIT_ID = __DEV__ ? TestIds.BANNER : "ca-app-pub-3230523634633671/2180052108";
+const AD_UNIT_ID = USE_TEST_ADS ? TestIds.BANNER : "ca-app-pub-3230523634633671/2180052108";
 
 export function ActivityBannerAd() { 
   return (

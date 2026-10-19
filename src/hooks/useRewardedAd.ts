@@ -5,8 +5,9 @@ import {
 } from "react-native-google-mobile-ads";
 import { claimRewardedAiBonus } from "@/lib/ai";
 import { useToast } from "@/components/ui/toast";
+import { USE_TEST_ADS } from "@/constants/config";
 
-const AD_UNIT_ID = __DEV__
+const AD_UNIT_ID = USE_TEST_ADS
   ? TestIds.REWARDED
   : "ca-app-pub-3230523634633671/9001161038";
 
@@ -31,6 +32,12 @@ export function useRewardedAd() {
       });
     }
   }, [rewardedAd.earnedReward, toast]);
+
+  useEffect(() => {
+    if (rewardedAd.status === "error" || rewardedAd.status === "no-fill") {
+      console.warn(`[AdMob] Rewarded Ad ${rewardedAd.status}:`, rewardedAd.error);
+    }
+  }, [rewardedAd.status, rewardedAd.error]);
 
   useEffect(() => {
     if (rewardedAd.status === "closed") {

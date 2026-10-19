@@ -218,7 +218,7 @@ export const translations: Record<LanguageCode, Dict> = {
     "ai.transactionUpdated": "Transaksi berhasil diubah.",
     "ai.askTitle": "Tanya Dompety AI",
     "ai.listening": "Mendengarkan...",
-    "ai.promptPlaceholder": "Tanyakan sesuatu tentang keuanganmu...",
+    "ai.promptPlaceholder": "Masukan atau tanyakan sesuatu tentang keuanganmu...",
     "ai.quotaRemaining": "{remaining}/{max} kuota tersisa",
     // settings upgrade banner
     "settings.upgradeTitle": "✨ Upgrade ke Dompety AI Pro",
@@ -248,8 +248,10 @@ export const translations: Record<LanguageCode, Dict> = {
     // quota exceeded modal
     "aiQuota.proLimitTitle": "Batas AI Pro Tercapai ({max}/{max})",
     "aiQuota.freeLimitTitle": "Kuota AI Harian Habis ({max}/{max})",
+    "aiQuota.limitTitle": "Kuota AI Harian Habis ({max}/{max})",
     "aiQuota.proLimitDesc": "Anda telah mencapai batas wajar harian 60 permintaan AI. Kuota harian Anda akan direset otomatis besok.",
     "aiQuota.freeLimitDesc": "Dapatkan tambahan +3 kuota gratis dengan menonton iklan video, atau tingkatkan ke Pro untuk kuota 60/hari dan tanpa iklan.",
+    "aiQuota.limitDesc": "Kuota AI harian Anda telah habis. Dapatkan tambahan +3 kuota gratis dengan menonton iklan video.",
     "aiQuota.watchAd": "Tonton Iklan (+3 Kuota)",
     "aiQuota.upgradePro": "Upgrade ke Pro ({price})",
     "aiQuota.understand": "Mengerti",
@@ -454,7 +456,7 @@ export const translations: Record<LanguageCode, Dict> = {
     "ai.transactionUpdated": "Transaction updated successfully.",
     "ai.askTitle": "Ask Dompety AI",
     "ai.listening": "Listening...",
-    "ai.promptPlaceholder": "Ask something about your finances...",
+    "ai.promptPlaceholder": "Insert or ask something about your finances...",
     "ai.quotaRemaining": "{remaining}/{max} quota remaining",
     // settings upgrade banner
     "settings.upgradeTitle": "✨ Upgrade to Dompety AI Pro",
@@ -484,8 +486,10 @@ export const translations: Record<LanguageCode, Dict> = {
     // quota exceeded modal
     "aiQuota.proLimitTitle": "Pro AI Limit Reached ({max}/{max})",
     "aiQuota.freeLimitTitle": "Daily AI Quota Reached ({max}/{max})",
+    "aiQuota.limitTitle": "Daily AI Quota Reached ({max}/{max})",
     "aiQuota.proLimitDesc": "You have reached the fair daily limit of 60 AI requests. Your quota will reset automatically tomorrow.",
     "aiQuota.freeLimitDesc": "Get +3 free quota by watching a video ad, or upgrade to Pro for 60/day and an ad-free experience.",
+    "aiQuota.limitDesc": "You have reached your daily AI quota. Get +3 bonus quota by watching a video ad.",
     "aiQuota.watchAd": "Watch Ad (+3 Quota)",
     "aiQuota.upgradePro": "Upgrade to Pro ({price})",
     "aiQuota.understand": "Got it",

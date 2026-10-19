@@ -13,6 +13,7 @@ import { useColor } from "@/hooks/useColor";
 import { useT } from "@/i18n";
 import { useAccounts } from "@/hooks/useAccounts";
 import { isPro$ } from "@/store/profile$";
+import { ENABLE_PRO } from "@/constants/config";
 import { useSelector } from "@legendapp/state/react";
 import type { AccountRow } from "@/services/accountService";
 import { useState } from "react";
@@ -49,7 +50,7 @@ export default function AccountScreen() {
   const isPro = useSelector(isPro$);
 
   const openCreateForm = () => {
-    if (!isPro && accounts.length >= 4) {
+    if (ENABLE_PRO && !isPro && accounts.length >= 4) {
       toast.error("Batas akun gratis maksimal 4. Upgrade ke Pro untuk rekening tanpa batas.");
       return;
     }

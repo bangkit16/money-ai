@@ -41,26 +41,30 @@ export function AiQuotaExceededModal({
         <View style={[styles.card, { backgroundColor: cardColor }, shadow.heroCard]}>
           <View style={[styles.iconCircle, { backgroundColor: primaryColor + "15" }]}>
             <Ionicons
-              name={isPro ? "time-outline" : "sparkles"}
+              name={ENABLE_PRO && isPro ? "time-outline" : "sparkles"}
               size={32}
               color={primaryColor}
             />
           </View>
 
           <Text style={[styles.title, { color: textColor }]}>
-            {isPro
+            {!ENABLE_PRO
+              ? t("aiQuota.limitTitle", { max: maxQuota })
+              : isPro
               ? t("aiQuota.proLimitTitle", { max: maxQuota })
               : t("aiQuota.freeLimitTitle", { max: maxQuota })}
           </Text>
 
           <Text style={[styles.description, { color: textMuted }]}>
-            {isPro
+            {!ENABLE_PRO
+              ? t("aiQuota.limitDesc")
+              : isPro
               ? t("aiQuota.proLimitDesc")
               : t("aiQuota.freeLimitDesc")}
           </Text>
 
           <View style={styles.actionsContainer}>
-            {!isPro && (
+            {(!ENABLE_PRO || !isPro) && (
               <>
                 <TouchableOpacity
                   style={[styles.primaryButton, { backgroundColor: primaryColor }]}
@@ -98,7 +102,7 @@ export function AiQuotaExceededModal({
               onPress={onClose}
             >
               <Text style={[styles.cancelText, { color: textMuted }]}>
-                {isPro ? t("aiQuota.understand") : t("aiQuota.later")}
+                {ENABLE_PRO && isPro ? t("aiQuota.understand") : t("aiQuota.later")}
               </Text>
             </TouchableOpacity>
           </View>

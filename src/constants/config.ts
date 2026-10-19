@@ -1,5 +1,8 @@
 export const ENABLE_PRO = process.env.EXPO_PUBLIC_ENABLE_PRO === "true";
 
+export const USE_TEST_ADS =
+  __DEV__ || process.env.EXPO_PUBLIC_USE_TEST_ADS === "true";
+
 export const PRIVACY_POLICY_URL =
   process.env.EXPO_PUBLIC_PRIVACY_POLICY_URL ||
   "https://bangkit16s.github.io/dompety-privacy-policy";
