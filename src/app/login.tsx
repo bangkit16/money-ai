@@ -1,6 +1,5 @@
 // migrated to useColor
 import { GoogleSignInButton } from "@/components/features/login/google-sign-in-button";
-import { Modal, Switch } from "react-native";
 import { LoginHero } from "@/components/features/login/login-hero";
 import { Text } from "@/components/ui/text";
 import { shadow, spacing, typography } from "@/constants/theme";
@@ -25,6 +24,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useToast } from "@/components/ui/toast";
+import { PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL } from "@/constants/config";
 import { createSessionFromUrl } from "@/lib/auth";
 import { syncAllStores } from "@/store/syncAllStores";
 import {
@@ -64,9 +64,7 @@ export default function LoginScreen() {
     iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID!,
   });
 
-  // console.log(process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID!);
   useEffect(() => {
-    console.log("Google Web Client ID:", process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID!);
     GoogleSignin.configure({
       iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID!,
       webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID!,
@@ -97,10 +95,6 @@ export default function LoginScreen() {
     router.replace("/(tabs)");
     setEmailLoading(false);
   };
-
-  const [consoleLog, setConsoleLog] = useState<string>("");
-  const [showTerms, setShowTerms] = useState(false);
-  const [agree, setAgree] = useState(false);
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
@@ -142,9 +136,7 @@ export default function LoginScreen() {
       // Native (Android/iOS): account picker native, tanpa browser/deep link.
       await GoogleSignin.hasPlayServices();
       const response = await GoogleSignin.signIn();
-      setConsoleLog(" Google sign-in response: " + JSON.stringify(response));
       const idToken = response.data?.idToken;
-      setConsoleLog(" Google sign-in idToken: " + idToken);
 
       if (idToken) {
         // Daftarkan / Masuk ke Supabase menggunakan idToken tersebut
@@ -155,7 +147,6 @@ export default function LoginScreen() {
 
         if (error) {
           toast.error("Gagal masuk dengan Google: " + error.message);
-          setConsoleLog(" Google sign-in error: " + error.message);
           throw error;
         }
 
@@ -288,30 +279,23 @@ export default function LoginScreen() {
             </Text>
           </TouchableOpacity>
 
-          {/* Terms Modal */}
-          <Modal visible={showTerms} animationType="slide" transparent={true} onRequestClose={() => setShowTerms(false)}>
-            <View style={styles.modalOverlay}>
-              <View style={styles.modalContent}>
-                <Text style={styles.modalTitle}>Terms of Service</Text>
-                <Text style={styles.modalBody}>[Isi Terms of Service di sini...]</Text>
-                <View style={styles.checkboxContainer}>
-                  <Switch value={agree} onValueChange={setAgree} />
-                  <Text style={styles.checkboxLabel}>Dengan ini saya setuju dengan layanan blblabla</Text>
-                </View>
-                <TouchableOpacity onPress={() => setShowTerms(false)} style={styles.modalCloseBtn}>
-                  <Text style={styles.modalCloseText}>Tutup</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </Modal>
-          <TouchableOpacity onPress={() => setShowTerms(true)}>
-            <Text style={[styles.termsText, { color: textMutedColor }]}>
-              {t("login.terms", { brand: "Dompety's" })}
-              <Text style={styles.termsLink}>{t("login.termsOfService")}</Text>
-              {t("login.termsAnd")}
-              <Text style={styles.termsLink}>{t("login.privacyPolicy")}</Text>.
+          <Text style={[styles.termsText, { color: textMutedColor }]}>
+            {t("login.terms", { brand: "Dompety's" })}
+            <Text
+              style={[styles.termsLink, { color: primaryColor }]}
+              onPress={() => WebBrowser.openBrowserAsync(TERMS_OF_SERVICE_URL)}
+            >
+              {t("login.termsOfService")}
             </Text>
-          </TouchableOpacity>
+            {t("login.termsAnd")}
+            <Text
+              style={[styles.termsLink, { color: primaryColor }]}
+              onPress={() => WebBrowser.openBrowserAsync(PRIVACY_POLICY_URL)}
+            >
+              {t("login.privacyPolicy")}
+            </Text>
+            .
+          </Text>
         </View>
         {/* </View> */}
       </KeyboardAvoidingView>
@@ -385,47 +369,8 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 16,
   },
-  termsLink: { fontSize: 10 },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "#00000088",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modalContent: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 20,
-    width: "80%",
-    maxHeight: "80%",
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-  modalBody: {
-    fontSize: 14,
-    marginBottom: 20,
-  },
-  checkboxContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 15,
-  },
-  checkboxLabel: {
-    marginLeft: 8,
-    fontSize: 14,
-    color: "#000",
-  },
-  modalCloseBtn: {
-    alignSelf: "flex-end",
-    padding: 8,
-    backgroundColor: "#2196F3",
-    borderRadius: 6,
-  },
-  modalCloseText: {
-    color: "#fff",
-    fontSize: 14,
+  termsLink: {
+    fontSize: 10,
+    textDecorationLine: "underline",
   },
 });

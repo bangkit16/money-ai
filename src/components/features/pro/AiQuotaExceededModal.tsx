@@ -4,6 +4,7 @@ import { useColor } from "@/hooks/useColor";
 import { radius, shadow, spacing } from "@/constants/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { useT } from "@/i18n";
+import { ENABLE_PRO } from "@/constants/config";
 
 type AiQuotaExceededModalProps = {
   visible: boolean;
@@ -73,19 +74,21 @@ export function AiQuotaExceededModal({
                   <Text style={styles.primaryButtonText}>{t("aiQuota.watchAd")}</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity
-                  style={[styles.secondaryButton, { borderColor }]}
-                  activeOpacity={0.85}
-                  onPress={() => {
-                    onClose();
-                    onUpgradePro();
-                  }}
-                >
-                  <Ionicons name="star" size={18} color="#EAB308" />
-                  <Text style={[styles.secondaryButtonText, { color: textColor }]}>
-                    {t("aiQuota.upgradePro", { price: "Rp14.900" })}
-                  </Text>
-                </TouchableOpacity>
+                {ENABLE_PRO && (
+                  <TouchableOpacity
+                    style={[styles.secondaryButton, { borderColor }]}
+                    activeOpacity={0.85}
+                    onPress={() => {
+                      onClose();
+                      onUpgradePro();
+                    }}
+                  >
+                    <Ionicons name="star" size={18} color="#EAB308" />
+                    <Text style={[styles.secondaryButtonText, { color: textColor }]}>
+                      {t("aiQuota.upgradePro", { price: "Rp14.900" })}
+                    </Text>
+                  </TouchableOpacity>
+                )}
               </>
             )}
 

@@ -46,3 +46,6 @@ example
 .agents/
 .claude/
 supabase/.temp/
+
+.env*
+credentials/

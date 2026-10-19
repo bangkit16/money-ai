@@ -32,11 +32,11 @@ export function ProfileCard() {
           <Text style={styles.name} numberOfLines={1}>
             {name}
           </Text>
-          <View style={[styles.badge, isPro ? styles.proBadge : styles.freeBadge]}>
+          {/* <View style={[styles.badge, isPro ? styles.proBadge : styles.freeBadge]}>
             <Text style={[styles.badgeText, isPro ? styles.proBadgeText : styles.freeBadgeText]}>
               {isPro ? "PRO" : "FREE"}
             </Text>
-          </View>
+          </View> */}
         </View>
         <Text style={[styles.email, { color: muted }]} numberOfLines={1}>
           {email}

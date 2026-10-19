@@ -28,6 +28,8 @@ import { invalidateTransactionCaches } from "@/lib/query-invalidation";
 import { useToast } from "@/components/ui/toast";
 import { AppBar } from "@/components/features/shared/app-bar";
 import { useT } from "@/i18n";
+import * as WebBrowser from "expo-web-browser";
+import { ENABLE_PRO, PRIVACY_POLICY_URL } from "@/constants/config";
 
 export default function SettingsScreen() {
   const [confirmVisible, setConfirmVisible] = useState(false);
@@ -135,7 +137,7 @@ export default function SettingsScreen() {
       >
         <ProfileCard />
 
-        {!isPro && (
+        {ENABLE_PRO && !isPro && (
           <TouchableOpacity
             style={[styles.proBanner, { backgroundColor: primary }]}
             onPress={() => setUpgradeVisible(true)}
@@ -199,6 +201,16 @@ export default function SettingsScreen() {
           />
         </Section>
 
+        <Section title={t("settings.about")}>
+          <SettingRow
+            icon="policy"
+            iconColor={primary}
+            title={t("settings.privacyPolicy")}
+            description={t("settings.privacyPolicyDesc")}
+            onPress={() => WebBrowser.openBrowserAsync(PRIVACY_POLICY_URL)}
+          />
+        </Section>
+        
         <Section title={t("settings.dataManagement")}>
           <SettingRow
             icon="delete-outline"
@@ -208,6 +220,7 @@ export default function SettingsScreen() {
             onPress={() => setDeleteDataVisible(true)}
           />
         </Section>
+
 
         <Section title={t("settings.account")}>
           <SettingRow
