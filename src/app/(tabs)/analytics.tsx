@@ -1,7 +1,7 @@
 // migrated to useColor
 import { SpendingStructureCard } from "@/components/features/analytics/spending-structure-card";
 import { TopCategoriesList } from "@/components/features/analytics/top-categories-list";
-import { ActivityBannerAd } from "@/components/features/activity/banner-ad";
+import { AnalyticsBannerAd } from "@/components/features/analytics/banner-ad";
 import { AppBar } from "@/components/features/shared/app-bar";
 import { Text } from "@/components/ui/text";
 import { radius, shadow, spacing, typography } from "@/constants/theme";
@@ -101,8 +101,8 @@ export default function AnalyticsScreen() {
       </ScrollView>
 
       {!isPro && (
-        <View style={styles.bannerWrapper}>
-          <ActivityBannerAd />
+        <View style={[styles.bannerWrapper, { backgroundColor: bgColor }]}>
+          <AnalyticsBannerAd />
         </View>
       )}
     </View>
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: spacing.marginMobile,
     paddingTop: 16,
-    paddingBottom: 110,
+    paddingBottom: 150,
     gap: spacing.gutter,
   },
 
@@ -164,7 +164,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "100%",
     height: 60,
-    backgroundColor: "white",
     zIndex: 1,
   },
 });

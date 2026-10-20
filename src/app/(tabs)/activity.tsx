@@ -162,7 +162,7 @@ export default function ActivityScreen() {
         }
       />
       {!isPro && (
-        <View style={styles.bannerWrapper}>
+        <View style={[styles.bannerWrapper, { backgroundColor: bgColor }]}>
           <ActivityBannerAd />
         </View>
       )}
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
   },
   loadingText: { ...typography.bodySm },
 
-  listContent: { paddingHorizontal: spacing.marginMobile, paddingBottom: 110 },
+  listContent: { paddingHorizontal: spacing.marginMobile, paddingBottom: 150 },
 
   searchBlock: { gap: 16, paddingTop: 16, marginBottom: 8 },
 
@@ -199,13 +199,12 @@ const styles = StyleSheet.create({
 
   bannerWrapper: {
     position: "absolute",
-    bottom: 0,
+    bottom: 80,
     left: 0,
     right: 0,
     alignItems: "center",
     width: "100%",
     height: 60,
-    backgroundColor: "white",
     zIndex: 1,
   },
 });

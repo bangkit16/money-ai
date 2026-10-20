@@ -30,14 +30,14 @@ export type InsertTransactionInput = {
 };
 
 export const transactions$ = observable<Record<number, TransactionEntity>>(
-  syncedSupabase({
+  (syncedSupabase as any)({
     supabase,
-    collection: "transaction" as any,
-    select: (from) =>
+    collection: "transaction",
+    select: (from: any) =>
       from.select(
         "id, created_at, transaction, amount, transaction_type, category_id, account_id, to_account_id, transaction_date, user_id"
       ),
-    filter: (query) => query.order("created_at", { ascending: false }),
+    filter: (query: any) => query.order("created_at", { ascending: false }),
     actions: ["read", "create", "update", "delete"],
     realtime: true,
     persist: {

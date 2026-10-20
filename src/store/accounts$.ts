@@ -15,11 +15,11 @@ export type AccountEntity = {
 };
 
 export const accounts$ = observable<Record<number, AccountEntity>>(
-  syncedSupabase({
+  (syncedSupabase as any)({
     supabase,
-    collection: "account" as any,
-    select: (from) => from.select("*"),
-    filter: (query) => query.order("created_at", { ascending: true }),
+    collection: "account",
+    select: (from: any) => from.select("*"),
+    filter: (query: any) => query.order("created_at", { ascending: true }),
     actions: ["read", "create", "update", "delete"],
     realtime: true,
     persist: {

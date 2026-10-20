@@ -3,7 +3,7 @@ import { BannerAd, BannerAdSize, TestIds } from "react-native-google-mobile-ads"
 import { StyleSheet, View } from "react-native";
 import { USE_TEST_ADS } from "@/constants/config";
 
-const AD_UNIT_ID = USE_TEST_ADS ? TestIds.BANNER : "ca-app-pub-3230523634633671/2180052108";
+const AD_UNIT_ID = USE_TEST_ADS ? TestIds.ADAPTIVE_BANNER : "ca-app-pub-3230523634633671/2180052108";
 
 export function ActivityBannerAd() { 
   return (
@@ -13,6 +13,9 @@ export function ActivityBannerAd() {
         size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
         requestOptions={{
           requestNonPersonalizedAdsOnly: true,
+        }}
+        onAdFailedToLoad={(error) => {
+          console.warn("[AdMob] Banner failed to load:", error);
         }}
       />
     </View>

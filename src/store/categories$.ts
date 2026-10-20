@@ -13,10 +13,10 @@ export type CategoryRow = {
 };
 
 export const categories$ = observable<Record<number, CategoryRow>>(
-  syncedSupabase({
+  (syncedSupabase as any)({
     supabase,
-    collection: "category_transaction" as any,
-    select: (from) => from.select("*"),
+    collection: "category_transaction",
+    select: (from: any) => from.select("*"),
     actions: ["read"],
     persist: {
       name: "categories_cache",
