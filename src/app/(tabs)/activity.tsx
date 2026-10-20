@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
 
   bannerWrapper: {
     position: "absolute",
-    bottom: 80,
+    bottom: 0,
     left: 0,
     right: 0,
     alignItems: "center",
