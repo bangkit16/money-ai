@@ -1,18 +1,35 @@
 import mobileAds, { AdsConsent } from "react-native-google-mobile-ads";
 
-export async function initMobileAds(): Promise<void> {
-  // 1. Google UMP Consent flow (GDPR / UK compliance)
-  try {
-    await AdsConsent.requestInfoUpdate();
-    await AdsConsent.loadAndShowConsentFormIfRequired();
-  } catch (err) {
-    console.warn("AdsConsent UMP error:", err);
-  }
+let initPromise: Promise<void> | null = null;
+let isReady = false;
 
-  // 2. Initialize Mobile Ads SDK
-  try {
-    await mobileAds().initialize();
-  } catch (err) {
-    console.warn("AdMob init error:", err);
-  }
+export async function initMobileAds(): Promise<void> {
+  if (initPromise) return initPromise;
+
+  initPromise = (async () => {
+    // 1. Google UMP Consent flow (GDPR / UK compliance)
+    try {
+      const consentInfo = await AdsConsent.requestInfoUpdate();
+      if (consentInfo.isConsentFormAvailable && consentInfo.status === "REQUIRED") {
+        await AdsConsent.loadAndShowConsentFormIfRequired();
+      }
+    } catch (err) {
+      console.warn("[AdMob] AdsConsent UMP warning:", err);
+    }
+
+    // 2. Initialize Mobile Ads SDK
+    try {
+      await mobileAds().initialize();
+      isReady = true;
+    } catch (err) {
+      console.warn("[AdMob] Init error:", err);
+    }
+  })();
+
+  return initPromise;
 }
+
+export function isMobileAdsReady(): boolean {
+  return isReady;
+}
+

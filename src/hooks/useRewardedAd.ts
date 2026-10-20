@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   useRewardedAd as useGoogleRewardedAd,
   TestIds,
@@ -6,6 +6,7 @@ import {
 import { claimRewardedAiBonus } from "@/lib/ai";
 import { useToast } from "@/components/ui/toast";
 import { USE_TEST_ADS } from "@/constants/config";
+import { initMobileAds } from "@/lib/admob";
 
 const AD_UNIT_ID = USE_TEST_ADS
   ? TestIds.REWARDED
@@ -13,11 +14,15 @@ const AD_UNIT_ID = USE_TEST_ADS
 
 export function useRewardedAd() {
   const toast = useToast();
+  const [sdkReady, setSdkReady] = useState(false);
+
+  useEffect(() => {
+    initMobileAds().then(() => setSdkReady(true));
+  }, []);
+
   const rewardedAd = useGoogleRewardedAd({
     adUnitId: AD_UNIT_ID,
-    requestOptions: {
-      requestNonPersonalizedAdsOnly: true,
-    },
+    autoLoad: sdkReady,
   });
 
   const claimedRef = useRef(false);
@@ -47,8 +52,13 @@ export function useRewardedAd() {
   }, [rewardedAd.status, rewardedAd]);
 
   const showRewardedAd = async (): Promise<boolean> => {
+    if (!sdkReady || rewardedAd.status === "loading") {
+      toast.info("Iklan sedang disiapkan. Tunggu sebentar...");
+      return false;
+    }
+
     if (rewardedAd.status !== "loaded") {
-      toast.error("Iklan belum siap. Silakan coba sesaat lagi.");
+      toast.error("Iklan belum siap. Sedang memuat ulang...");
       rewardedAd.load();
       return false;
     }
@@ -60,7 +70,7 @@ export function useRewardedAd() {
 
   return {
     isAdLoaded: rewardedAd.status === "loaded",
-    isAdLoading: rewardedAd.status === "loading",
+    isAdLoading: !sdkReady || rewardedAd.status === "loading",
     showRewardedAd,
     reloadAd: rewardedAd.load,
   };
