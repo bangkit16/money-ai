@@ -10,7 +10,10 @@
     },
     "preview": {
       "distribution": "internal",
-      "android": { "buildType": "apk" }
+      "android": { "buildType": "apk" },
+      "env": {
+        "EXPO_PUBLIC_USE_TEST_ADS": "true"
+      }
     },
     "production": {
       "autoIncrement": true

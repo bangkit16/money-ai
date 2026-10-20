@@ -162,7 +162,7 @@ export default function ActivityScreen() {
         }
       />
       {!isPro && (
-        <View style={[styles.bannerWrapper, { backgroundColor: bgColor }]}>
+        <View style={[styles.bannerWrapper]}>
           <ActivityBannerAd />
         </View>
       )}
@@ -206,5 +206,6 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 60,
     zIndex: 1,
+    overflow: "visible",
   },
 });
