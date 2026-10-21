@@ -29,6 +29,13 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-3230523634633671~3589422419",
+          "iosAppId": "ca-app-pub-3230523634633671~9029788063"
+        }
+      ],
       "expo-router",
       [
         "expo-splash-screen",
@@ -53,12 +60,6 @@
         "@react-native-google-signin/google-signin",
         {
           "iosUrlScheme": "com.googleusercontent.apps.93363001051-4ts9knbfvnad7v6jag22mku089hl4klc"
-        }
-      ],
-      [
-        "react-native-google-mobile-ads",
-        {
-          "androidAppId": "ca-app-pub-3230523634633671~3589422419"
         }
       ]
     ],
