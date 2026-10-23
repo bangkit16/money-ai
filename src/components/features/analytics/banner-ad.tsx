@@ -5,7 +5,7 @@ import { USE_TEST_ADS } from "@/constants/config";
 import { initMobileAds } from "@/lib/admob";
 
 const AD_UNIT_ID = USE_TEST_ADS
-  ? TestIds.ADAPTIVE_BANNER
+  ? TestIds.BANNER
   : "ca-app-pub-3230523634633671/5651785410";
 
 export function AnalyticsBannerAd() {
@@ -18,7 +18,7 @@ export function AnalyticsBannerAd() {
   if (!isReady) return null;
 
   return (
-    <View style={styles.container}>
+    // <View style={styles.container}>
       <BannerAd
         unitId={AD_UNIT_ID}
         size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
@@ -29,7 +29,7 @@ export function AnalyticsBannerAd() {
           console.warn("[AdMob] Analytics Banner failed to load:", error);
         }}
       />
-    </View>
+    // </View>
   );
 }
 

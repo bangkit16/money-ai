@@ -87,6 +87,11 @@ export default function ActivityScreen() {
   return (
     <View style={[styles.screen, { backgroundColor: bgColor }]}>
       <AppBar />
+      {!isPro && (
+        <View style={styles.bannerWrapper}>
+          <ActivityBannerAd />
+        </View>
+      )}
 
       <SectionList
         sections={filteredSections}
@@ -161,11 +166,6 @@ export default function ActivityScreen() {
           ) : null
         }
       />
-      {!isPro && (
-        <View style={[styles.bannerWrapper]}>
-          <ActivityBannerAd />
-        </View>
-      )}
     </View>
   );
 }
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
   },
   loadingText: { ...typography.bodySm },
 
-  listContent: { paddingHorizontal: spacing.marginMobile, paddingBottom: 150 },
+  listContent: { paddingHorizontal: spacing.marginMobile, paddingBottom: 100 },
 
   searchBlock: { gap: 16, paddingTop: 16, marginBottom: 8 },
 
@@ -198,14 +198,9 @@ const styles = StyleSheet.create({
   },
 
   bannerWrapper: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
     alignItems: "center",
     width: "100%",
-    height: 60,
-    zIndex: 1,
-    overflow: "visible",
+    paddingVertical: 4,
+    backgroundColor: "blue",
   },
 });

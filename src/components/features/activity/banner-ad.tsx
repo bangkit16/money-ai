@@ -5,7 +5,7 @@ import { StyleSheet, View } from "react-native";
 import { USE_TEST_ADS } from "@/constants/config";
 import { initMobileAds } from "@/lib/admob";
 
-const AD_UNIT_ID = USE_TEST_ADS ? TestIds.ADAPTIVE_BANNER : "ca-app-pub-3230523634633671/2180052108";
+const AD_UNIT_ID = USE_TEST_ADS ? TestIds.BANNER : "ca-app-pub-3230523634633671/2180052108";
 
 export function ActivityBannerAd() {
   const [isReady, setIsReady] = useState(false);
@@ -17,7 +17,7 @@ export function ActivityBannerAd() {
   if (!isReady) return null;
 
   return (
-    <View style={styles.container}>
+    // <View style={styles.container}>
       <BannerAd
         unitId={AD_UNIT_ID}
         size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
@@ -28,7 +28,7 @@ export function ActivityBannerAd() {
           console.warn("[AdMob] Banner failed to load:", error);
         }}
       />
-    </View>
+    // </View>
   );
 }
 

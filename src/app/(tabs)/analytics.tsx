@@ -35,6 +35,11 @@ export default function AnalyticsScreen() {
   return (
     <View style={[styles.screen, { backgroundColor: bgColor }]}>
       <AppBar />
+      {!isPro && (
+        <View style={styles.bannerWrapper}>
+          <AnalyticsBannerAd />
+        </View>
+      )}
 
       <ScrollView
         contentContainerStyle={styles.scrollContent}
@@ -99,12 +104,6 @@ export default function AnalyticsScreen() {
           </>
         )}
       </ScrollView>
-
-      {!isPro && (
-        <View style={[styles.bannerWrapper]}>
-          <AnalyticsBannerAd />
-        </View>
-      )}
     </View>
   );
 }
@@ -115,7 +114,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: spacing.marginMobile,
     paddingTop: 16,
-    paddingBottom: 150,
+    paddingBottom: 100,
     gap: spacing.gutter,
   },
 
@@ -157,14 +156,9 @@ const styles = StyleSheet.create({
   retry: { ...typography.titleMd, marginTop: 8 },
 
   bannerWrapper: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
     alignItems: "center",
     width: "100%",
-    height: 60,
-    zIndex: 1,
-    overflow: "visible",
+    paddingVertical: 4,
+    backgroundColor: "blue",
   },
 });
