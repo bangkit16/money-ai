@@ -1,5 +1,6 @@
 import { accounts$, accountActions, type AccountEntity } from "@/store/accounts$";
 import { transactions$ } from "@/store/transactions$";
+import { supabase } from "@/lib/supabase";
 
 export type AccountRow = {
   id: number;
@@ -12,6 +13,7 @@ export type AccountRow = {
 };
 
 export class AccountService {
+  // ponytail: sinkron langsung dari Legend-State cache, fallback ke view Supabase bila perlu
   static async GetAccountsWithTotals(): Promise<AccountRow[]> {
     const rawAccounts = accounts$.peek() ?? {};
     const accList = Object.values(rawAccounts) as AccountEntity[];
@@ -21,25 +23,23 @@ export class AccountService {
     return accList
       .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
       .map((acc) => {
-        let totalAmount = 0;
-
+        let total = 0;
         for (const tx of txList) {
           const amt = Number(tx.amount) || 0;
           if (tx.account_id === acc.id) {
-            if (tx.transaction_type === "INCOME") totalAmount += amt;
-            else totalAmount -= amt;
+            if (tx.transaction_type === "INCOME") total += amt;
+            else total -= amt;
           }
           if (tx.to_account_id === acc.id) {
-            totalAmount += amt;
+            total += amt;
           }
         }
-
         return {
           id: acc.id,
-          created_at: acc.created_at,
           account_name: acc.account_name,
+          created_at: acc.created_at,
           user_id: acc.user_id,
-          total_amount: totalAmount,
+          total_amount: total,
           is_primary: acc.is_primary ?? false,
           exclude_from_total: acc.exclude_from_total ?? false,
         };
@@ -47,7 +47,7 @@ export class AccountService {
   }
 
   static async CreateAccount(accountName: string, excludeFromTotal = false) {
-    accountActions.create(accountName, excludeFromTotal);
+    return accountActions.create(accountName, excludeFromTotal);
   }
 
   static async UpdateAccount(

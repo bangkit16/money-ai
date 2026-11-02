@@ -14,6 +14,7 @@ export type ActivityTransactionRow = {
 };
 
 export class ActivityService {
+  // ponytail: membaca dari Legend-State observables (offline-ready & realtime)
   static async GetTransactions(
     page = 0,
     limit = 10,

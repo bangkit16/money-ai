@@ -16,6 +16,7 @@ import { useT } from "@/i18n";
 import { useSettings } from "@/providers/settings-provider";
 import { ActivityService } from "@/services/activityService";
 import { isPro$ } from "@/store/profile$";
+import { transactions$ } from "@/store/transactions$";
 import { useSelector } from "@legendapp/state/react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
@@ -40,6 +41,9 @@ export default function ActivityScreen() {
   const isPro = useSelector(isPro$);
   const { accountOptions } = useAccounts();
 
+  // ponytail: reactive sync dengan Legend-State transactions$
+  const txVersion = useSelector(() => Object.keys(transactions$.get() ?? {}).length);
+
   const effectiveAccountId =
     selectedAccountId !== null &&
     accountOptions.some((acc) => acc.id === selectedAccountId)
@@ -54,7 +58,7 @@ export default function ActivityScreen() {
     hasNextPage,
     isFetchingNextPage,
   } = useInfiniteQuery({
-    queryKey: ["transactions", activeFilter, debouncedQuery, effectiveAccountId],
+    queryKey: ["transactions", activeFilter, debouncedQuery, effectiveAccountId, txVersion],
     queryFn: ({ pageParam = 0 }) =>
       ActivityService.GetTransactions(
         pageParam,

@@ -28,6 +28,7 @@ export default function AnalyticsScreen() {
   const { language } = useSettings();
   const isPro = useSelector(isPro$);
 
+  // ponytail: reactive sync dengan Legend-State store (offline-first & realtime)
   const data = useSelector(() =>
     AnalyticsService.ComputeCurrentMonth(language, activeType)
   );
@@ -82,8 +83,7 @@ export default function AnalyticsScreen() {
                 <Text
                   style={[
                     styles.toggleButtonText,
-                    { color: textMutedColor },
-                    active && { color: primaryForegroundColor },
+                    { color: active ? primaryForegroundColor : textMutedColor },
                   ]}
                 >
                   {t(item.labelKey)}
@@ -93,16 +93,13 @@ export default function AnalyticsScreen() {
           })}
         </View>
 
-        {data && (
-          <>
-            <SpendingStructureCard
-              segments={data.segments}
-              totalSpend={data.totalSpend}
-              type={activeType}
-            />
-            <TopCategoriesList items={data.topCategories} type={activeType} />
-          </>
-        )}
+        <SpendingStructureCard
+          segments={data?.segments ?? []}
+          totalSpend={data?.totalSpend ?? 0}
+          type={activeType}
+        />
+
+        <TopCategoriesList items={data?.topCategories ?? []} type={activeType} />
       </ScrollView>
     </View>
   );
@@ -110,24 +107,24 @@ export default function AnalyticsScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-
   scrollContent: {
     paddingHorizontal: spacing.marginMobile,
     paddingTop: 16,
-    paddingBottom: 100,
+    paddingBottom: 120,
     gap: spacing.gutter,
   },
-
   pageTitle: {
     ...typography.headlineLg,
     fontSize: 22,
     marginBottom: 4,
   },
-  pageSubtitle: { ...typography.bodyLg },
-
+  pageSubtitle: {
+    ...typography.bodyLg,
+  },
   toggleRow: {
     flexDirection: "row",
     gap: 8,
+    marginBottom: 8,
   },
   toggleButton: {
     flex: 1,
@@ -135,26 +132,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 6,
-    paddingVertical: 12,
-    borderRadius: radius.lg,
+    paddingVertical: 10,
+    borderRadius: radius.full,
     borderWidth: 1,
   },
   toggleButtonText: {
     ...typography.labelCaps,
     fontSize: 11,
   },
-
-  sectionHeaderRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-end",
-  },
-  titleMd: { ...typography.titleMd },
-
-  center: { alignItems: "center", justifyContent: "center", paddingVertical: 48 },
-  errorText: { ...typography.bodyLg },
-  retry: { ...typography.titleMd, marginTop: 8 },
-
   bannerWrapper: {
     alignItems: "center",
     width: "100%",

@@ -56,6 +56,7 @@ function startEndOfMonth(d: Date) {
 export type AnalyticsType = "EXPENSE" | "INCOME";
 
 export class AnalyticsService {
+  // ponytail: sinkron penuh dengan Legend-State observable agar reaktif & offline-ready
   static ComputeCurrentMonth(
     lang: LanguageCode = "id",
     type: AnalyticsType = "EXPENSE"

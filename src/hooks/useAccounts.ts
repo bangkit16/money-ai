@@ -4,6 +4,7 @@ import { transactions$ } from "@/store/transactions$";
 import type { AccountRow } from "@/services/accountService";
 
 export function useAccounts() {
+  // ponytail: reactive derive dari Legend-State observables agar sinkron offline & realtime
   const accountsWithTotals = useSelector(() => {
     const rawAccounts = accounts$.get() ?? {};
     const accList = Object.values(rawAccounts) as AccountEntity[];

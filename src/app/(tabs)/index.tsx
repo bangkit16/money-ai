@@ -1,4 +1,4 @@
-import { spacing, typography } from "@/constants/theme";
+import { spacing } from "@/constants/theme";
 import { HeroBalanceCard } from "@/components/features/dashboard/hero-balance-card";
 import { MonthlySummaryCard } from "@/components/features/dashboard/monthly-summary-card";
 import { RecentTransactions } from "@/components/features/dashboard/recent-transactions";
@@ -6,21 +6,17 @@ import { AppBar } from "@/components/features/shared/app-bar";
 import { useColor } from "@/hooks/useColor";
 import { useTransactions } from "@/hooks/useTransactions";
 import { useAccounts } from "@/hooks/useAccounts";
+import { DashboardService } from "@/services/dashboardService";
 import { useMemo } from "react";
-import {
-  ScrollView,
-  StyleSheet,
-  View,
-} from "react-native";
-import { useT } from "@/i18n";
+import { ScrollView, StyleSheet, View } from "react-native";
 import { useSettings } from "@/providers/settings-provider";
 
 export default function DashboardScreen() {
   const bgColor = useColor("background");
-  const t = useT();
   const { language } = useSettings();
 
-  const { transactions: allEnrichedTx, recentTransactions: recentTx } = useTransactions();
+  // ponytail: reactive sync dengan Legend-State store (offline-first & realtime)
+  const { transactions: allEnrichedTx, recentTransactions } = useTransactions();
   const { totalBalance } = useAccounts();
 
   const allTx = useMemo(() => {
@@ -29,90 +25,13 @@ export default function DashboardScreen() {
       transaction_type: tx.transaction_type,
       created_at: tx.created_at,
       account: tx.from_account,
+      to_account: tx.to_account,
     }));
   }, [allEnrichedTx]);
 
   const summary = useMemo(() => {
-    if (!allTx) return null;
-
-    const now = new Date();
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-
-    let totalIncome = 0;
-    let totalExpense = 0;
-    let thisMonthIncome = 0;
-    let thisMonthExpense = 0;
-    let prevMonthIncome = 0;
-    let prevMonthExpense = 0;
-    const accountBalances = new Map<
-      number,
-      { name: string; balance: number }
-    >();
-
-    for (const tx of allTx) {
-      if (tx.account?.exclude_from_total) continue;
-
-      const isIncome = tx.transaction_type === "INCOME";
-      const signedAmount = isIncome ? tx.amount : -tx.amount;
-
-      if (isIncome) totalIncome += tx.amount;
-      else if (tx.transaction_type === "EXPENSE") totalExpense += tx.amount;
-
-      const txDate = new Date(tx.created_at);
-      if (txDate >= monthStart) {
-        if (isIncome) thisMonthIncome += tx.amount;
-        else if (tx.transaction_type === "EXPENSE") thisMonthExpense += tx.amount;
-      } else if (txDate >= prevMonthStart && txDate < monthStart) {
-        if (isIncome) prevMonthIncome += tx.amount;
-        else if (tx.transaction_type === "EXPENSE") prevMonthExpense += tx.amount;
-      }
-
-      if (tx.account) {
-        const existing = accountBalances.get(tx.account.id);
-        if (existing) {
-          existing.balance += signedAmount;
-        } else {
-          accountBalances.set(tx.account.id, {
-            name: tx.account.account_name,
-            balance: signedAmount,
-          });
-        }
-      }
-    }
-
-    const netWorth = totalBalance;
-    const thisMonthNet = thisMonthIncome - thisMonthExpense;
-    const prevMonthNet = prevMonthIncome - prevMonthExpense;
-    const trendPct =
-      prevMonthNet !== 0
-        ? ((thisMonthNet - prevMonthNet) / Math.abs(prevMonthNet)) * 100
-        : thisMonthNet !== 0
-          ? 100
-          : 0;
-
-    const flowTotal = thisMonthIncome + thisMonthExpense;
-    const incomeBarWidth =
-      flowTotal > 0 ? (thisMonthIncome / flowTotal) * 100 : 0;
-    const expenseBarWidth =
-      flowTotal > 0 ? (thisMonthExpense / flowTotal) * 100 : 0;
-
-    const monthLabel = now.toLocaleDateString(
-      language === "id" ? "id-ID" : "en-US",
-      { month: "long", year: "numeric" }
-    );
-
-    return {
-      netWorth,
-      trendPct,
-      prevMonthNet,
-      thisMonthIncome,
-      thisMonthExpense,
-      incomeBarWidth,
-      expenseBarWidth,
-      monthLabel,
-    };
-  }, [allTx, language]);
+    return DashboardService.computeSummary(allTx, totalBalance, language);
+  }, [allTx, totalBalance, language]);
 
   return (
     <View style={[styles.screen, { backgroundColor: bgColor }]}>
@@ -123,20 +42,20 @@ export default function DashboardScreen() {
         showsVerticalScrollIndicator={false}
       >
         <HeroBalanceCard
-          netWorth={summary?.netWorth ?? 0}
-          trendPct={summary?.trendPct ?? 0}
-          prevMonthNet={summary?.prevMonthNet ?? 0}
+          netWorth={summary.netWorth}
+          trendPct={summary.trendPct}
+          prevMonthNet={summary.prevMonthNet}
         />
 
         <MonthlySummaryCard
-          income={summary?.thisMonthIncome ?? 0}
-          expense={summary?.thisMonthExpense ?? 0}
-          incomeBarWidth={summary?.incomeBarWidth ?? 0}
-          expenseBarWidth={summary?.expenseBarWidth ?? 0}
-          monthLabel={summary?.monthLabel}
+          income={summary.thisMonthIncome}
+          expense={summary.thisMonthExpense}
+          incomeBarWidth={summary.incomeBarWidth}
+          expenseBarWidth={summary.expenseBarWidth}
+          monthLabel={summary.monthLabel}
         />
 
-        <RecentTransactions transactions={recentTx} />
+        <RecentTransactions transactions={recentTransactions} />
       </ScrollView>
     </View>
   );
